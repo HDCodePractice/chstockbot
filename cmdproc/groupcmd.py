@@ -2,7 +2,6 @@ from telegram import Update, ForceReply
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
 def group_command(update: Update, _: CallbackContext) -> None:
-    print(update)
     if update.effective_chat.id == -1001478922081:
        update.message.reply_text("our group contains " + format(update.message.chat.get_members_count()) + """ members
 本组成员: 张富贵, Joe Shen, Stephen.""")
@@ -15,18 +14,3 @@ def group_command(update: Update, _: CallbackContext) -> None:
 def add_dispatcher(dp):
     dp.add_handler(CommandHandler("group", group_command))
     return []
-
-
-if update.message.type == "poll" or update.message.type == "poll_answer":
-    print("我也不知道chatid是多少")
-
-if update.message.type == "poll" or update.message.type == "poll_answer":
-    update.effective_chat = None
-else:
-    update.effective_chat = update.message.chat
-
-if update.effective_chat != None :
-    print("我也不知道chatid是多少")
-
-if update.effective_user != None:
-    print(update.effective_user.id)
