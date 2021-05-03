@@ -1,9 +1,9 @@
 {
     "good" : {
-        "1-40" : "This is good!",
+        "1-40" : "No Bad!",
         "40-80" : "You got a good gift!",
-        "80-120" : "Not bad!",
-        "120-160" : "",
+        "80-120" : "Wow, this is amazing!",
+        "120-160" : "You ",
         "160-200" : ""
     },
     "bad" : {
