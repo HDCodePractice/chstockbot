@@ -15,3 +15,18 @@ def group_command(update: Update, _: CallbackContext) -> None:
 def add_dispatcher(dp):
     dp.add_handler(CommandHandler("group", group_command))
     return []
+
+
+if update.message.type == "poll" or update.message.type == "poll_answer":
+    print("我也不知道chatid是多少")
+
+if update.message.type == "poll" or update.message.type == "poll_answer":
+    update.effective_chat = None
+else:
+    update.effective_chat = update.message.chat
+
+if update.effective_chat != None :
+    print("我也不知道chatid是多少")
+
+if update.effective_user != None:
+    print(update.effective_user.id)
