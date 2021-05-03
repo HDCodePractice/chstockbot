@@ -44,6 +44,12 @@ if __name__ == '__main__':
     print(f"Starting... ID: {str(CONFIG['ID'])} , Username: {CONFIG['Username']}")
 
     commands = []
+    from cmdproc import echo
+    commands += echo.add_dispatcher(dispatcher)
+    from cmdproc import groupcmd
+    commands += groupcmd.add_dispatcher(dispatcher)
+    from cmdproc import rewards
+    commands += rewards.add_dispatcher(dispatcher)
     # 在这里加入功能
     # from cmdproc import admincmd
     # commands += admincmd.add_dispatcher(dispatcher)
