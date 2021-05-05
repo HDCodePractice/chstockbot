@@ -12,7 +12,7 @@ def help():
     return "'bot.py -c <configpath>'"
 
 
-if name == 'main':
+if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hc:", ["config="])
     except getopt.GetoptError:
