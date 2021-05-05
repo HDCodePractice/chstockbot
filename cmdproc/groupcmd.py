@@ -1,10 +1,11 @@
-from telegram import Update, ForceReply
+from telegram import Update, ForceReply, BotCommand
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
 def group_command(update: Update, _: CallbackContext) -> None:
+    delete_time = 30
     if update.effective_chat.id == -1001346239262: 
         # 主群的回复
-       update.message.reply_text("""
+       msg = update.message.reply_text("""
 旅行团友群：
 https://t.me/joinchat/H7BPD0eLWqvSTPKB
 
@@ -34,7 +35,8 @@ https://t.me/c/1307935093/95
 
 期权、期货及其他衍生产品，读完之后再考虑操作期货
 https://t.me/c/1307935093/96
-       """)
+       """,disable_web_page_preview=True)
+       context.job_queue.run_once(delete_reply_msg,delete_time,context=[msg,update.effective_message],name=f"delete_msg_{msg.message_id}")
     else: # 私聊时发送标准的内容回去
        update.message.reply_text(
 """欢迎来自clubhouse的朋友
@@ -48,7 +50,13 @@ https://t.me/joinchat/H7BPD0eLWqvSTPKB
 https://t.me/joinchat/H3E3Y_WL4MABeF9s
 
 Switch游戏玩不停
-https://t.me/joinchat/6OHFklcv-8JlZmM1""")
+https://t.me/joinchat/6OHFklcv-8JlZmM1""",disable_web_page_preview=True)
+
+
+def delete_reply_msg(context : CallbackContext):
+    msgs=context.job.context
+    for msg in msgs:
+        context.bot.delete_message(msg.chat.id,msg.message_id)
 
 def add_dispatcher(dp):
     dp.add_handler(CommandHandler("group", group_command))

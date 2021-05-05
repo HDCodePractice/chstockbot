@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from telegram.ext import Updater
 import mysystemd
 import os
