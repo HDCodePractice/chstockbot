@@ -12,7 +12,7 @@ def help():
     return "'bot.py -c <configpath>'"
 
 
-if __name__ == '__main__':
+if name == 'main':
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hc:", ["config="])
     except getopt.GetoptError:
@@ -48,17 +48,12 @@ if __name__ == '__main__':
     # from cmdproc import admincmd
     # commands += admincmd.add_dispatcher(dispatcher)
     from cmdproc import echo
+    from cmdproc import groupcmdjoe
     commands += echo.add_dispatcher(dispatcher)
-    from cmdproc import group
-    commands += group.add_dispatcher(dispatcher)
-    from cmdproc import groupcmd
-    commands += groupcmd.add_dispatcher(dispatcher)
+    commands += groupcmdjoe.add_dispatcher(dispatcher)
 
     updater.bot.set_my_commands(commands)
-
     updater.start_polling()
-    print('Started...')
-    mysystemd.ready()
 
     updater.idle()
     print('Stopping...')
