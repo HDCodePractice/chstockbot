@@ -53,6 +53,8 @@ if __name__ == '__main__':
     commands += group.add_dispatcher(dispatcher)
     from cmdproc import groupcmd
     commands += groupcmd.add_dispatcher(dispatcher)
+    from cmdproc import rewards
+    commands += rewards.add_dispatcher(dispatcher)
 
     updater.bot.set_my_commands(commands)
 

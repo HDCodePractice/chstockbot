@@ -6,8 +6,10 @@ def group_cmd(update: Update, _:CallbackContext):
     print(chatId)
     member = update.message.from_user.full_name
     print(member)
+    """
     title = update.message.chat.title
     print(title)
+    """
     if chatId == -1001430794202 :
         update.message.reply_text("Hello " + member + "\nCurrently you are at Group " + title + "; \n本队成员: a b c d")
 
