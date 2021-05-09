@@ -13,15 +13,12 @@ def reward_cmd(update: Update, _:CallbackContext):
     print(rewardNumber)
 
     if rewardNumber == 0 :
-        badRewardWordIndex = random.randint(0,len(bad_rewards_array) - 1) #get random index from bad words list
-        print(badRewardWordIndex)
         #get value of index from bad words list
-        update.message.reply_text(bad_rewards_array[badRewardWordIndex] + "! You got " + str(rewardNumber) + " XP! ")
+        update.message.reply_text("%s! You got %s XP! " %(random.choice(bad_rewards_array), str(rewardNumber)))
     else :
-        goodRewardWordIndex = random.randint(0,len(good_rewards_array) - 1) #get random index from good words list
-        print(goodRewardWordIndex)
+
          #get value of index from good words list
-        update.message.reply_text(good_rewards_array[goodRewardWordIndex] + "! You got " + str(rewardNumber) + " XP! ")
+        update.message.reply_text("%s! You got %s XP! " %(random.choice(good_rewards_array), str(rewardNumber)))
 
 def add_dispatcher(dp):
     dp.add_handler(CommandHandler("rewards", reward_cmd))
