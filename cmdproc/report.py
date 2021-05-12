@@ -16,7 +16,7 @@ def report_user(update: Update, _:CallbackContext):
             reporter = incoming_message.chat.get_member(incoming_message.from_user.id) #举报人信息
             reportee = incoming_message.reply_to_message.chat.get_member(incoming_message.reply_to_message.chat.id) #被举报人信息
             forward_msg = str(incoming_message.reply_to_message.text)
-            print(forward_msg)
+            #print(forward_msg)
             reporter_name = reporter["user"]["first_name"] + " " + reporter["user"]["last_name"] if reporter["user"]["is_bot"] == False else reporter["user"]["first_name"]
             reportee_name = reportee["user"]["first_name"] + " " + reportee["user"]["last_name"] if reportee["user"]["is_bot"] == False else reportee["user"]["first_name"]
             incoming_message.reply_text(respose_txt(reporter_name, reporter["user"]["id"], reportee_name, reportee["user"]["id"], forward_msg))
@@ -30,9 +30,9 @@ def report_user(update: Update, _:CallbackContext):
             reporter = incoming_message.chat.get_member(incoming_message.from_user.id) #举报人信息
             reportee = incoming_message.reply_to_message.chat.get_member(incoming_message.reply_to_message.from_user.id) #被举报人信息
             forward_msg = str(incoming_message.reply_to_message.text)
-            print(reporter["user"])
-            print(reportee["user"])
-            print(forward_msg)
+            #print(reporter["user"])
+            #print(reportee["user"])
+            #print(forward_msg)
             reporter_name = reporter["user"]["first_name"] + " " + reporter["user"]["last_name"] if reporter["user"]["is_bot"] == False else reporter["user"]["first_name"]
             reportee_name = reportee["user"]["first_name"] + " " + reportee["user"]["last_name"] if reportee["user"]["is_bot"] == False else reportee["user"]["first_name"]
             incoming_message.reply_text(respose_txt(reporter_name, reporter["user"]["id"], reportee_name, reportee["user"]["id"], forward_msg))
