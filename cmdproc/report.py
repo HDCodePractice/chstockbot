@@ -22,7 +22,7 @@ def report_user(update: Update, _:CallbackContext):
             incoming_message.reply_text(respose_txt(reporter_name, reporter["user"]["id"], reportee_name, reportee["user"]["id"], forward_msg))
             print("this message is quoted from another message")
         else :
-            incoming_message.reply_text("没有发现被举报人的信息或者你举报的是个机器人，请重新选择包含被举报人的信息并回复/r")
+            incoming_message.reply_text("没有发现被举报人的信息，请重新选择包含被举报人的信息并回复/r")
             print("this message doesnt contain reporter's name, please reply to the user's message you want to report")
     else :
         print("this is group chat")
@@ -38,7 +38,7 @@ def report_user(update: Update, _:CallbackContext):
             incoming_message.reply_text(respose_txt(reporter_name, reporter["user"]["id"], reportee_name, reportee["user"]["id"], forward_msg))
             print("this message is quoted from another message")
         else :
-            incoming_message.reply_text("没有发现被举报人的信息或者你举报的是个机器人，请重新选择包含被举报人的信息并回复/r")
+            incoming_message.reply_text("没有发现被举报人的信息，请重新选择包含被举报人的信息并回复/r")
             print("this message doesnt contain reporter's name, please reply to the user's message you want to report")
 def add_dispatcher(dp):
     dp.add_handler(CommandHandler("r", report_user))
