@@ -2,7 +2,6 @@ from telegram import Update, ForceReply
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
 def groupcmd(update: Update, _: CallbackContext) -> None:
-    print(update)
     if update.message.chat.id == -1001478922081:
         # update.effective_chat.id == -1001478922081:  一样的效果
         update.message.reply_text("张富贵,Joe Shen,Stephen")
