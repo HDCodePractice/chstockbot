@@ -1,25 +1,79 @@
 from telegram import Update,  BotCommand
 from telegram.ext import CommandHandler,  CallbackContext
 
-vio_text = "举报信息"
+def respose_txt(reporter, reportee):
+    msg = f"""
+name: {reporter.full_name} ID: {reporter.id} 举报了
+name: {reportee.full_name} ID: {reportee.id} 
+说了: 
+"""
+    return msg
 
-def report_command(update: Update, _: CallbackContext) -> None:
-    message = update.message
-    user = message.from_user
-    reply_user = message.reply_to_message.from_user
-    if message.reply_to_message != None:     #检查举报命令否为回复信息
-        if message.reply_to_message.text == None:    #检查被举报的信息内容是否为文本信息
-            vio_text = "非文本信息" #若被举报信息不含文本则定义举报内容为非文本信息                         
-        else:                
-            vio_text = message.reply_to_message.text #赋值被举报信息
-            bot_reply = f"""
-User 用户: {user.full_name}  ID: {user.id} Reported 举报了
-User 用户: {reply_user.full_name} ID: {reply_user.id}
-Reported Content 被举报内容:
-{vio_text}"""
-            message.reply_text(bot_reply)
-    else:   #提示举报命令需要回复另一条信息
-        message.reply_text("To submit a report, please reply to the message in violation of our policy and type /r in text body" + "\n若举报违规行为，请回复违规信息并在回复信息中键入 /r")
+def report_command(update: Update, _:CallbackContext):
+    incoming_message = update.message
+    #verify if this is direct chat or forwarded chat
+    print(incoming_message)
+    if incoming_message.reply_to_message:
+        #forward_msg = []
+        reporter = incoming_message.from_user #举报人信息
+        reporter_name = reporter.full_name
+        #获得转发信息
+
+
+        #forward_msg = update.effective_message
+        print("this message is quoted from another message")
+        #grab user information based on chat type (group or private)
+        if incoming_message.chat.type == None :
+            print("this is private chat")
+            reportee = incoming_message.reply_to_message.from_user
+            reportee_name = reportee.full_name
+            
+        else :
+            print("this is group chat")
+            reportee = incoming_message.reply_to_message.chat.get_member(incoming_message.reply_to_message.from_user.id) #被举报人信息
+            reportee_name = reportee["user"]["first_name"] + " " + reportee["user"]["last_name"] if reportee["user"]["last_name"] is not None else reportee["user"]["first_name"]
+           
+        #send out message to chat
+        incoming_message.reply_text(respose_txt(reporter, reportee))
+        if incoming_message.reply_to_message.text is not None :
+            forward_msg = incoming_message.reply_to_message.text
+            incoming_message.reply_text(forward_msg)
+        elif incoming_message.reply_to_message.animation is not None :
+            forward_msg = incoming_message.reply_to_message.animation.file_id
+            incoming_message.reply_animation(forward_msg)
+        elif incoming_message.reply_to_message.audio is not None :
+            forward_msg = incoming_message.reply_to_message.audio.file_id
+            incoming_message.reply_audio(forward_msg)
+        elif incoming_message.reply_to_message.sticker is not None :
+            forward_msg =  incoming_message.reply_to_message.sticker.file_id
+            incoming_message.reply_sticker(forward_msg)
+        elif incoming_message.reply_to_message.video is not None :
+            forward_msg =  incoming_message.reply_to_message.video.file_id
+            incoming_message.reply_video(forward_msg)
+        elif incoming_message.reply_to_message.voice is not None :
+            forward_msg =  incoming_message.reply_to_message.voice.file_id
+            incoming_message.reply_voice(forward_msg)
+        elif incoming_message.reply_to_message.venue is not None :
+            forward_msg =  incoming_message.reply_to_message.venue.file_id
+            incoming_message.reply_venue(forward_msg) 
+        elif incoming_message.reply_to_message.photo is not None :
+            forward_msg =  incoming_message.reply_to_message.photo.copy
+            incoming_message.reply_photo(forward_msg)
+        elif incoming_message.reply_to_message.poll is not None :
+            forward_msg =  incoming_message.reply_to_message.poll.id
+            incoming_message.reply_poll(forward_msg)
+        elif incoming_message.reply_to_message.document is not None :
+            forward_msg = incoming_message.reply_to_message.document.file_id
+            incoming_message.reply_document(forward_msg)
+        elif incoming_message.reply_to_message.text_html is not None :
+            forward_msg = incoming_message.reply_to_message.text_html
+            incoming_message.reply_html(forward_msg)           
+        else:
+            forward_msg = incoming_message.reply_to_message.text
+            incoming_message.reply_text(forward_msg) 
+    else :
+        incoming_message.reply_text("没有发现被举报人的信息，请重新选择包含被举报人的信息并回复/r")
+        print("this message doesnt contain reporter's name, please reply to the user's message you want to report")
 
 
 def add_dispatcher(dp):
