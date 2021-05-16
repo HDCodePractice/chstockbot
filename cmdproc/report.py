@@ -4,9 +4,9 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Callb
 
 def respose_txt(reporter, reportee):
     msg = f"""
-    Name: {reporter.id} ID: {reporter.full_name}
-    Name: {reportee.id} ID: {reportee.full_name}
-    say:
+Name: {reporter.id} ID: {reporter.full_name}
+Name: {reportee.id} ID: {reportee.full_name}
+say:
     """
     return msg
 
@@ -17,16 +17,10 @@ def report_user(update: Update, _:CallbackContext):
     if incoming_message.reply_to_message:
         #forward_msg = []
         reporter = incoming_message.from_user #举报人信息
-        reporter_name = reporter.full_name
-        #获得转发信息
-
-
-        #forward_msg = update.effective_message
         print("this message is quoted from another message")
         #grab user information based on chat type (group or private)
-        print("this is private chat")
         reportee = incoming_message.reply_to_message.from_user #举报人信息
-        reportee_name = reportee.full_name
+        
         #send out message to chat
         incoming_message.reply_text(respose_txt(reporter,reportee))
         if incoming_message.reply_to_message.text is not None :
