@@ -51,28 +51,43 @@ def report_user(update: Update, _:CallbackContext):
             else :
                 reportee_name = "unknown user"
         #send out message to chat
-
+        #incoming_message.reply_text(respose_txt(reporter_name, reporter["user"]["id"], reportee_name, reportee["user"]["id"]))
         if incoming_message.reply_to_message.text is not None :
             forward_msg = incoming_message.reply_to_message.text
-            incoming_message.reply_text(respose_txt(reporter_name, reporter["user"]["id"], reportee_name, reportee["user"]["id"]) + forward_msg)
+            incoming_message.reply_text(respose_txt(reporter_name, reporter["user"]["id"], reportee_name, reportee["user"]["id"])).reply_text(forward_msg)
         elif incoming_message.reply_to_message.animation is not None :
             forward_msg = incoming_message.reply_to_message.animation.file_id
-            incoming_message.reply_text(respose_txt(reporter_name, reporter["user"]["id"], reportee_name, reportee["user"]["id"]))
-            incoming_message.reply_animation(forward_msg,allow_sending_without_reply=True)
+            incoming_message.reply_text(respose_txt(reporter_name, reporter["user"]["id"], reportee_name, reportee["user"]["id"])).reply_animation(forward_msg)
         elif incoming_message.reply_to_message.audio is not None :
             forward_msg = incoming_message.reply_to_message.audio.file_id
-            incoming_message.reply_text(respose_txt(reporter_name, reporter["user"]["id"], reportee_name, reportee["user"]["id"]))
-            incoming_message.reply_audio(forward_msg,allow_sending_without_reply=True)
+            incoming_message.reply_text(respose_txt(reporter_name, reporter["user"]["id"], reportee_name, reportee["user"]["id"])).reply_audio(forward_msg)
         elif incoming_message.reply_to_message.sticker is not None :
             forward_msg =  incoming_message.reply_to_message.sticker.file_id
-            incoming_message.reply_text(respose_txt(reporter_name, reporter["user"]["id"], reportee_name, reportee["user"]["id"]))
-            incoming_message.reply_sticker(forward_msg,allow_sending_without_reply=True)
+            incoming_message.reply_text(respose_txt(reporter_name, reporter["user"]["id"], reportee_name, reportee["user"]["id"])).reply_sticker(forward_msg)
+        elif incoming_message.reply_to_message.video is not None :
+            forward_msg =  incoming_message.reply_to_message.video.file_id
+            incoming_message.reply_text(respose_txt(reporter_name, reporter["user"]["id"], reportee_name, reportee["user"]["id"])).reply_video(forward_msg)
+        elif incoming_message.reply_to_message.voice is not None :
+            forward_msg =  incoming_message.reply_to_message.voice.file_id
+            incoming_message.reply_text(respose_txt(reporter_name, reporter["user"]["id"], reportee_name, reportee["user"]["id"])).reply_voice(forward_msg)
+        elif incoming_message.reply_to_message.venue is not None :
+            forward_msg =  incoming_message.reply_to_message.venue.file_id
+            incoming_message.reply_text(respose_txt(reporter_name, reporter["user"]["id"], reportee_name, reportee["user"]["id"])).reply_venue(forward_msg) 
+        elif incoming_message.reply_to_message.photo is not None :
+            forward_msg =  incoming_message.reply_to_message.photo.copy
+            incoming_message.reply_text(respose_txt(reporter_name, reporter["user"]["id"], reportee_name, reportee["user"]["id"])).reply_photo(forward_msg)    
+        elif incoming_message.reply_to_message.poll is not None :
+            forward_msg =  incoming_message.reply_to_message.poll.id
+            incoming_message.reply_text(respose_txt(reporter_name, reporter["user"]["id"], reportee_name, reportee["user"]["id"])).reply_poll(forward_msg)
         elif incoming_message.reply_to_message.document is not None :
             forward_msg = incoming_message.reply_to_message.document.file_id
-            incoming_message.reply_text(respose_txt(reporter_name, reporter["user"]["id"], reportee_name, reportee["user"]["id"]))
-            incoming_message.reply_document(forward_msg,allow_sending_without_reply=True)         
-            #incoming_message.reply_text(respose_txt(reporter_name, reporter["user"]["id"], reportee_name, reportee["user"]["id"]))
-            
+            incoming_message.reply_text(respose_txt(reporter_name, reporter["user"]["id"], reportee_name, reportee["user"]["id"])).reply_document(forward_msg)
+        elif incoming_message.reply_to_message.text_html is not None :
+            forward_msg = incoming_message.reply_to_message.text_html
+            incoming_message.reply_text(respose_txt(reporter_name, reporter["user"]["id"], reportee_name, reportee["user"]["id"])).reply_html(forward_msg)           
+        else:
+            forward_msg = incoming_message.reply_to_message.text
+            incoming_message.reply_text(respose_txt(reporter_name, reporter["user"]["id"], reportee_name, reportee["user"]["id"])).reply_text(forward_msg) 
     else :
         incoming_message.reply_text("没有发现被举报人的信息，请重新选择包含被举报人的信息并回复/r")
         print("this message doesnt contain reporter's name, please reply to the user's message you want to report")
