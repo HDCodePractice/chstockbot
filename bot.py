@@ -45,8 +45,10 @@ if __name__ == '__main__':
     # 在这里加入功能
     # from cmdproc import admincmd
     # commands += admincmd.add_dispatcher(dispatcher)
-    from cmdproc import groupcmd
+    from cmdproc import groupcmd,reportcmd,infocmd
     commands += groupcmd.add_dispatcher(dispatcher)
+    commands += reportcmd.add_dispatcher(dispatcher)
+    commands += infocmd.add_dispatcher(dispatcher)
 
     updater.bot.set_my_commands(commands)
 

@@ -1,5 +1,5 @@
-from telegram import Update, ForceReply, BotCommand
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from telegram import Update,  BotCommand
+from telegram.ext import CommandHandler,  CallbackContext
 
 def group_command(update: Update, _: CallbackContext) -> None:
     delete_time = 30
