@@ -1,0 +1,29 @@
+{
+  "update_id": 700663449,
+  "message": {
+    "message_id": 255,
+    "date": 1620226537,
+    "chat": {
+      "id": -1001430794202,
+      "type": "supergroup",
+      "title": "学渣的大朋友"
+    },
+    "text": "/group@BernieZBot",
+    "entities": [{ "type": "bot_command", "offset": 0, "length": 17 }],
+    "caption_entities": [],
+    "photo": [],
+    "new_chat_members": [],
+    "new_chat_photo": [],
+    "delete_chat_photo": False,
+    "group_chat_created": False,
+    "supergroup_chat_created": False,
+    "channel_chat_created": False,
+    "from": {
+      "id": 1170242636,
+      "first_name": "Bernie",
+      "is_bot": False,
+      "last_name": "Z",
+      "language_code": "en"
+    }
+  }
+}
