@@ -108,6 +108,12 @@ def kick_member(update: Update, _:CallbackContext): #移除并拉黑举报人
             #kick reporter
             try:
                 forwarding_message.bot.kick_chat_member(group,member_id,datetime.timestamp(datetime.now()))
+                #在本地拉黑用户； 未来添加用户时需要检查blacklist文档确定该用户没有被拉黑
+                f = open("blacklist.txt", "a")
+                f.write(
+f"""{member_id}/{group}
+""")
+                f.close()
                 forwarding_message.reply_text(f"""已在群组{group}中删除并拉黑用户：{member_id}""")
             except Exception as e:
                 forwarding_message.reply_text(f"""无法在群组{group}中删除用户：{member_id}; 请联系管理员删除, 详细信息如下：{e}""")
