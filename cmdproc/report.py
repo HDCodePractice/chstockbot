@@ -2,11 +2,11 @@ from datetime import datetime
 from os import error
 from telegram import Update, ForceReply
 import telegram
-from telegram.error import BadRequest
+from telegram.error import BadRequest, TelegramError
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
-admingroup = "-512402539"
-groups =["-512402539","-512402539"]
+admingroup = "-1001430794202"
+groups =["-1001430794202","-512402539"]
 
 
 def respose_txt(reporter, reportee, forward_message):
@@ -92,12 +92,12 @@ def kick_member(update: Update, _:CallbackContext): #移除并拉黑举报人
     #check if reply_to_message exist
     if forwarding_message.reply_to_message.text and "say:" in forwarding_message.reply_to_message.text :
         
-        if command == "/kk" :
+        if "/kk" in command:
         #get reporter inforamtion
             member_info = forwarding_message.reply_to_message.text.split("\n")[0]
             member_id = member_info.split("ID: ")[-1]
-        elif command == "/kr" :
-            member_info = forwarding_message.reply_to_message.text.split("\n")[0]
+        elif "/kr" in command:
+            member_info = forwarding_message.reply_to_message.text.split("\n")[1]
             member_id = member_info.split("ID: ")[-1]
         else:
             forwarding_message.reply_text("no command found, please re-try")
@@ -107,16 +107,12 @@ def kick_member(update: Update, _:CallbackContext): #移除并拉黑举报人
         for group in groups:
             #kick reporter
             try:
-                forwarding_message.bot.kick_chat_member(group,member_id)
-                forwarding_message.reply_text(f"""已在群组{group}中删除用户：{member_id}""")
-            except :
-                forwarding_message.reply_text(f"""缺少管理权限，无法在群组{group}中删除用户：{member_id}; 请联系管理员删除""")
+                forwarding_message.bot.kick_chat_member(group,member_id,datetime.timestamp(datetime.now()))
+                forwarding_message.reply_text(f"""已在群组{group}中删除并拉黑用户：{member_id}""")
+            except Exception as e:
+                forwarding_message.reply_text(f"""无法在群组{group}中删除用户：{member_id}; 请联系管理员删除, 详细信息如下：{e}""")
             #block reporter
-            try:
-                forwarding_message.bot.restrict_chat_member(group,member_id, datetime.now)
-                forwarding_message.reply_text(f"""已在群组{group}中拉黑用户：{member_id}""")
-            except :
-                forwarding_message.reply_text(f"""缺少管理权限，无法在群组{group}中拉黑用户：{member_id}; 请联系管理员删除""")
+        
 
     else:
         forwarding_message.reply_text(f"""没有发现被举报人的信息，请重新选择包含被举报人的信息并回复{command}""")    
