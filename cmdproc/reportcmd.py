@@ -6,7 +6,7 @@ from telegram.error import BadRequest, TelegramError
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
 admingroup = "-1001430794202"
-groups =["-1001430794202","--1001409640737"]
+groups =["-1001430794202","-1001409640737"]
 
 
 def respose_txt(reporter, reportee, forward_message):
