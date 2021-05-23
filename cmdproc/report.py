@@ -46,44 +46,7 @@ def report_user(update: Update, callbackcontext:CallbackContext):
         print("this message doesnt contain reporter's name, please reply to the user's message you want to report")
 
     #temperary disable echo previous message expect text
-'''         if incoming_message.reply_to_message.text != None :
-            forward_msg = incoming_message.reply_to_message.text
-            incoming_message.reply_text(forward_msg)
-        elif incoming_message.reply_to_message.animation != None :
-            forward_msg = incoming_message.reply_to_message.animation.file_id
-            incoming_message.reply_animation(forward_msg)
-        elif incoming_message.reply_to_message.audio != None :
-            forward_msg = incoming_message.reply_to_message.audio.file_id
-            incoming_message.reply_audio(forward_msg)
-        elif incoming_message.reply_to_message.sticker != None :
-            forward_msg =  incoming_message.reply_to_message.sticker.file_id
-            incoming_message.reply_sticker(forward_msg)
-        elif incoming_message.reply_to_message.video != None :
-            forward_msg =  incoming_message.reply_to_message.video.file_id
-            incoming_message.reply_video(forward_msg)
-        elif incoming_message.reply_to_message.voice != None :
-            forward_msg =  incoming_message.reply_to_message.voice.file_id
-            incoming_message.reply_voice(forward_msg)
-        elif incoming_message.reply_to_message.venue != None :
-            forward_msg =  incoming_message.reply_to_message.venue.file_id
-            incoming_message.reply_venue(forward_msg) 
-        elif incoming_message.reply_to_message.photo != None :
-            forward_msg =  incoming_message.reply_to_message.photo.copy
-            incoming_message.reply_photo(forward_msg)    
-        elif incoming_message.reply_to_message.poll != None :
-            forward_msg =  incoming_message.reply_to_message.poll.id
-            incoming_message.reply_poll(forward_msg)
-        elif incoming_message.reply_to_message.document != None :
-            forward_msg = incoming_message.reply_to_message.document.file_id
-            incoming_message.reply_document(forward_msg)
-        elif incoming_message.reply_to_message.text_html != None :
-            forward_msg = incoming_message.reply_to_message.text_html
-            incoming_message.reply_html(forward_msg)           
-        else:
-            forward_msg = incoming_message.reply_to_message.text
-            incoming_message.reply_text(forward_msg) '''
-          
-    
+   
 
 def kick_member(update: Update, _:CallbackContext): #移除并拉黑举报人
     forwarding_message = update.message
@@ -107,12 +70,10 @@ def kick_member(update: Update, _:CallbackContext): #移除并拉黑举报人
         for group in groups:
             #kick reporter
             try:
-                forwarding_message.bot.kick_chat_member(group,member_id,datetime.timestamp(datetime.now()))
+                forwarding_message.bot.kick_chat_member(group,member_id)
                 #在本地拉黑用户； 未来添加用户时需要检查blacklist文档确定该用户没有被拉黑
                 f = open("blacklist.txt", "a")
-                f.write(
-f"""{member_id}/{group}
-""")
+                f.write("{member_id}/{group}\n".format(member_id,group))
                 f.close()
                 forwarding_message.reply_text(f"""已在群组{group}中删除并拉黑用户：{member_id}""")
             except Exception as e:
