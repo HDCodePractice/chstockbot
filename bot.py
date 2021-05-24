@@ -42,6 +42,7 @@ if __name__ == '__main__':
     print(f"Starting... ID: {str(CONFIG['ID'])} , Username: {CONFIG['Username']}")
 
     commands = []
+
     from cmdproc import groupcmd
     commands += groupcmd.add_dispatcher(dispatcher)
     from cmdproc import reportcmd
