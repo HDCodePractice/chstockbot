@@ -44,6 +44,7 @@ if __name__ == '__main__':
     commands = []
     from cmdproc import groupcmd
     commands += groupcmd.add_dispatcher(dispatcher)
+
     from cmdproc import reportcmd
     commands += reportcmd.add_dispatcher(dispatcher)
 
