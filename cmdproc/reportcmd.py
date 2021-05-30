@@ -15,8 +15,7 @@ def report_command(update: Update, _: CallbackContext) -> None:
             vio_text = "非文本信息" #若被举报信息不含文本则定义举报内容为非文本信息                         
         else:                
             vio_text = message.reply_to_message.text #赋值被举报信息
-            bot_reply = f"""
-User 用户: {user.full_name}  ID: {user.id} Reported 举报了
+            bot_reply = f"""User 用户: {user.full_name}  ID: {user.id} Reported 举报了
 User 用户: {reply_user.full_name} ID: {reply_user.id}
 Reported Content 被举报内容:
 {vio_text}"""
@@ -29,7 +28,7 @@ Reported Content 被举报内容:
 def kick_command(update: Update, _: CallbackContext) -> None:
     bot = update.effective_message.bot
     text = update.message.reply_to_message.text
-    groupName = update.message.chat.title
+    group = update.message.chat.title
     spammerId = text.split("\n")[1].split(" ID: ")[-1]
     spammerName = text.split("\n")[1].split(" ID: ")[0].split("： ")[-1]
     try:
