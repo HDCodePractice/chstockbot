@@ -52,7 +52,7 @@ def kick_member(update: Update, _:CallbackContext): #移除并拉黑举报人
     command = forwarding_message.text
     response = ""
     #check if reply_to_message exist
-    if forwarding_message.reply_to_message.text and "say:" in forwarding_message.reply_to_message.text :
+    if forwarding_message.reply_to_message and "say:" in forwarding_message.reply_to_message.text :
         
         if "/kk" in command:
         #get reporter inforamtion
