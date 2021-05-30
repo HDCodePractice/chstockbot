@@ -44,8 +44,8 @@ if __name__ == '__main__':
     commands = []
     from cmdproc import groupcmd
     commands += groupcmd.add_dispatcher(dispatcher)
-    from cmdproc import reportcmd
-    commands += reportcmd.add_dispatcher(dispatcher)
+    from cmdproc import Kick
+    commands += Kick.add_dispatcher(dispatcher)
 
     updater.bot.set_my_commands(commands)
 
