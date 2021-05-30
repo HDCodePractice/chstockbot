@@ -1,7 +1,4 @@
-from datetime import datetime
-from os import error
-from telegram import Update, ForceReply
-import telegram
+from telegram import Update, ForceReply,BotCommand
 from telegram.error import BadRequest, TelegramError
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
@@ -14,6 +11,9 @@ def respose_txt(reporter, reportee, forward_message):
 Name: {reporter.full_name} ID: {reporter.id}
 Name: {reportee.full_name} ID: {reportee.id}
 say: {forward_message}
+回复 
+kk 🦶被举报人 
+kr 🦶举报人
     """
     return msg
 
@@ -46,19 +46,19 @@ def report_user(update: Update, callbackcontext:CallbackContext):
     #temperary disable echo previous message expect text
    
 
-def kick_member(update: Update, _:CallbackContext): #移除并拉黑举报人
+def kick_member(update: Update, context:CallbackContext): #移除并拉黑举报人
     forwarding_message = update.message
     #check which command user sending
     command = forwarding_message.text
     response = ""
     #check if reply_to_message exist
     if forwarding_message.reply_to_message and "say:" in forwarding_message.reply_to_message.text :
-        
-        if "/kk" in command:
+        print(command)
+        if "/kr" in command.split(" ")[0]:
         #get reporter inforamtion
             member_info = forwarding_message.reply_to_message.text.split("\n")[0]
             member_id = member_info.split("ID: ")[-1]
-        elif "/kr" in command:
+        elif "/kk" in command.split(" ")[0]:
             member_info = forwarding_message.reply_to_message.text.split("\n")[1]
             member_id = member_info.split("ID: ")[-1]
         else:
@@ -73,7 +73,7 @@ def kick_member(update: Update, _:CallbackContext): #移除并拉黑举报人
                 response += f"""
 已在群组{group}中删除并拉黑用户：{member_id}
             """
-            except Exception as e:
+            except TelegramError as e:
                 response += f"""
 无法在群组{group}中删除用户：{member_id}; 请联系管理员删除, 详细信息如下：{e}
                 """
@@ -89,4 +89,4 @@ def add_dispatcher(dp):
     dp.add_handler(CommandHandler("r", report_user))
     dp.add_handler(CommandHandler("kr", kick_member))
     dp.add_handler(CommandHandler("kk", kick_member))
-    return []
+    return [BotCommand('r','举报一个对话')]
