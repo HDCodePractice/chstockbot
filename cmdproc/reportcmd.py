@@ -7,10 +7,21 @@ def report_cmd (update: Update, _: CallbackContext) -> None:
     report_message = update.message.reply_to_message.text
     report_member = update.message.reply_to_message.from_user.full_name
     report_member_id = update.message.reply_to_message.from_user.id
-    update.message.reply_text("Name: " + member + " User ID: " + str(member_id) + " 举报了" + "\nName: " + report_member + " User ID: " + str(report_member_id) + " 说了: " + "\n" + report_message)
+    bot_reply = f"""
+Name: {member} User ID: {member_id} 举报了
+Name: {report_member} User ID: {report_member_id} 说了:
+{report_message}
+"""
+    bot = update.effective_message.bot
+    bot.send_message(-1001430794202,bot_reply)
+
+def kick_cmd (update: Update, _: CallbackContext) -> None:
+    bot = update.effective_message.bot
+    bot.kick_chat_member(-1001409640737,"hi")
 
 def add_dispatcher(dp):
     dp.add_handler(CommandHandler("r", report_cmd))
+    dp.add_handler(CommandHandler("k", kick_cmd))
     return []
 
     
