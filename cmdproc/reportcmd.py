@@ -1,34 +1,92 @@
-from telegram import Update,  BotCommand
-from telegram.ext import CommandHandler,  CallbackContext
+from telegram import Update, ForceReply,BotCommand
+from telegram.error import BadRequest, TelegramError
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
-vio_text = "举报信息"
+admingroup = "-1001430794202"
+groups =["-1001430794202","-1001409640737"]
 
-def report_command(update: Update, _: CallbackContext) -> None:
-    message = update.message
-    user = message.from_user
-    reply_user = message.reply_to_message.from_user
-    if message.reply_to_message != None:     #检查举报命令否为回复信息
-        if message.reply_to_message.text == None:    #检查被举报的信息内容是否为文本信息
-            vio_text = "非文本信息" #若被举报信息不含文本则定义举报内容为非文本信息                         
-        else:                
-            vio_text = message.reply_to_message.text #赋值被举报信息
-            bot_reply = f"""
-User 用户: {user.full_name}  ID: {user.id} Reported 举报了
-User 用户: {reply_user.full_name} ID: {reply_user.id}
-Reported Content 被举报内容:
-{vio_text}"""
-            bot = update.effective_message.bot
-            bot.send_message(-1001250988031,bot_reply)
-            # message.reply_text(bot_reply)
-    else:   #提示举报命令需要回复另一条信息
-        message.reply_text("To submit a report, please reply to the message in violation of our policy and type /r in text body" + "\n若举报违规行为，请回复违规信息并在回复信息中键入 /r")
 
-def kick_command(update: Update, _: CallbackContext) -> None:
-    bot = update.effective_message.bot
-    bot.kick_chat_member(-1001409640737,1844736039)
-    bot.unban_chat_member(-1001409640737,1844736039)
+def respose_txt(reporter, reportee, forward_message):
+    msg = f"""
+Name: {reporter.full_name} ID: {reporter.id}
+Name: {reportee.full_name} ID: {reportee.id}
+say: {forward_message}
+回复 
+kk 🦶被举报人 
+kr 🦶举报人
+    """
+    return msg
+
+def report_user(update: Update, callbackcontext:CallbackContext):
+    incoming_message = update.message
+    #verify if this is direct chat or forwarded chat
+    if incoming_message.reply_to_message:
+        #forward_msg = []
+        reporter = incoming_message.from_user #举报人信息
+       
+        #grab user information based on chat type (group or private)
+        reportee = incoming_message.reply_to_message.from_user #举报人信息
+        
+        #check if message is a text
+        if incoming_message.reply_to_message.text:
+            forward_message = incoming_message.reply_to_message.text
+        else :
+            forward_message = f"""not a message, but you can fetch it by searching message ID {incoming_message.reply_to_message.message_id}"""
+        #send out message to chat
+        incoming_message.reply_text(f"""亲爱的{reporter.full_name}: 你的举报已成功，感谢你的一份贡献""")
+
+        #send direct message to admin group for audit
+        incoming_message.bot.send_message(admingroup,respose_txt(reporter,reportee, forward_message))
+
+
+
+    else :
+        incoming_message.reply_text("没有发现被举报人的信息，请重新选择包含被举报人的信息并回复/r")
+       
+    #temperary disable echo previous message expect text
+   
+
+def kick_member(update: Update, context:CallbackContext): #移除并拉黑举报人
+    forwarding_message = update.message
+    #check which command user sending
+    command = forwarding_message.text
+    response = ""
+    #check if reply_to_message exist
+    if forwarding_message.reply_to_message and "say:" in forwarding_message.reply_to_message.text :
+        print(command)
+        if "/kr" in command.split(" ")[0]:
+        #get reporter inforamtion
+            member_info = forwarding_message.reply_to_message.text.split("\n")[0]
+            member_id = member_info.split("ID: ")[-1]
+        elif "/kk" in command.split(" ")[0]:
+            member_info = forwarding_message.reply_to_message.text.split("\n")[1]
+            member_id = member_info.split("ID: ")[-1]
+        else:
+            forwarding_message.reply_text("no command found, please re-try")
+        #make sure the name and id being sent to admin group
+
+        for group in groups:
+            #kick reporter
+            try:
+                forwarding_message.bot.kick_chat_member(group,member_id)
+                #在本地拉黑用户； 未来添加用户时需要检查blacklist文档确定该用户没有被拉黑
+                response += f"""
+已在群组{group}中删除并拉黑用户：{member_id}
+            """
+            except TelegramError as e:
+                response += f"""
+无法在群组{group}中删除用户：{member_id}; 请联系管理员删除, 详细信息如下：{e}
+                """
+            #block reporter
+        forwarding_message.reply_text(response)
+
+    else:
+        forwarding_message.reply_text(f"""没有发现被举报人的信息，请重新选择包含被举报人的信息并回复{command}""")    
+
+
 
 def add_dispatcher(dp):
-    dp.add_handler(CommandHandler("r", report_command))
-    dp.add_handler(CommandHandler("k", kick_command))
-    return [BotCommand('r','举报一个对话'),BotCommand('k','🦶一个人出群！')]
+    dp.add_handler(CommandHandler("r", report_user))
+    dp.add_handler(CommandHandler("kr", kick_member))
+    dp.add_handler(CommandHandler("kk", kick_member))
+    return [BotCommand('r','举报一个对话')]
