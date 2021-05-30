@@ -6,8 +6,8 @@ vio_text = "举报信息"
 def report_command(update: Update, _: CallbackContext) -> None:
     message = update.message
     user = message.from_user
-    reply_user = message.reply_to_message.from_user
     if message.reply_to_message != None:     #检查举报命令否为回复信息
+        reply_user = message.reply_to_message.from_user
         if message.reply_to_message.text == None:    #检查被举报的信息内容是否为文本信息
             vio_text = "非文本信息" #若被举报信息不含文本则定义举报内容为非文本信息                         
         else:                
