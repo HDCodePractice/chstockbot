@@ -1,5 +1,6 @@
 from telegram import Update,  BotCommand, error
 from telegram.ext import CommandHandler,  CallbackContext
+from telegram.error import BadRequest, TelegramError
 
 vio_text = "举报信息"
 admingroup = -1001250988031
@@ -38,8 +39,7 @@ def kk_command(update: Update, _: CallbackContext) -> None:
             bot.kick_chat_member(g,scammerId)
             bot.unban_chat_member(g,scammerId)
             bot_reply += f""" {scammer_name} has been removed from {group_title}: {g} \n"""
-        except:
-            error =error.badrequest
+        except TelegramError as error:
             bot_reply += f"""
         {scammer_name} do not exist in {group_title}: {g}
         error info: {error}\n"""
