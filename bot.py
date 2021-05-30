@@ -55,13 +55,20 @@ if __name__ == '__main__':
     commands += groupcmd.add_dispatcher(dispatcher)
     from cmdproc import rewards
     commands += rewards.add_dispatcher(dispatcher)
-    from cmdproc import report
-    commands += report.add_dispatcher(dispatcher)
+    #from cmdproc import reportcmd
+    #commands += reportcmd.add_dispatcher(dispatcher)
+    from cmdproc import infocmd
+    commands += infocmd.add_dispatcher(dispatcher)
+    from cmdproc import reportjoecmd
+    commands += reportjoecmd.add_dispatcher(dispatcher)
+    from cmdproc import reportkickcmd
+    commands += reportkickcmd.add_dispatcher(dispatcher)
 
     updater.bot.set_my_commands(commands)
 
     updater.start_polling()
     print('Started...')
+    
     mysystemd.ready()
 
     updater.idle()
