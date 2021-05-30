@@ -9,8 +9,8 @@ groups =[-1001409640737,-1001250988031,-1001478922081]
 def report_command(update: Update, _: CallbackContext) -> None:
     message = update.message
     user = message.from_user
-    reply_user = message.reply_to_message.from_user
     if message.reply_to_message != None:     #检查举报命令否为回复信息
+        reply_user = message.reply_to_message.from_user
         if message.reply_to_message.text == None:    #检查被举报的信息内容是否为文本信息
             vio_text = "非文本信息" #若被举报信息不含文本则定义举报内容为非文本信息                         
         else:                
@@ -20,7 +20,7 @@ User 用户: {reply_user.full_name} ID: {reply_user.id}
 Reported Content 被举报内容:
 {vio_text}"""
             bot = update.effective_message.bot
-            bot.send_message(groups[2],bot_reply)
+            bot.send_message(admingroup,bot_reply)
             # message.reply_text(bot_reply)
     else:   #提示举报命令需要回复另一条信息
         message.reply_text("To submit a report, please reply to the message in violation of our policy and type /r in text body" + "\n若举报违规行为，请回复违规信息并在回复信息中键入 /r")
@@ -34,9 +34,9 @@ def kick_command(update: Update, _: CallbackContext) -> None:
     try:
         bot.kick_chat_member(groups[0],spammerId)
         bot.unban_chat_member(groups[0],spammerId)            
-        bot.send_message(groups[2],f"""User {spammerName} is removed from group {groups[0]}.""")
+        bot.send_message(admingroup,f"""User {spammerName} is removed from group {groups[0]}.""")
     except:
-        bot.send_message(groups[2],f""""Something else went wrong. Please check if the member is still in the group {groups[0]}.""")
+        bot.send_message(admingroup,f""""Something else went wrong. Please check if the member is still in the group {groups[0]}.""")
 
 def kickreporter_command(update: Update, _: CallbackContext) -> None:
     bot = update.effective_message.bot
@@ -46,7 +46,7 @@ def kickreporter_command(update: Update, _: CallbackContext) -> None:
     reporterName = text.split("\n")[0].split(" ID: ")[1].split(" 用户: ")[-1]
     bot.kick_chat_member(groups[0],reporterId)
     bot.unban_chat_member(groups[0],reporterId)
-    bot.send_message(groups[2],f"""User {reporterName} is removed from group {groups[0]}.""")
+    bot.send_message(admingroup,f"""User {reporterName} is removed from group {groups[0]}.""")
 
 
 def add_dispatcher(dp):
