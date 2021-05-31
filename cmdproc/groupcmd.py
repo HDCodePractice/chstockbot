@@ -1,7 +1,7 @@
 from telegram import Update,  BotCommand
 from telegram.ext import CommandHandler,  CallbackContext
 
-def group_command(update: Update, _: CallbackContext) -> None:
+def group_command(update: Update, context: CallbackContext) -> None:
     delete_time = 30
     if update.effective_chat.id == -1001346239262: 
         # 主群的回复
