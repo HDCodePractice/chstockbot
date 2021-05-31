@@ -1,10 +1,10 @@
 import pandas as pd
-import pandas_datareader as pdr
+import pandas_datareader.data as web
 import datetime
 
 start = datetime.date.today() - datetime.timedelta(days=365)
 end = datetime.date.today()
 
-symbol = 'aapl'
-df = pdr.get_data_yahoo(symbol.upper(),start=start,end=end)
+symbol = '^spx'
+df = web.DataReader(symbol.upper(), 'stooq',start=start,end=end)
 print(df)
