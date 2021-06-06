@@ -51,8 +51,8 @@ if __name__ == '__main__':
     from cmdproc import reportcmd
     commands += reportcmd.add_dispatcher(dispatcher)
 
-    from cmdproc import sendxyhcmd
-    commands += sendxyhcmd.add_dispatcher(dispatcher)
+    # from cmdproc import sendxyh
+    # commands += sendxyh.add_dispatcher(dispatcher)
 
     updater.bot.set_my_commands(commands)
 
