@@ -16,7 +16,8 @@ groups =[-1001409640737,-1001250988031,-1001478922081,-1001405840327]
 start = datetime.date.today() - datetime.timedelta(days=365) 
 end = datetime.date.today()
 
-tickers = ['qqq','spy','nio']
+tickers = ['qqq','spy','nio','aapl','msft']
+
 market_brief = ""
 
 def brief(ticker, term1, term2, term3):
@@ -28,16 +29,13 @@ def brief(ticker, term1, term2, term3):
     ticker_term2 = df_ticker.tail(term2)["Adj Close"].mean()
     ticker_term3 = df_ticker.tail(term3)["Adj Close"].mean()
     
-    ticker_brief = f"""{ticker} 今日：{format(ticker_today,'.2f')}({format(ticker_today_low,'.2f')}-{format(ticker_today_high,'.2f')})
-{term1}  周期均价：{format(ticker_term1,'.2f')}
-{term2}  周期均价：{format(ticker_term2,'.2f')}
-{term3} 周期均价：{format(ticker_term3,'.2f')}"""
+    ticker_brief = f"""{ticker} 今日：{format(ticker_today,'.2f')}({format(ticker_today_low,'.2f')}-{format(ticker_today_high,'.2f')}) {term1} 周期均价：{format(ticker_term1,'.2f')} {term2} 周期均价：{format(ticker_term2,'.2f')} {term3} 周期均价：{format(ticker_term3,'.2f')}"""
     return[ticker_brief]
 
 for t in tickers:
-    market_brief += f"{brief(t, 13, 20, 200)} "
-#    print(f"{brief(t, 13, 20, 200)}")
-#print(f"""今日天相 {market_brief}""")
+    market_brief += f"{brief(t, 13, 50, 200)}\n"
+    #print(f"{brief(t, 13, 50, 200)}")
+#print(f"今日天相\n{market_brief}")
 
 
 
@@ -51,4 +49,4 @@ except FileNotFoundError:
 
 bot = Bot(CONFIG["Token"])
 for g in groups:    
-    bot.send_message(chat_id = g, text = f"今日天相 {market_brief}")
+    bot.send_message(chat_id = g, text = f"今日天相\n{market_brief}")
