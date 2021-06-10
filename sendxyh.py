@@ -29,13 +29,13 @@ def brief(ticker, term1, term2, term3):
     ticker_term2 = df_ticker.tail(term2)["Adj Close"].mean()
     ticker_term3 = df_ticker.tail(term3)["Adj Close"].mean()
     
-    ticker_brief = f"""{ticker} 今日：{format(ticker_today,'.2f')}({format(ticker_today_low,'.2f')}-{format(ticker_today_high,'.2f')}) {term1} 周期均价：{format(ticker_term1,'.2f')} {term2} 周期均价：{format(ticker_term2,'.2f')} {term3} 周期均价：{format(ticker_term3,'.2f')}"""
+    ticker_brief = f"{ticker} 今日：{format(ticker_today,'.2f')}({format(ticker_today_low,'.2f')}-{format(ticker_today_high,'.2f')}); {term1} 周期均价：{format(ticker_term1,'.2f')}; {term2} 周期均价：{format(ticker_term2,'.2f')}; {term3} 周期均价：{format(ticker_term3,'.2f')}"
     return[ticker_brief]
 
 for t in tickers:
     market_brief += f"{brief(t, 13, 50, 200)}\n"
     #print(f"{brief(t, 13, 50, 200)}")
-#print(f"今日天相\n{market_brief}")
+print(f"今日天相\n{market_brief}")
 
 
 
