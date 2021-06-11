@@ -17,26 +17,26 @@ start = datetime.date.today() - datetime.timedelta(days=365)
 end = datetime.date.today()
 
 tickers = ['qqq','spy','nio','aapl','msft']
-
+terms = [13, 20, 50, 200]
 market_brief = ""
 
-def brief(ticker, term1, term2, term3):
+def brief(ticker, terms):
     df_ticker = pdr.get_data_yahoo(ticker.upper(),start=start,end=end)
     ticker_today = df_ticker.iat[-1,3]
     ticker_today_low = df_ticker.iat[-1,1]
     ticker_today_high = df_ticker.iat[-1,0]
-    ticker_term1 = df_ticker.tail(term1)["Adj Close"].mean()
-    ticker_term2 = df_ticker.tail(term2)["Adj Close"].mean()
-    ticker_term3 = df_ticker.tail(term3)["Adj Close"].mean()
+
+    ticker_termInfo = ""
+    for term in terms:
+        ticker_terms = df_ticker.tail(term)["Adj Close"].mean()
+        ticker_termInfo += f"{term} 周期均价：{ticker_terms:.2f}\n"
     
     ticker_brief = f"""{ticker} 今日：{ticker_today:.2f} ({ticker_today_low:.2f}-{ticker_today_high:.2f});
-{term1} 周期均价：{ticker_term1:.2f};
-{term2} 周期均价：{ticker_term2:.2f}; 
-{term3} 周期均价：{ticker_term3:.2f}"""
-    return(ticker_brief)
+{ticker_termInfo}"""
+    return f"{ticker_brief}\n"
 
 for t in tickers:
-    market_brief += f"{brief(t, 13, 50, 200)}\n"
+    market_brief += f"{brief(t, terms)}\n"
     #print(f"{brief(t, 13, 50, 200)}")
 #print(f"今日天相\n{market_brief}")
 
