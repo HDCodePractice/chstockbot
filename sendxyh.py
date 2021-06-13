@@ -5,6 +5,7 @@ from telegram import Bot
 from pandas_datareader._utils import RemoteDataError
 
 symbols = [["SPY",10,50],["QQQ",13,55,200],["RBLX",13,55,200]]
+ds = 'stooq'
 notifychat = -1001430794202
 adminchat = -1001250988031
 # symbols = [["SPY",10,50]]
@@ -30,7 +31,6 @@ def cal_symbols_avg_yahoo(symbol:str,avgs:list):
         return f"{message}\n"
     except RemoteDataError:
         return f"{symbol}丢失了\n"
-
 
 if __name__ == '__main__':
     try:
@@ -64,4 +64,4 @@ if __name__ == '__main__':
         # bot.send_message(adminchat,f"向{notifychat}发送成功夕阳红:\n{message}")
     except Exception as err:
         print(err)
-        bot.send_message(adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了出的问题是:\n{err}")
+        bot.send_message(adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了出的问题是:\n{type(err)}:\n{err}")
