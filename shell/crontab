@@ -1,0 +1,2 @@
+# 每周一到周五的下午4:30发送夕阳红
+30 16 * * 1-5 /home/chstockbot/shell/sendxyh.sh

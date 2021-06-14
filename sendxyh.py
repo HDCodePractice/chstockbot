@@ -55,6 +55,9 @@ if __name__ == '__main__':
         sys.exit(2)
 
     bot = Bot(token = CONFIG['Token'])
+    symbols = CONFIG['xyhticker']
+    notifychat = CONFIG['xyhchat']
+    adminchat = CONFIG['xyhlog']
 
     message = "🌈🌈🌈当日天相🌈🌈🌈: \n"
     try:
