@@ -63,6 +63,7 @@ if __name__ == '__main__':
     try:
         for symbol in symbols:
             message += cal_symbols_avg_yahoo(symbol[0],symbol[1:])
+        message += "贡献者:毛票教的大朋友们"
         bot.send_message(notifychat,message)
         # bot.send_message(adminchat,f"向{notifychat}发送成功夕阳红:\n{message}")
     except Exception as err:
