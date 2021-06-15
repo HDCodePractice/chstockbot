@@ -1,2 +1,2 @@
 # 每周一到周五的下午5:00发送夕阳红
-0 17 * * 1-5 /home/chstockbot/shell/sendxyh.sh
+0 17 * * 1-5 /home/pi/chstockbot/shell/sendxyh.sh
