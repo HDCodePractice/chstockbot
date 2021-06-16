@@ -6,7 +6,7 @@ from pandas_datareader._utils import RemoteDataError
 
 symbols = [["SPY",10,50],["QQQ",13,55,200],["RBLX",13,55,200]]
 notifychat = -1001409640737
-adminchat = -1001250988031
+adminchat = -1001478922081
 ds = ['stooq','yahoo']
 #symbols = [["SPY",10,50]]
 #issue 18, 22, 26 作业
