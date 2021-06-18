@@ -4,33 +4,39 @@ import datetime
 from telegram import Bot
 from pandas_datareader._utils import RemoteDataError
 
-symbols = [["SPY",10,50],["QQQ",13,55,200],["RBLX",13,55,200]]
+
+
+symbols = [["SPY",10,50]]
 ds = 'stooq'
 notifychat = -1001430794202
-adminchat = -1001250988031
+adminchat = -1001430794202
 # symbols = [["SPY",10,50]]
 
 def help():
     return "'sendxyh.py -c configpaht'"
 
-def cal_symbols_avg_stooq(symbol:str,avgs:list):
-    pass
-
-def cal_symbols_avg_yahoo(symbol:str,avgs:list):
+def cal_symbols_avg(ds:str, symbol:str, avgs:list):
     start = datetime.date.today() - datetime.timedelta(days=365)
     end = datetime.date.today()
-
     try:
-        df = web.DataReader(symbol.upper(), 'yahoo',start=start,end=end)
+        df = web.DataReader(symbol.upper(), ds,start=start,end=end).sort_values(by="Date")
+        check_point=df.loc[datetime.date.today().strftime("%Y-%m-%d"),"Close"] #做了一个checkpoint来查找今天的数据， 如果没有会抛出异常
         message = f"{symbol.upper()}价格: {df['Close'][-1]:0.2f}({df['Low'][-1]:0.2f} - {df['High'][-1]:0.2f}) \n"
         for avg in avgs:
             if df.count()[0] > avg :
-                message += f"{avg} 周期均价：{df.tail(avg)['Adj Close'].mean():0.2f}\n"
+                #加入红绿灯的判断
+                if df['Close'][-1] < df.tail(avg)['Close'].mean():
+                    flag = "🔴"
+                else:
+                    flag = "🟢"
+                message += f"{flag} {avg} 周期均价：{df.tail(avg)['Close'].mean():0.2f}\n"
             else:
                 message += f"{avg} 周期均价因时长不足无法得出\n"
         return f"{message}\n"
     except RemoteDataError:
         return f"{symbol}丢失了\n"
+    except KeyError:
+        return f"{ds} 没找到今天的数据，看来要不没开市，要不没收盘，先不发天相了\n"
 
 if __name__ == '__main__':
     try:
@@ -58,10 +64,13 @@ if __name__ == '__main__':
 
     message = "🌈🌈🌈当日天相🌈🌈🌈: \n"
     try:
-        for symbol in symbols:
-            message += cal_symbols_avg_yahoo(symbol[0],symbol[1:])
-        bot.send_message(notifychat,message)
-        # bot.send_message(adminchat,f"向{notifychat}发送成功夕阳红:\n{message}")
+        for symbol in symbols: 
+            message += cal_symbols_avg(ds,symbol[0],symbol[1:])
+        if not "先不发天相了" in message:
+            bot.send_message(notifychat,message)
+            #bot.send_message(adminchat,f"向{notifychat}发送成功夕阳红:\n{message}")
+        else:
+            bot.send_message(adminchat,f"Admin Group Message: 数据源没找到今天的数据，看来要不没开市，要不没收盘，先不发天相了，请4点后重新尝试")
     except Exception as err:
         print(err)
-        bot.send_message(adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了出的问题是:\n{type(err)}:\n{err}")
+        bot.send_message(adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}")
