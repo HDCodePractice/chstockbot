@@ -1,0 +1,10 @@
+[Unit]
+Description=CHStockBot Service
+
+[Service]
+ExecStart=/home/pi/py3/bin/python /home/pi/chstockbot/bot.py -c /home/pi/trade.config/chstockbot
+Restart=on-failure
+Type=notify
+
+[Install]
+WantedBy=default.target

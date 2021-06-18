@@ -11,7 +11,7 @@ adminchat = -1001250988031
 # symbols = [["SPY",10,50]]
 
 def help():
-    return "'sendxyh.py -c configpaht'"
+    return "'sendxyh.py -c configpath'"
 
 def cal_symbols_avg_stooq(symbol:str,avgs:list):
     pass
