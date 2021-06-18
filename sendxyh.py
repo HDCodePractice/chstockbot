@@ -7,7 +7,7 @@ from pandas_datareader._utils import RemoteDataError
 
 
 symbols = [["SPY",10,50]]
-ds = 'stooq'
+ds = 'yahoo'
 notifychat = -1001430794202
 adminchat = -1001430794202
 # symbols = [["SPY",10,50]]
@@ -20,23 +20,24 @@ def cal_symbols_avg(ds:str, symbol:str, avgs:list):
     end = datetime.date.today()
     try:
         df = web.DataReader(symbol.upper(), ds,start=start,end=end).sort_values(by="Date")
-        check_point=df.loc[datetime.date.today().strftime("%Y-%m-%d"),"Close"] #做了一个checkpoint来查找今天的数据， 如果没有会抛出异常
-        message = f"{symbol.upper()}价格: {df['Close'][-1]:0.2f}({df['Low'][-1]:0.2f} - {df['High'][-1]:0.2f}) \n"
-        for avg in avgs:
-            if df.count()[0] > avg :
-                #加入红绿灯的判断
-                if df['Close'][-1] < df.tail(avg)['Close'].mean():
-                    flag = "🔴"
+        if datetime.date.today() == df.index.date[-1]: #做了一个checkpoint来查找今天的数据; credit for Stephen
+            message = f"{symbol.upper()}价格: {df['Close'][-1]:0.2f}({df['Low'][-1]:0.2f} - {df['High'][-1]:0.2f}) \n"
+            for avg in avgs:
+                if df.count()[0] > avg :
+                    #加入红绿灯的判断
+                    if df['Close'][-1] < df.tail(avg)['Close'].mean():
+                        flag = "🔴"
+                    else:
+                        flag = "🟢"
+                    message += f"{flag} {avg} 周期均价：{df.tail(avg)['Close'].mean():0.2f}\n"
                 else:
-                    flag = "🟢"
-                message += f"{flag} {avg} 周期均价：{df.tail(avg)['Close'].mean():0.2f}\n"
-            else:
-                message += f"{avg} 周期均价因时长不足无法得出\n"
-        return f"{message}\n"
+                    message += f"{avg} 周期均价因时长不足无法得出\n"
+            return f"{message}\n"
+        else:
+            return f"{ds} 没找到今天的数据，看来要不没开市，要不没收盘，先不发天相了\n"
     except RemoteDataError:
         return f"{symbol}丢失了\n"
-    except KeyError:
-        return f"{ds} 没找到今天的数据，看来要不没开市，要不没收盘，先不发天相了\n"
+        
 
 if __name__ == '__main__':
     try:
@@ -70,7 +71,7 @@ if __name__ == '__main__':
             bot.send_message(notifychat,message)
             #bot.send_message(adminchat,f"向{notifychat}发送成功夕阳红:\n{message}")
         else:
-            bot.send_message(adminchat,f"Admin Group Message: 数据源没找到今天的数据，看来要不没开市，要不没收盘，先不发天相了，请4点后重新尝试")
+            bot.send_message(adminchat,f"Admin Group Message: {ds} 数据源没找到今天的数据，看来要不没开市，要不没收盘，先不发天相了，请4点后重新尝试")
     except Exception as err:
         print(err)
         bot.send_message(adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}")
