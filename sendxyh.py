@@ -7,7 +7,7 @@ from pandas_datareader._utils import RemoteDataError
 
 
 symbols = [["SPY",10,50]]
-ds = 'yahoo'
+ds = ['yahoo','stooq']
 notifychat = -1001430794202
 adminchat = -1001430794202
 # symbols = [["SPY",10,50]]
@@ -15,11 +15,18 @@ adminchat = -1001430794202
 def help():
     return "'sendxyh.py -c configpaht'"
 
-def cal_symbols_avg(ds:str, symbol:str, avgs:list):
+def cal_symbols_avg(ds:list, symbol:str, avgs:list):
     start = datetime.date.today() - datetime.timedelta(days=365)
     end = datetime.date.today()
-    try:
-        df = web.DataReader(symbol.upper(), ds,start=start,end=end).sort_values(by="Date")
+    for datasource in ds:
+        try:
+            df = web.DataReader(symbol.upper(), datasource,start=start,end=end).sort_values(by="Date")
+            break
+        except RemoteDataError:
+            continue
+        except NotImplementedError:
+            continue
+    if df is not None and df.empty  == False:
         if datetime.date.today() == df.index.date[-1]: #做了一个checkpoint来查找今天的数据; credit for Stephen
             message = f"{symbol.upper()}价格: {df['Close'][-1]:0.2f}({df['Low'][-1]:0.2f} - {df['High'][-1]:0.2f}) \n"
             for avg in avgs:
@@ -34,9 +41,9 @@ def cal_symbols_avg(ds:str, symbol:str, avgs:list):
                     message += f"{avg} 周期均价因时长不足无法得出\n"
             return f"{message}\n"
         else: #还可以再细分一下具体情况，但感觉好像没有必要，哈哈
-            return f"{ds} 没找到今天的数据，看来要不没开市，要不没收盘，要不数据还没更新，请尝试其他数据源， 当前数据源不发出天相信息\n"
-    except RemoteDataError:
-        return f"{symbol}丢失了\n"
+            return f"{datasource} 没找到今天的数据，当前数据源不发出天相信息\n"
+    else:
+        return f"cannot found df, skip\n"
         
 
 if __name__ == '__main__':
@@ -71,7 +78,7 @@ if __name__ == '__main__':
             bot.send_message(notifychat,message)
             #bot.send_message(adminchat,f"向{notifychat}发送成功夕阳红:\n{message}")
         else:
-            bot.send_message(adminchat,f"Admin Group Message: {ds} 没找到今天的数据，看来要不没开市，要不没收盘，要不数据还没更新，请尝试其他数据源， 当前数据源不发出天相信息")
+            bot.send_message(adminchat,f"Admin Group Message: {ds} 没找到今天的数据，看来要不没开市，要不没收盘，要不数据还没更新， 当前数据源不发出天相信息")
     except Exception as err:
         print(err)
         bot.send_message(adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}")
