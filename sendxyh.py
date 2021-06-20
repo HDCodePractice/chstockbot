@@ -25,6 +25,8 @@ def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
             continue
         except NotImplementedError:
             continue
+        except KeyError:
+            continue
     if df is not None and df.empty  == False:
         if end == df.index.date[-1]: #做了一个checkpoint来查找今天的数据; credit for Stephen
             message = f"{symbol.upper()}价格: {df['Close'][-1]:0.2f}({df['Low'][-1]:0.2f} - {df['High'][-1]:0.2f}) \n"
