@@ -8,6 +8,7 @@ symbols = [["SPY",10,50],["QQQ",13,55,200],["RBLX",13,55,200]]
 notifychat = -1001409640737
 adminchat = -1001478922081
 ds = ['stooq','yahoo']
+debug = True
 #symbols = [["SPY",10,50]]
 #issue 18, 22, 26 作业
 
@@ -71,6 +72,7 @@ if __name__ == '__main__':
     symbols = CONFIG['xyhticker']
     notifychat = CONFIG['xyhchat']
     adminchat = CONFIG['xyhlog']
+    debug = CONFIG['DEBUG']
 
     message = "🌈🌈🌈当日天相🌈🌈🌈: \n"
     try:
@@ -78,10 +80,19 @@ if __name__ == '__main__':
             message += cal_symbols_avg(ds,symbol[0],symbol[1:])
         if not "当前数据源不发出天相信息" in message:
             message += "贡献者:毛票教的大朋友们"
-            bot.send_message(notifychat,message)
+            if debug :
+                print(f"{notifychat}\n{message}")
+            else:
+                bot.send_message(notifychat,message)
             #bot.send_message(adminchat,f"向{notifychat}发送成功夕阳红:\n{message}")
         else:
-            bot.send_message(adminchat,f"Admin Group Message: {ds} 没找到今天的数据，看来要不没开市，要不没收盘，要不数据还没更新， 当前数据源不发出天相信息")
+            if debug:
+                print(f"{adminchat}\nAdmin Group Message: {ds} 没找到今天的数据，看来要不没开市，要不没收盘，要不数据还没更新， 当前数据源不发出天相信息")
+            else:
+                bot.send_message(adminchat,f"Admin Group Message: {ds} 没找到今天的数据，看来要不没开市，要不没收盘，要不数据还没更新， 当前数据源不发出天相信息")
     except Exception as err:
         err.print_exc()
-        bot.send_message(adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}")
+        if debug:
+            print(f"{adminchat}\n今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}")
+        else:
+            bot.send_message(adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}")
