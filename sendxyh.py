@@ -15,9 +15,8 @@ debug = True
 def help():
     return "'sendxyh.py -c configpath'"
 
-def cal_symbols_avg(ds:list, symbol:str, avgs:list):
-    start = datetime.date.today() - datetime.timedelta(days=365)
-    end = datetime.date.today()
+def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
+    start = end - datetime.timedelta(days=365)
     for datasource in ds:
         try:
             df = web.DataReader(symbol.upper(), datasource,start=start,end=end).sort_values(by="Date")
@@ -27,7 +26,7 @@ def cal_symbols_avg(ds:list, symbol:str, avgs:list):
         except NotImplementedError:
             continue
     if df is not None and df.empty  == False:
-        if datetime.date.today() == df.index.date[-1]: #做了一个checkpoint来查找今天的数据; credit for Stephen
+        if end == df.index.date[-1]: #做了一个checkpoint来查找今天的数据; credit for Stephen
             message = f"{symbol.upper()}价格: {df['Close'][-1]:0.2f}({df['Low'][-1]:0.2f} - {df['High'][-1]:0.2f}) \n"
             for avg in avgs:
                 if df.count()[0] > avg :
