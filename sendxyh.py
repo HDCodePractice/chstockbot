@@ -72,6 +72,7 @@ if __name__ == '__main__':
     notifychat = CONFIG['xyhchat']
     adminchat = CONFIG['xyhlog']
     debug = CONFIG['DEBUG']
+    ds = CONFIG['xyhsource']
 
     message = "🌈🌈🌈当日天相🌈🌈🌈: \n"
     try:
