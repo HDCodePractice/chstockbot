@@ -1,21 +1,42 @@
-import pandas as pd
-import pandas_datareader as pdr
-import datetime
-from telegram import Update, ForceReply, Bot, botcommand
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
-import numpy as ny
+import getopt,sys,config,os
 import pandas_datareader.data as web
-from pandas import DataFrame
-import mysystemd
-import os
-import getopt
-import sys
-import config
+import datetime
+from telegram import Bot
+from pandas_datareader._utils import RemoteDataError
 
+symbols = [["SPY",10,50],["QQQ",13,55,200],["RBLX",13,55,200]]
+ds = 'stooq'
+notifychat = 841121769
+today=datetime.date.today().weekday
+print(today)
+# symbols = [["SPY",10,50]]
 
 def help():
-    return "'sendxyh.py -c <configpath>'"
+    return "'sendxyh.py -c configpath'"
 
+def cal_symbols_avg_stooq(symbol:str,avgs:list):
+    pass
+
+def cal_symbols_avg_yahoo(symbol:str,avgs:list):
+    start = datetime.date.today() - datetime.timedelta(days=365)
+    end = datetime.date.today()
+
+    if today != 6 | today != 7:
+        try:
+            df = web.DataReader(symbol.upper(), 'yahoo',start=start,end=end)
+            message = f"{symbol.upper()}价格: {df['Close'][-1]:0.2f}({df['Low'][-1]:0.2f} - {df['High'][-1]:0.2f}) \n"
+            for avg in avgs:
+                if df.count()[0] > avg :
+                    if df['Close'][0] > df.head(avg)['Close'].mean():
+                        message += f"🟢 {avg} 周期均价：{df.tail(avg)['Adj Close'].mean():0.2f}\n"
+                    elif df['Close'][0] < df.head(avg)['Close'].mean():
+                        message += f"🔴 {avg} 周期均价：{df.tail(avg)['Adj Close'].mean():0.2f}\n"
+                else:
+                    message += f"{avg} 周期均价因时长不足无法得出\n"
+            return f"{message}\n"
+        except RemoteDataError:
+            return f"{symbol}丢失了\n"
+    pass
 
 if __name__ == '__main__':
     try:
@@ -39,38 +60,16 @@ if __name__ == '__main__':
         config.set_default()
         sys.exit(2)
 
-end = datetime.date.today()
-start = end - datetime.timedelta(days=365)
-
-
-
-a = ["TCTZF","600019.SS","MZDAY"]
-b = [13,50,200]
-
-mesg = ""
-xyh_id = 841121769
-
-for j in a :
-    df = web.DataReader(j,"yahoo",start=start,end=end )
-    close = df.tail(1).iat[0,3]
-    low = df.tail(1).iat[0,1]
-    high = df.tail(1).iat[0,0]
-    print( f"""{j}价格: 收盘{close} (最低{low}-最高{high})""")# for test
-    mesg += f"""{j}价格: 收盘{close} (最低{low}-最高{high})"""
-
-    for i in b :
+    bot = Bot(token = CONFIG['Token'])
     
-        print(f"{i} 周期均价：{df.tail(i)['Adj Close'].mean()}") # for test
-        mesg += f"{i} 周期均价：{df.tail(i)['Adj Close'].mean()}"
-"""
-def thin(a):        
-    return f"{a}"
-for i in a :
-    mesg += thin(a)
-    print(f"这是一次的结果{thin(i)}")
-"""
-print(f"所有的结果{mesg}")# for test
 
-
-bot = Bot(token=CONFIG["Token"])
-bot.send_message(chat_id=xyh_id,text=mesg)
+    message = "🌈🌈🌈当日天相🌈🌈🌈: \n"
+    try:
+        for symbol in symbols:
+            message += cal_symbols_avg_yahoo(symbol[0],symbol[1:])
+        message += "贡献者:毛票教的大朋友们"
+        bot.send_message(notifychat,message)
+        # bot.send_message(adminchat,f"向{notifychat}发送成功夕阳红:\n{message}")
+    except Exception as err:
+        print(err)
+        # bot.send_message(adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了出的问题是:\n{type(err)}:\n{err}")
