@@ -81,7 +81,7 @@ if __name__ == '__main__':
     message = "🌈🌈🌈当日天相🌈🌈🌈: \n"
     try:
         for symbol in symbols: 
-            message += cal_symbols_avg(ds,symbol[0],symbol[1:],end=datetime.date(2021,6,18))
+            message += cal_symbols_avg(ds,symbol[0],symbol[1:])
         if not "当前数据源不发出天相信息" in message:
             message += "贡献者:毛票教的大朋友们"
             if debug :
