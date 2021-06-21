@@ -8,8 +8,6 @@ from pandas_datareader._utils import RemoteDataError
 def help():
     return "'sendxyh.py -c configpath'"
 
-
-
 def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
     start = end - datetime.timedelta(days=365)
     df = pd.DataFrame() #先创建一个空的dataframe， 防止判定出错
