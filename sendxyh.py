@@ -29,14 +29,15 @@ def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
                         message += f"{flag} {avg} 周期均价：{df.tail(avg)['Close'].mean():0.2f}\n"
                     else:
                         message += f"{avg} 周期均价因时长不足无法得出\n"         
-            else: #还可以再细分一下具体情况，但感觉好像没有必要，哈哈
+            else: #当天不是交易日时 返回false
                 return False
         except RemoteDataError:
             message = f"使用数据源{datasource}没有找到相关ticker {symbol}的数据\n"
         except KeyError: #没有找到相关ticker的数据，和数据源无关，可以continue也可以break， 为确认其他数据源是不是也有相同问题，选择continue
             message = f"使用数据源{datasource} 的ticker {symbol}的数据出错了\n"
         except Exception: 
-            continue
+            if datasource == ds[-1]:
+                raise Exception("所有数据源都不可用\n")
         return f"{message}\n"
 
 if __name__ == '__main__':
