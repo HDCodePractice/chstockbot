@@ -10,7 +10,6 @@ def help():
 
 def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
     start = end - datetime.timedelta(days=365)
-    df = pd.DataFrame() #先创建一个空的dataframe， 防止判定出错
     for datasource in ds:
         try:
             df = web.DataReader(symbol.upper(), datasource,start=start,end=end)
@@ -38,6 +37,7 @@ def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
         except Exception: 
             if datasource == ds[-1]:
                 raise Exception("所有数据源都不可用\n")
+            continue
         return f"{message}\n"
 
 if __name__ == '__main__':
