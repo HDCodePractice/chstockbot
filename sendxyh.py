@@ -14,38 +14,30 @@ def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
     for datasource in ds:
         try:
             df = web.DataReader(symbol.upper(), datasource,start=start,end=end)
-            break
-        except NotImplementedError: #数据源不存在，继续下一个数据源
-            continue
-        except RemoteDataError: #没有找到相关ticker的数据，和数据源无关，可以continue也可以break， 为确认其他数据源是不是也有相同问题，选择continue
-            continue
-    if df is not None and df.empty  == False: #判断1。 df是否没有定义；2. df是否是空的
-        df = df.sort_values(by="Date") #将排序这个步骤放在了判断df是否存在之后
-
-        if "Adj Close" in df.columns.values: #把df的cloumn名字改掉, 防止名字冲突
-            df = df.rename(columns={"Close":"Close Backup","Adj Close": "Close"})
-
-        if end == df.index.date[-1]: #做了一个checkpoint来查找今天的数据; credit for Stephen
-            message = f"{symbol.upper()}价格: {df['Close'][-1]:0.2f}({df['Low'][-1]:0.2f} - {df['High'][-1]:0.2f}) \n"
-            for avg in avgs:
-                if df.count()[0] > avg :
-                    #加入红绿灯的判断
-                    if df['Close'][-1] < df.tail(avg)['Close'].mean():
-                        flag = "🔴"
+            df = df.sort_values(by="Date") #将排序这个步骤放在了判断df是否存在之后
+            if "Adj Close" in df.columns.values: #把df的cloumn名字改掉, 防止名字冲突
+                df = df.rename(columns={"Close":"Close Backup","Adj Close": "Close"})
+            if end == df.index.date[-1]: #做了一个checkpoint来查找今天的数据; credit for Stephen
+                message = f"{symbol.upper()}价格: {df['Close'][-1]:0.2f}({df['Low'][-1]:0.2f} - {df['High'][-1]:0.2f}) \n"
+                for avg in avgs:
+                    if df.count()[0] > avg :
+                        #加入红绿灯的判断
+                        if df['Close'][-1] < df.tail(avg)['Close'].mean():
+                            flag = "🔴"
+                        else:
+                            flag = "🟢"
+                        message += f"{flag} {avg} 周期均价：{df.tail(avg)['Close'].mean():0.2f}\n"
                     else:
-                        flag = "🟢"
-                    message += f"{flag} {avg} 周期均价：{df.tail(avg)['Close'].mean():0.2f}\n"
-                else:
-                    message += f"{avg} 周期均价因时长不足无法得出\n"
-            return f"{message}\n"
-        else: #还可以再细分一下具体情况，但感觉好像没有必要，哈哈
-            return f"{datasource} 没找到{symbol}今天的数据，当前数据源不发出天相信息\n"
-    elif RemoteDataError: #RemoteDataError表示数据不存在，归为一类；继续输出信息;不太明白为啥要两个换行
-        return f"ticker {symbol} 数据不存在，无法读取数据\n\n"
-    elif KeyError: #keyerror表示缺少部分key，继续输出信息了;不太明白为啥要两个换行
-        return f"{symbol}的数据缺少部分key，无法读取数据\n\n"    
-    else: #其他所有情况都抛出异常
-        raise Exception(f"数据源出问题了\n")
+                        message += f"{avg} 周期均价因时长不足无法得出\n"         
+            else: #还可以再细分一下具体情况，但感觉好像没有必要，哈哈
+                return False
+        except RemoteDataError:
+            message = f"使用数据源{datasource}没有找到相关ticker {symbol}的数据\n"
+        except KeyError: #没有找到相关ticker的数据，和数据源无关，可以continue也可以break， 为确认其他数据源是不是也有相同问题，选择continue
+            message = f"使用数据源{datasource} 的ticker {symbol}的数据出错了\n"
+        except Exception: 
+            continue
+        return f"{message}\n"
 
 if __name__ == '__main__':
     try:
@@ -78,9 +70,13 @@ if __name__ == '__main__':
 
     message = "🌈🌈🌈当日天相🌈🌈🌈: \n"
     try:
-        for symbol in symbols: 
-            message += cal_symbols_avg(ds,symbol[0],symbol[1:])
-        if not "当前数据源不发出天相信息" in message:
+        for symbol in symbols:
+            output = cal_symbols_avg(ds,symbol[0],symbol[1:])
+            if output == False:
+                break
+            else:
+                message += output  
+        if output != False:
             message += "贡献者:毛票教的大朋友们"
             if debug :
                 print(f"{notifychat}\n{message}")
