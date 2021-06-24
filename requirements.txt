@@ -2,3 +2,4 @@ python-telegram-bot
 systemd-python
 pandas 
 pandas-datareader
+beautifulsoup4
