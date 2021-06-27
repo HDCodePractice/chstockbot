@@ -1,9 +1,7 @@
 import getopt,sys,config,os
 import pandas_datareader.data as web
 import datetime
-import pandas as pd
 from telegram import Bot
-from pandas_datareader._utils import RemoteDataError
 
 def help():
     return "'sendxyh.py -c configpath'"
