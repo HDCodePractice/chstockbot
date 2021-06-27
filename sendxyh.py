@@ -27,18 +27,14 @@ def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
                             flag = "🟢"
                         message += f"{flag} {avg} 周期均价：{df.tail(avg)['Close'].mean():0.2f}\n"
                     else:
-                        message += f"{avg} 周期均价因时长不足无法得出\n"         
+                        message += f"{avg} 周期均价因时长不足无法得出\n"  
+                return True, f"{message}\n"       
             else: #当天不是交易日时 返回false
-                return False
-        except RemoteDataError:
-            message = f"使用数据源{datasource}没有找到相关ticker {symbol}的数据\n"
-        except KeyError: #没有找到相关ticker的数据，和数据源无关，可以continue也可以break， 为确认其他数据源是不是也有相同问题，选择continue
-            message = f"使用数据源{datasource} 的ticker {symbol}的数据出错了\n"
-        except Exception: 
+                return 2, f"今天不是交易日，不需要发送信息\n"
+        except Exception as e: 
             if datasource == ds[-1]:
-                raise Exception("所有数据源都不可用\n")
+                return False, f"{e}\n"
             continue
-        return f"{message}\n"
 
 if __name__ == '__main__':
     try:
@@ -69,26 +65,30 @@ if __name__ == '__main__':
     debug = CONFIG['DEBUG']
     ds = CONFIG['xyhsource']
 
-    message = "🌈🌈🌈当日天相🌈🌈🌈: \n"
+    notify_message = ""
+    admin_message = ""
     try:
         for symbol in symbols:
-            output = cal_symbols_avg(ds,symbol[0],symbol[1:])
-            if output == False:
-                break
+            output = cal_symbols_avg(ds,symbol[0],symbol[1:],datetime.date(2021,6,24))
+            if output[0] == True:
+                notify_message += output[1] 
+            elif output[0] == False:
+                 admin_message +=output[1]
             else:
-                message += output  
-        if output != False:
-            message += "贡献者:毛票教的大朋友们"
-            if debug :
-                print(f"{notifychat}\n{message}")
-            else:
-                bot.send_message(notifychat,message)
-            #bot.send_message(adminchat,f"向{notifychat}发送成功夕阳红:\n{message}")
+                print(f"{adminchat}\n今天不是交易日，不发送信息")
+                sys.exit("今天不是交易日，不发送信息，终止当前程序")
+        if debug :
+            if notify_message:
+                notify_message = "🌈🌈🌈当日天相🌈🌈🌈: \n" + notify_message + "贡献者:毛票教的大朋友们"
+                print(f"{notifychat}\n{notify_message}")
+            if admin_message:
+                print(f"{adminchat}\n{admin_message}")
         else:
-            if debug:
-                print(f"{adminchat}\nAdmin Group Message: {ds} 没找到今天的数据，看来要不没开市，要不没收盘，要不数据还没更新， 当前数据源不发出天相信息")
-            else:
-                bot.send_message(adminchat,f"Admin Group Message: {ds} 没找到今天的数据，看来要不没开市，要不没收盘，要不数据还没更新， 当前数据源不发出天相信息")
+            if notify_message:
+                notify_message = "🌈🌈🌈当日天相🌈🌈🌈: \n" + notify_message + "贡献者:毛票教的大朋友们"
+                bot.send_message(notifychat,notify_message)
+            if admin_message:
+                bot.send_message(adminchat,admin_message)
     except Exception as err:
         if debug:
             print(f"{adminchat}\n今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}")
