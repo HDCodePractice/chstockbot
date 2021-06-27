@@ -69,7 +69,7 @@ if __name__ == '__main__':
     admin_message = ""
     try:
         for symbol in symbols:
-            output = cal_symbols_avg(ds,symbol[0],symbol[1:],datetime.date(2021,6,24))
+            output = cal_symbols_avg(ds,symbol[0],symbol[1:])
             if output[0] == True:
                 notify_message += output[1] 
             elif output[0] == False:
