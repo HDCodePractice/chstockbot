@@ -28,13 +28,14 @@ def search_file( rule=".txt", path='.'):
     for fpathe,dirs,fs in os.walk(path):   # os.walk是获取所有的目录
         for f in fs:
             filename = os.path.join(fpathe,f)
-            if filename.endswith(rule):  # 判断是否是"xxx"结尾
+            if filename.endswith("/" + rule):  # 判断是否是"xxx"结尾
                 all.append(filename)
     return all
 
 
 def compare_avg_price(symbol,ma,end=datetime.date.today()):
     tiker_file = search_file(symbol.lower() + ".us.txt",os.path.expanduser("~/Downloads/data"))
+    print(tiker_file)
     df = read_stooq_file(path=tiker_file[0])
     #filter df based on end time
     if end in df.index.date:
