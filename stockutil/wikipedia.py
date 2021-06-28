@@ -18,6 +18,13 @@ def get_sp500_tickers():
     df = table[0]
     return df['Symbol'].tolist()
 
+def get_ndx100_tickers():
+    """
+    获取NDX指数成份股，返回list包括股票的代码字符串。
+    """
+    return []
+
+
 def save_list(list,filename):
     # with open("sp500tickers.pickle", "wb") as f:
     #     pickle.dump(tickers, f)
