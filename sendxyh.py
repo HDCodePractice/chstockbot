@@ -16,6 +16,12 @@ debug = True
 def help():
     return "'sendxyh.py -c configpath'"
 
+def get_spx_ndx_avg_msg():
+    """
+    获取spx和ndx在50MA之上的股票数量的百分比信息，返回发给用户的信息。
+    """
+    return ""
+
 def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
     start = end - datetime.timedelta(days=365)
     for datasource in ds:
