@@ -3,6 +3,7 @@ import pandas_datareader.data as web
 import datetime
 from telegram import Bot
 from pandas_datareader._utils import RemoteDataError
+from requests.exceptions import ConnectionError
 
 symbols = [["SPY",10,50],["QQQ",13,55,200],["RBLX",13,55,200]]
 notifychat = -1001409640737
@@ -21,12 +22,10 @@ def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
         try:
             df = web.DataReader(symbol.upper(), datasource,start=start,end=end).sort_values(by="Date")
             break
-        except RemoteDataError:
+        except ConnectionError as error:
+            # print(f"哈哈哈，出问题啦,错误是{type(error)}:\n{str(error)}")
             continue
-        except NotImplementedError:
-            continue
-        except KeyError:
-            continue
+        
     if df is not None and df.empty  == False:
         if end == df.index.date[-1]: #做了一个checkpoint来查找今天的数据; credit for Stephen
             message = f"{symbol.upper()}价格: {df['Close'][-1]:0.2f}({df['Low'][-1]:0.2f} - {df['High'][-1]:0.2f}) \n"
@@ -75,7 +74,7 @@ if __name__ == '__main__':
     adminchat = CONFIG['xyhlog']
     debug = CONFIG['DEBUG']
     ds = CONFIG['xyhsource']
-
+    
     message = "🌈🌈🌈当日天相🌈🌈🌈: \n"
     try:
         for symbol in symbols: 
@@ -93,7 +92,7 @@ if __name__ == '__main__':
             else:
                 bot.send_message(adminchat,f"Admin Group Message: {ds} 没找到今天的数据，看来要不没开市，要不没收盘，要不数据还没更新， 当前数据源不发出天相信息")
     except Exception as err:
-        err.print_exc()
+        print(f"这是外面的exception{type(err)}\n{err}")
         if debug:
             print(f"{adminchat}\n今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}")
         else:
