@@ -31,6 +31,9 @@ def search_file( rule=".txt", path='.'):
                 all.append(filename)
     return all
 
+def symbol_above_moving_average(symbol,avg):
+    return True
+
 
 if __name__ == '__main__':
     tiker_file = search_file("tlry.us.txt",os.path.expanduser("~/Downloads/data"))
