@@ -18,6 +18,13 @@ def get_sp500_tickers():
     df = table[0]
     return df['Symbol'].tolist()
 
+def get_ndx100_tickers():
+    """
+    获取NDX指数成份股，返回list包括股票的代码字符串。
+    """
+    return []
+
+
 def save_list(list,filename):
     # with open("sp500tickers.pickle", "wb") as f:
     #     pickle.dump(tickers, f)
@@ -31,4 +38,14 @@ def load_list(filename):
     return tickers
 
 if __name__ == '__main__':
-    print(get_sp500_tickers())
+    # 本程序只是用于测试，正常使用请from stockutil import wikipedia
+    sp500 = get_sp500_tickers()
+    import stooq
+    up = []
+    down = []
+    for symbol in sp500:
+        if stooq.symbol_above_moving_average(symbol):
+            up.append(symbol)
+        else:
+            down.append(symbol)
+    print(f"SP500共有{len(up)+len(down)}支股票，共有{len(up)/(len(up)+len(down))*100:.2f}%高于50周期均线")
