@@ -1,5 +1,4 @@
 import datetime
-from numpy import typeDict
 import pandas as pd
 import datetime
 import os
@@ -49,23 +48,26 @@ def symbol_above_moving_average(symbol,avg=50,end=datetime.date.today()):
     return True
 
 
-def compare_avg_price(symbol,ma,end=datetime.date.today()):
+def compare_avg_price(symbol,ma=50,end=datetime.date.today()):
     tiker_file = search_file(symbol.lower() + ".us.txt",os.path.expanduser("~/Downloads/data"))
-    print(tiker_file)
     df = read_stooq_file(path=tiker_file[0])
     #filter df based on end time
+    err_msg = ""
+    successful_msg = ""
     if end in df.index.date:
         df = df.loc[df.index[0]:end]
-    else:
-        return 0, "输入的日期没有数据，请确保输入的日期当天有开市\n"
-    #calculate ma price
-    if df.count()[0] > ma :
-        if df['Adj Close'][-1] < df.tail(ma)['Adj Close'].mean():
-            return False, f"🔴 {ma}均价: {df.tail(ma)['Adj Close'].mean():.2f} {end}当天收盘价：{df['Adj Close'][-1]:.2f}\n"
+        if df.count()[0] > ma :
+            if df['Adj Close'][-1] < df.tail(ma)['Adj Close'].mean():
+                successful_msg += f"🔴 {ma}均价: {df.tail(ma)['Adj Close'].mean():.2f} {end}当天收盘价：{df['Adj Close'][-1]:.2f}\n"
+            else:
+                successful_msg += f"🟢 {ma}均价: {df.tail(ma)['Adj Close'].mean():.2f} {end}当天收盘价：{df['Adj Close'][-1]:.2f}\n"
         else:
-            return True, f"🟢 {ma}均价: {df.tail(ma)['Adj Close'].mean():.2f} {end}当天收盘价：{df['Adj Close'][-1]:.2f}\n"
+            err_msg += f"{ma} 周期均价因时长不足无法得出\n"
     else:
-        return 0, f"{ma} 周期均价因时长不足无法得出\n"
+        err_msg += f"输入的日期没有数据，请确保输入的日期当天有开市\n"
+    return successful_msg,err_msg
+    #calculate ma price
+    
 
 
 if __name__ == '__main__':
