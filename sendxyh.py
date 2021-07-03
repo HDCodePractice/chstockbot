@@ -18,6 +18,8 @@ def get_spx_ndx_avg_msg():
 
 def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
     start = end - datetime.timedelta(days=365)
+    successful_msg = ""
+    err_msg = ""
     for datasource in ds:
         try:
             df = web.DataReader(symbol.upper(), datasource,start=start,end=end)
@@ -25,7 +27,7 @@ def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
             if "Adj Close" in df.columns.values: #把df的cloumn名字改掉, 防止名字冲突
                 df = df.rename(columns={"Close":"Close Backup","Adj Close": "Close"})
             if end == df.index.date[-1]: #做了一个checkpoint来查找今天的数据; credit for Stephen
-                message = f"{symbol.upper()}价格: {df['Close'][-1]:0.2f}({df['Low'][-1]:0.2f} - {df['High'][-1]:0.2f}) \n"
+                successful_msg += f"{symbol.upper()}价格: {df['Close'][-1]:0.2f}({df['Low'][-1]:0.2f} - {df['High'][-1]:0.2f}) \n"
                 for avg in avgs:
                     if df.count()[0] > avg :
                         #加入红绿灯的判断
@@ -33,16 +35,24 @@ def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
                             flag = "🔴"
                         else:
                             flag = "🟢"
-                        message += f"{flag} {avg} 周期均价：{df.tail(avg)['Close'].mean():0.2f}\n"
+                        successful_msg += f"{flag} {avg} 周期均价：{df.tail(avg)['Close'].mean():0.2f}\n"
                     else:
-                        message += f"{avg} 周期均价因时长不足无法得出\n"  
-                return True, f"{message}\n"       
+                        successful_msg += f"{avg} 周期均价因时长不足无法得出\n"         
             else: #当天不是交易日时 返回false
-                return 2, f"今天不是交易日，不需要发送信息\n"
+                err_msg += f"今天不是交易日，不需要发送{symbol}信息\n"
+        except NotImplementedError:
+            if datasource == ds[-1]:
+                err_msg += f"当前数据源{datasource}不可用"
+            continue
+        except RemoteDataError:
+            if datasource == ds[-1]:
+                err_msg += f"找不到{symbol}的信息\n"
+            continue
         except Exception as e: 
             if datasource == ds[-1]:
-                return False, f"{e}\n"
+                err_msg += f"当前{symbol}读取报错了，具体错误信息是{e}\n"
             continue
+    return successful_msg, err_msg
 
 if __name__ == '__main__':
     try:
@@ -77,14 +87,14 @@ if __name__ == '__main__':
     admin_message = ""
     try:
         for symbol in symbols:
-            output = cal_symbols_avg(ds,symbol[0],symbol[1:])
-            if output[0] == True:
-                notify_message += output[1] 
-            elif output[0] == False:
-                 admin_message +=output[1]
-            else:
-                print(f"{adminchat}\n今天不是交易日，不发送信息")
-                sys.exit("今天不是交易日，不发送信息，终止当前程序")
+            successful_msg, err_msg = cal_symbols_avg(ds,symbol[0],symbol[1:])
+            if successful_msg:
+                notify_message += successful_msg
+            elif err_msg:
+                 admin_message += err_msg
+            #keep this for future use
+            #else:
+            #   sys.exit("今天不是交易日，不发送信息，终止当前程序")
         if debug :
             if notify_message:
                 notify_message = "🌈🌈🌈当日天相🌈🌈🌈: \n" + notify_message + "贡献者:毛票教的大朋友们"
