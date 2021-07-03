@@ -2,9 +2,19 @@ import getopt,sys,config,os
 import pandas_datareader.data as web
 import datetime
 from telegram import Bot
+from pandas_datareader._utils import RemoteDataError
+from requests.exceptions import ConnectionError
+
+
 
 def help():
     return "'sendxyh.py -c configpath'"
+
+def get_spx_ndx_avg_msg():
+    """
+    获取spx和ndx在50MA之上的股票数量的百分比信息，返回发给用户的信息。
+    """
+    return ""
 
 def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
     start = end - datetime.timedelta(days=365)

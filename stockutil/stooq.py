@@ -1,6 +1,7 @@
 import datetime
 from numpy import typeDict
 import pandas as pd
+import datetime
 import os
 def read_stooq_file(path="~/Downloads/data/daily/us/nasdaq stocks/2/tlry.us.txt"):
     """
@@ -31,6 +32,21 @@ def search_file( rule=".txt", path='.'):
             if filename.endswith("/" + rule):  # 判断是否是"xxx"结尾
                 all.append(filename)
     return all
+
+def symbol_above_moving_average(symbol,avg=50,end=datetime.date.today()):
+    """
+    获取一个股票代码是否高于指定的历史平均价。
+
+    Parameters
+    ----------
+    symbol : str
+        股票代码
+    avg : int, default 50
+        计算的历史时长，默认为50MA
+    end : datetime.date, default today
+        计算到的截止日期，默认为当天
+    """
+    return True
 
 
 def compare_avg_price(symbol,ma,end=datetime.date.today()):
