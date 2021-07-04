@@ -71,7 +71,7 @@ def read_stooq_file(path="~/Downloads/data/daily/us/nasdaq stocks/3/tlry.us.txt"
 
     return df
 
-def search_file(rule=".txt", path='.')->List:
+def search_file(rule=".txt", path='.')->list:
     """
     在path目录下搜索结尾名为rule的所有文件。返回：所有结尾名为rule的文件路径列表
 
