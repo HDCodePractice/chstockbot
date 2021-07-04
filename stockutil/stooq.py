@@ -110,7 +110,7 @@ def compare_avg_price(symbol,ma=50,end=datetime.date.today()):
                 err_msg += f"{ma} 周期均价因时长不足无法得出\n"
         else:
             err_msg += f"输入的日期没有数据，请确保输入的日期当天有开市\n"
-    elif err:
+    if err:
         err_msg += f"数据出错了，具体信息如下:{err}\n"
     return successful_msg,err_msg
     #calculate ma price

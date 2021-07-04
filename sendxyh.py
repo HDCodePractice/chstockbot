@@ -90,11 +90,8 @@ if __name__ == '__main__':
             successful_msg, err_msg = cal_symbols_avg(ds,symbol[0],symbol[1:])
             if successful_msg:
                 notify_message += successful_msg
-            elif err_msg:
-                 admin_message += err_msg
-            #keep this for future use
-            #else:
-            #   sys.exit("今天不是交易日，不发送信息，终止当前程序")
+            if err_msg:
+                admin_message += err_msg
         if debug :
             if notify_message:
                 notify_message = "🌈🌈🌈当日天相🌈🌈🌈: \n" + notify_message + "贡献者:毛票教的大朋友们"
