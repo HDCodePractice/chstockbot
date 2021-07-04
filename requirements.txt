@@ -3,3 +3,4 @@ systemd-python
 pandas 
 pandas-datareader
 beautifulsoup4
+pytgcalls
