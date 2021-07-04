@@ -41,16 +41,13 @@ def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
             else: #当天不是交易日时 返回false
                 err_msg += f"今天不是交易日，不需要发送{symbol}信息\n"
         except NotImplementedError:
-            if datasource == ds[-1]:
-                err_msg += f"当前数据源{datasource}不可用"
+            err_msg += f"当前数据源{datasource}不可用"
             continue
         except RemoteDataError:
-            if datasource == ds[-1]:
-                err_msg += f"找不到{symbol}的信息\n"
+            err_msg += f"在{datasource}找不到{symbol}的信息\n"
             continue
         except Exception as e: 
-            if datasource == ds[-1]:
-                err_msg += f"当前{symbol}读取报错了，具体错误信息是{e}\n"
+            err_msg += f"当前{symbol}读取报错了，具体错误信息是{e}\n"
             continue
     return successful_msg, err_msg
 
@@ -87,7 +84,7 @@ if __name__ == '__main__':
     admin_message = ""
     try:
         for symbol in symbols:
-            successful_msg, err_msg = cal_symbols_avg(ds,symbol[0],symbol[1:])
+            successful_msg, err_msg = cal_symbols_avg(ds,symbol[0],symbol[1:],datetime.date(2021,7,2))
             if successful_msg:
                 notify_message += successful_msg
             if err_msg:

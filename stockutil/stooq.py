@@ -6,6 +6,12 @@ import requests
 import os
 from zipfile import ZipFile
 
+class markCloseError(Exception):
+    pass
+
+class maNotEnoughError(Exception):
+    pass
+
 def download_file(url="https://static.stooq.com/db/h/d_us_txt.zip",dict="~/Downloads/d_us_txt.zip"):
     msg = ""
     err = ""
@@ -75,7 +81,7 @@ def search_file( rule=".txt", path='.'):
                 all.append(filename)
     return all
 
-def symbol_above_moving_average(symbol,avg=50,end=datetime.date.today()):
+def symbol_above_moving_average(symbol,ma=50,path="~/Downloads/data",end=datetime.date.today()):
     """
     获取一个股票代码是否高于指定的历史平均价。
 
@@ -88,37 +94,32 @@ def symbol_above_moving_average(symbol,avg=50,end=datetime.date.today()):
     end : datetime.date, default today
         计算到的截止日期，默认为当天
     """
-    return True
-
-
-def compare_avg_price(symbol,ma=50,end=datetime.date.today()):
-    msg,err = check_stock_data()
     err_msg = ""
     successful_msg = ""
-    if msg:
-        tiker_file = search_file(symbol.lower() + ".us.txt",os.path.expanduser("~/Downloads/data"))
-        df = read_stooq_file(path=tiker_file[0])
-        #filter df based on end time
-        if end in df.index.date:
-            df = df.loc[df.index[0]:end]
-            if df.count()[0] > ma :
-                if df['Adj Close'][-1] < df.tail(ma)['Adj Close'].mean():
-                    successful_msg += f"🔴 {ma}均价: {df.tail(ma)['Adj Close'].mean():.2f} {end}当天收盘价：{df['Adj Close'][-1]:.2f}\n"
-                else:
-                    successful_msg += f"🟢 {ma}均价: {df.tail(ma)['Adj Close'].mean():.2f} {end}当天收盘价：{df['Adj Close'][-1]:.2f}\n"
+    tiker_file = search_file(symbol.lower() + ".us.txt",os.path.expanduser(path))
+    df = read_stooq_file(path=tiker_file[0])
+    #filter df based on end time
+    if end in df.index.date:
+        df = df.loc[df.index[0]:end]
+        if df.count()[0] > ma :
+            if df['Adj Close'][-1] < df.tail(ma)['Adj Close'].mean():
+                return False
             else:
-                err_msg += f"{ma} 周期均价因时长不足无法得出\n"
+                return True
         else:
-            err_msg += f"输入的日期没有数据，请确保输入的日期当天有开市\n"
-    if err:
-        err_msg += f"数据出错了，具体信息如下:{err}\n"
-    return successful_msg,err_msg
-    #calculate ma price
-    
+            raise maNotEnoughError(f"{ma} 周期均价因时长不足无法得出\n")
+    else:
+        raise markCloseError(f"输入的日期没有数据，请确保输入的日期当天有开市\n")
+
 
 
 if __name__ == '__main__':
     #tiker_file = search_file("tlry.us.txt",os.path.expanduser("~/Downloads/data"))
     #print(read_stooq_file(path=tiker_file[0]))
     #print(download_file())
-    print(compare_avg_price("qqq",50,end=datetime.date(2021,6,16)))
+    try:
+        print(symbol_above_moving_average("qqq",50,path="~/Downloads/data",end=datetime.date(2021,6,15)))
+    except maNotEnoughError as err:
+        print(err)
+    except markCloseError as err:
+        print(err)
