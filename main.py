@@ -25,7 +25,7 @@ except FileNotFoundError:
 app = Client(
     ":memory:",
     bot_token=config.CONFIG['Token'],
-    plugins=dict(root="modules"),
+    plugins=dict(root="musicbot.modules"),
 )
 
 app.run()
