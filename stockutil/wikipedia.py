@@ -41,13 +41,13 @@ if __name__ == '__main__':
     # 本程序只是用于测试，正常使用请from stockutil import wikipedia
     sp500 = get_sp500_tickers()
     ndx100 = get_ndx100_tickers()
-    indexes = [sp500,ndx100]
-    up = []
-    down = []
-    for index in indexes:
-        for symbol in index:
-            if stooq.symbol_above_moving_average(symbol):
-                up.append(symbol)
-            else:
-                down.append(symbol)
-    print(f"{index}共有{len(up)+len(down)}支股票，共有{len(up)/(len(up)+len(down))*100:.2f}%高于50周期均线")
+    # indexes = [sp500,ndx100]
+    # up = []
+    # down = []
+    # for index in indexes:
+    #     for symbol in index:
+    #         if stooq.symbol_above_moving_average(symbol):
+    #             up.append(symbol)
+    #         else:
+    #             down.append(symbol)
+    # print(f"{index}共有{len(up)+len(down)}支股票，共有{len(up)/(len(up)+len(down))*100:.2f}%高于50周期均线")
