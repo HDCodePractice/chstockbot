@@ -23,7 +23,7 @@ def read_stooq_file(path="~/Downloads/data/daily/us/nasdaq stocks/2/tlry.us.txt"
 
     return df
 
-def search_file( rule=".txt", path='.'):
+def search_file(rule=".txt", path='.'):
     all = []
     for fpathe,dirs,fs in os.walk(path):   # os.walk是获取所有的目录
         for f in fs:
@@ -45,9 +45,14 @@ def symbol_above_moving_average(symbol,avg=50,end=datetime.date.today()):
     end : datetime.date, default today
         计算到的截止日期，默认为当天
     """
-    return True
-
+    df = read_stooq_file(path=tiker_file[0])
+    if df['Adj Close'][-1] < df.tail(avg)['Adj Close'].mean():
+        message = f"{symbol} 高于{avg}MA"
+    else:
+        message = f"{symbol} 低于{avg}MA"
+    return message
 
 if __name__ == '__main__':
     tiker_file = search_file("tlry.us.txt",os.path.expanduser("~/Downloads/data"))
     print(read_stooq_file(path=tiker_file[0]))
+    print(symbol_above_moving_average("tlry"))
