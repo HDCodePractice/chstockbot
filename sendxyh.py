@@ -52,6 +52,12 @@ def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
             continue
     return successful_msg, err_msg
 
+def sendmsg(bot,chatid,msg,debug=True):
+    if debug:
+        print(f"{chatid}\n{msg}")
+    else:
+        bot.send_message(chatid,msg)
+
 if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hc:", ["config="])
@@ -90,20 +96,10 @@ if __name__ == '__main__':
                 notify_message += successful_msg
             if err_msg:
                 admin_message += err_msg
-        if debug :
-            if notify_message:
-                notify_message = "🌈🌈🌈当日天相🌈🌈🌈: \n" + notify_message + "贡献者:毛票教的大朋友们"
-                print(f"{notifychat}\n{notify_message}")
-            if admin_message:
-                print(f"{adminchat}\n{admin_message}")
-        else:
-            if notify_message:
-                notify_message = "🌈🌈🌈当日天相🌈🌈🌈: \n" + notify_message + "贡献者:毛票教的大朋友们"
-                bot.send_message(notifychat,notify_message)
-            if admin_message:
-                bot.send_message(adminchat,admin_message)
+        if notify_message:
+            notify_message = "🌈🌈🌈当日天相🌈🌈🌈: \n" + notify_message + "贡献者:毛票教的大朋友们"
+            sendmsg(bot,notifychat,notify_message,debug)
+        if admin_message:
+            sendmsg(bot,adminchat,admin_message,debug)
     except Exception as err:
-        if debug:
-            print(f"{adminchat}\n今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}")
-        else:
-            bot.send_message(adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}")
+        sendmsg(bot,adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}",debug)
