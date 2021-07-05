@@ -27,5 +27,6 @@ from musicbot import config as musicbotconfig
 musicbotconfig.API_HASH = CONFIG['api_hash']
 musicbotconfig.API_ID = CONFIG['api_id']
 musicbotconfig.BOT_TOKEN = CONFIG['Token']
-
+musicbotconfig.ARQ_API_KEY = CONFIG['ARQ_API_KEY']
+musicbotconfig.BOT_USERNAME = CONFIG['BOT_USERNAME']
 from musicbot import __main__

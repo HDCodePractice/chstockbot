@@ -5,3 +5,4 @@ pandas-datareader
 beautifulsoup4
 pytgcalls
 python-dotenv
+python-arq

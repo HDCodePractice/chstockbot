@@ -7,3 +7,4 @@ beautifulsoup4
 pytgcalls
 youtube_dl
 python-dotenv
+python-arq

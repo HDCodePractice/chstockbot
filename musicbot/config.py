@@ -9,3 +9,6 @@ BOT_TOKEN = getenv("BOT_TOKEN")
 API_ID = int(getenv("API_ID", "0"))
 API_HASH = getenv("API_HASH")
 SESSION_NAME = getenv("SESSION_NAME", "session")
+ARQ_API_KEY = getenv("ARQ_API_KEY",None)
+BOT_ID = ""
+BOT_USERNAME = ""
