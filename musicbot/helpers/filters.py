@@ -11,5 +11,4 @@ def command(commands: Union[str, List[str]]):
     else:
         cmds.append(commands)
         cmds.append(f"{commands}@{BOT_USERNAME}")
-    print(cmds)
     return filters.command(cmds)
