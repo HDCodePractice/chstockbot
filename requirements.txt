@@ -1,3 +1,5 @@
+Pyrogram
+TgCrypto
 python-telegram-bot 
 systemd-python
 pandas 
