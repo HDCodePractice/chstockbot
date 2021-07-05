@@ -131,5 +131,5 @@ dmypy.json
 .DS_Store
 config.json
 test.py
-# 等我想明白这东东整更好后再去除
-main.py
+# pyrogram的session文件
+session.session
