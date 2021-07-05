@@ -22,10 +22,10 @@ except FileNotFoundError:
     config.set_default()
     sys.exit(2)
     
-app = Client(
-    ":memory:",
-    bot_token=config.CONFIG['Token'],
-    plugins=dict(root="musicbot.modules"),
-)
+from musicbot import config as musicbotconfig
 
-app.run()
+musicbotconfig.API_HASH = CONFIG['api_hash']
+musicbotconfig.API_ID = CONFIG['api_id']
+musicbotconfig.BOT_TOKEN = CONFIG['Token']
+
+from musicbot import __main__
