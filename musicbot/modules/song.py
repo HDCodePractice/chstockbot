@@ -1,11 +1,15 @@
 from asyncio import sleep
 from pyrogram import Client,filters
 from pyrogram.types.messages_and_media.message import Message
+from pyrogram.types import InputMediaPhoto
 from .. import config
 from ..helpers.filters import command
+from ..helpers.chat_id import get_chat_id
 from Python_ARQ import ARQ
 from aiohttp import ClientSession
 from ..helpers.funcs import *
+from ..services import queues
+
 
 # 初始化ARQ API
 session = ClientSession()
@@ -46,7 +50,15 @@ async def song(_,message: Message):
             await m.delete()
             await message.delete()
             return
+    chat_id = get_chat_id(message.chat)
+    await m.delete()
+    m = await message.reply_photo(thumbnail,caption=f"{title} {sduration} {views}")
+    ydl_opts = {"format": "bestaudio[ext=m4a]"}
+    position = await queues.put(
+        chat_id,slink=slink,
+        title=title,singers=singers,
+        thumbnail=thumbnail,sduration=sduration,
+        views=views)
+    await sleep(15)
     await m.delete()
     await message.delete()
-    q= [slink,sduration,message.from_user.first_name,title,singers,thumbnail]
-    await message.reply_text(q)
