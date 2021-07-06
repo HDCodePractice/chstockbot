@@ -5,7 +5,7 @@ from .config import API_ID
 from .config import BOT_TOKEN
 from .config import BOT_ID
 from .config import BOT_USERNAME
-from musicbot.services import run
+from musicbot.services.callsmusic import run
 
 bot = Bot(
     ':memory:',
