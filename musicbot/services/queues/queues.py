@@ -28,6 +28,9 @@ def get(chat_id: int) -> Dict[str, str]:
             return {}
     return {}
 
+def getlist(chat_id: int):
+    if chat_id in queues:
+        return queues[chat_id]._queue
 
 def is_empty(chat_id: int) -> bool:
     if chat_id in queues:

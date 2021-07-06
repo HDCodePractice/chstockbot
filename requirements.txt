@@ -1,3 +1,5 @@
+Pyrogram
+TgCrypto
 python-telegram-bot 
 systemd-python
 pandas 
@@ -6,3 +8,4 @@ beautifulsoup4
 pytgcalls
 python-dotenv
 python-arq
+ffmpeg-python
