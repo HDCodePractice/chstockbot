@@ -14,8 +14,7 @@ async def convert(file_path: str) -> str:
         format='s16le',
         acodec='pcm_s16le',
         ac=2,
-        ar='48k',
-        loglevel='error'
+        ar='48k'
     ).overwrite_output().run()
     return out
 
