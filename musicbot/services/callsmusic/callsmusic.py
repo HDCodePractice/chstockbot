@@ -20,7 +20,9 @@ def init_instance(chat_id: int):
         queues.task_done(chat_id)
 
         if queues.is_empty(chat_id):
-            await stop(chat_id)
+            # 如果队列里的内容没有了，退出
+            # await stop(chat_id)
+            pass
         else:
             instance.input_filename = queues.get(chat_id)['file']
 

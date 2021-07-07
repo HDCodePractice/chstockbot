@@ -22,6 +22,7 @@ arq = ARQ("https://thearq.tech",config.ARQ_API_KEY,session)
 @Client.on_message(command("s") & ~filters.edited)
 async def song(_,message: Message):
     query = message.text.split(None, 1)
+    chat_id = get_chat_id(message.chat)
     if len(query) == 1:
         m = await message.reply_text("请使用 '/s 歌曲名' 来搜索歌曲")
         await sleep(5)
@@ -54,7 +55,6 @@ async def song(_,message: Message):
             await m.delete()
             await message.delete()
             return
-    chat_id = get_chat_id(message.chat)
     await m.delete()
     m = await message.reply_photo(thumbnail,caption=f"{title} {sduration} {views} 小水管尽力下载中...")
     file_path = await convert(youtube.download(slink))
@@ -62,7 +62,8 @@ async def song(_,message: Message):
         chat_id,slink=slink,
         title=title,singers=singers,
         thumbnail=thumbnail,sduration=sduration,
-        views=views,file=file_path)
+        views=views,file=file_path,
+        user=message.from_user)
     await m.edit_caption(f"{title} {sduration} {views} 成功加入播放队列...")
     await callsmusic.set_stream(chat_id,file_path)
     # await sleep(15)
