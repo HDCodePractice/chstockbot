@@ -59,6 +59,11 @@ async def set_stream(chat_id: int, file: str):
     if chat_id not in active_chats:
         await start(chat_id)
     get_instance(chat_id).input_filename = file
+    song = queues.get(chat_id)
+    mm = await client.send_photo(
+        chat_id,
+        song['thumbnail'],
+        caption=f"正在播放 {song['user'].first_name} 点播的\n`{song['title']}` by `{song['singers']}` {song['sduration']}")
 
 
 def pause(chat_id: int) -> bool:
