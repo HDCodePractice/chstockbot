@@ -11,21 +11,27 @@ class markCloseError(Exception):
 class maNotEnoughError(Exception):
     pass
 
-def download_file(url="https://static.stooq.com/db/h/d_us_txt.zip",dict="~/Downloads/d_us_txt.zip"):
+def download_file(url="https://static.stooq.com/db/h/d_us_txt.zip",dict="~/Downloads"):
     msg = ""
     err = ""
     try:
         request = requests.get(url)
-        with open(os.path.expanduser(dict), 'wb') as f:
-            f.write(request.content)
-        f.close
+        if not os.path.exits(os.path.expanduser(dict)):
+            os.makedirs(os.path.expanduser(dict))
+            with open(os.path.expanduser(f"{dict}/{url.split('/')[-1]}"), 'wb') as f:
+                f.write(request.content)
+            f.close
 
-        zf = ZipFile(os.path.expanduser(dict), 'r')
-        zf.extractall(os.path.expanduser('~/Downloads'))
-        zf.close()
-        msg += f"下载和解压成功"
+            zf = ZipFile(os.path.expanduser(f"{dict}/{url.split('/')[-1]}"), 'r')
+            zf.extractall(os.path.expanduser(dict))
+            zf.close()
+            msg += f"下载和解压成功"
+    # 目录不存在 这个在19行解决掉了没？
+    # 网站服务器当机无法下载 用Exception解决
+    # 解压文件受损，无法解压 用Exception解决
     except Exception as e:
         err += f"下载和解压出错了；具体错误是：{e}"
+        
     return msg,err
 
 def check_stock_data(path="~/Downloads/data/daily/us/nasdaq stocks/3/tlry.us.txt"):
@@ -53,6 +59,11 @@ def check_stock_data(path="~/Downloads/data/daily/us/nasdaq stocks/3/tlry.us.txt
 def read_stooq_file(path="~/Downloads/data/daily/us/nasdaq stocks/3/tlry.us.txt"):
     """
     适配 Yahoo 格式
+
+    Parameters
+    ----------
+    path: 读取stooq的文件路径
+
     """
     df = pd.read_csv(path, parse_dates=True)
     df = df.rename(columns={
@@ -71,7 +82,7 @@ def read_stooq_file(path="~/Downloads/data/daily/us/nasdaq stocks/3/tlry.us.txt"
 
     return df
 
-def search_file(rule=".txt", path='.')->List:
+def search_file(rule=".txt", path='.'):
     """
     在path目录下搜索结尾名为rule的所有文件。返回：所有结尾名为rule的文件路径列表
 
@@ -88,7 +99,7 @@ def search_file(rule=".txt", path='.')->List:
                 all.append(filename)
     return all
 
-def symbol_above_moving_average(symbol,ma=50,path="~/Downloads/data",end=datetime.date.today()):
+def symbol_above_moving_average(symbol:str,ma=50,path="~/Downloads/data",end=datetime.date.today())->bool:
     """
     获取一个股票代码是否高于指定的历史平均价。返回True高于avg，Flase低于avg
 
@@ -123,9 +134,9 @@ def symbol_above_moving_average(symbol,ma=50,path="~/Downloads/data",end=datetim
 
 
 if __name__ == '__main__':
-    #tiker_file = search_file("tlry.us.txt",os.path.expanduser("~/Downloads/data"))
-    #print(read_stooq_file(path=tiker_file[0]))
-    #print(download_file())
+    # tiker_file = search_file("tlry.us.txt",os.path.expanduser("~/Downloads/data"))
+    # print(read_stooq_file(path=tiker_file[0]))
+    # print(download_file())
     try:
         print(symbol_above_moving_average("qqq",50,path="~/Downloads/data",end=datetime.date(2021,6,15)))
     except maNotEnoughError as err:
