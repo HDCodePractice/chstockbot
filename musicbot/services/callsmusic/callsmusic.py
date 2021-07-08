@@ -95,7 +95,8 @@ def resume(chat_id: int) -> bool:
     if chat_id not in active_chats:
         return False
     elif active_chats[chat_id]['playing']:
-        return False
+        # 如果现在正在播放，返回True
+        return True
 
     get_instance(chat_id).resume_playout()
     active_chats[chat_id]['playing'] = True
