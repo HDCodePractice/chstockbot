@@ -66,6 +66,7 @@ async def song(_,message: Message):
         user=message.from_user)
     await m.edit_caption(f"{title} {sduration} 成功加入播放队列... 共有 {position} 首待播")
     await callsmusic.set_stream(chat_id,file_path)
+    # 等待5秒把搜索和搜索结果都清除
     await sleep(5)
     await m.delete()
-    # await message.delete()
+    await message.delete()
