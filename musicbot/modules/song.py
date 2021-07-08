@@ -64,7 +64,7 @@ async def song(_,message: Message):
         thumbnail=thumbnail,sduration=sduration,
         views=views,file=file_path,
         user=message.from_user)
-    await m.edit_caption(f"{title} {sduration} 成功加入播放队列...")
+    await m.edit_caption(f"{title} {sduration} 成功加入播放队列... 共有 {position} 首待播")
     await callsmusic.set_stream(chat_id,file_path)
     await sleep(5)
     await m.delete()
