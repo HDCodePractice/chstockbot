@@ -33,9 +33,11 @@ def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
                         #加入红绿灯的判断
                         if df['Close'][-1] < df.tail(avg)['Close'].mean():
                             flag = "🔴"
+                            percent = '-{:.2%}'.format(1-df['Close'][-1]/df.tail(avg)['Close'].mean())
                         else:
                             flag = "🟢"
-                        successful_msg += f"{flag} {avg} 周期均价：{df.tail(avg)['Close'].mean():0.2f}\n"
+                            percent = '{:.2%}'.format(df['Close'][-1]/df.tail(avg)['Close'].mean()-1)
+                        successful_msg += f"{flag} {avg} 周期均价：{df.tail(avg)['Close'].mean():0.2f}({percent})\n"
                     else:
                         successful_msg += f"{avg} 周期均价因时长不足无法得出\n"         
             else: #当天不是交易日时 返回false
