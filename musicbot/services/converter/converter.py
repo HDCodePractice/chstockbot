@@ -1,5 +1,5 @@
 import asyncio
-from os import path
+from os import path,remove
 
 from musicbot.helpers.errors import FFmpegReturnCodeError
 
@@ -16,6 +16,7 @@ async def convert(file_path: str) -> str:
         ac=2,
         ar='48k'
     ).overwrite_output().run()
+    remove(file_path)
     return out
 
 # async def convert(file_path: str) -> str:
