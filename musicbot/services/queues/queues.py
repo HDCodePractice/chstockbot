@@ -1,5 +1,6 @@
 from asyncio import Queue as _Queue
 from asyncio import QueueEmpty as Empty
+import asyncio
 from typing import Dict
 
 
@@ -37,6 +38,10 @@ def is_empty(chat_id: int) -> bool:
         return queues[chat_id].empty()
     return True
 
+def qsize(chat_id: int) -> int:
+    if chat_id in queues:
+        return queues[chat_id].qsize()
+    return 0
 
 def task_done(chat_id: int):
     if chat_id in queues:
@@ -53,3 +58,14 @@ def clear(chat_id: int):
         else:
             queues[chat_id].clear()
     raise Empty
+
+
+async def main():
+    for i in range(10):
+        n = await put(1,a=i)
+        print(qsize(1),n,queues)
+    for i in getlist(1):
+        print(qsize(1),i,getlist(1))
+
+if __name__ == '__main__':
+    asyncio.run(main())

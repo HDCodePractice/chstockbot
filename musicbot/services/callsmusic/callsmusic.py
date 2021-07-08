@@ -4,6 +4,8 @@ from pytgcalls import GroupCall
 
 from . import client
 from .. import queues
+from ..modules import control
+import os
 
 instances: Dict[int, GroupCall] = {}
 active_chats: Dict[int, Dict[str, bool]] = {}
@@ -12,19 +14,31 @@ active_chats: Dict[int, Dict[str, bool]] = {}
 def init_instance(chat_id: int):
     if chat_id not in instances:
         instances[chat_id] = GroupCall(client)
+        instances[chat_id].play_on_repeat = False
 
     instance = instances[chat_id]
 
     @instance.on_playout_ended
     async def ___(__, _):
         queues.task_done(chat_id)
-
         if queues.is_empty(chat_id):
             # 如果队列里的内容没有了，退出
             # await stop(chat_id)
-            pass
+            file = instance.input_filename
+            try:
+                os.remove(file)
+            except FileNotFoundError as err:
+                # 不知道为什么，播放完之后会调用两次on_playout_ended
+                print(err)
+            await control.clean(chat_id)
         else:
-            instance.input_filename = queues.get(chat_id)['file']
+            song = queues.get(chat_id)
+            instance.input_filename = song['file']
+            await control.send_photo(
+                chat_id,
+                song['thumbnail'],
+                caption=f"正在播放 {song['user'].first_name} 点播的\n`{song['title']}` by `{song['singers']}` {song['sduration']}\n 还有 {queues.qsize(chat_id)} 待播放")
+
 
 
 def remove(chat_id: int):
@@ -53,6 +67,7 @@ async def stop(chat_id: int):
 
     if chat_id in active_chats:
         del active_chats[chat_id]
+    await control.init_instances(chat_id)    
 
 
 async def set_stream(chat_id: int, file: str):
@@ -60,11 +75,10 @@ async def set_stream(chat_id: int, file: str):
         await start(chat_id)
     get_instance(chat_id).input_filename = file
     song = queues.get(chat_id)
-    mm = await client.send_photo(
+    await control.send_photo(
         chat_id,
         song['thumbnail'],
-        caption=f"正在播放 {song['user'].first_name} 点播的\n`{song['title']}` by `{song['singers']}` {song['sduration']}")
-
+        caption=f"正在播放 {song['user'].first_name} 点播的\n`{song['title']}` by `{song['singers']}` {song['sduration']}\n 还有 {queues.qsize(chat_id)} 待播放")
 
 def pause(chat_id: int) -> bool:
     if chat_id not in active_chats:
