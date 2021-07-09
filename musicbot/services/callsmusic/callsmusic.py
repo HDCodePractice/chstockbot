@@ -58,8 +58,9 @@ def get_instance(chat_id: int) -> GroupCall:
     return instances[chat_id]
 
 async def start(chat_id: int):
+    if chat_id not in active_chats:
+        init_instance(chat_id)
     await get_instance(chat_id).start(chat_id)
-    active_chats[chat_id] = {'playing': True, 'muted': False}
 
 async def stop(chat_id: int):
     await get_instance(chat_id).stop()
@@ -71,6 +72,7 @@ async def stop(chat_id: int):
 async def set_stream(chat_id: int, file: str):
     if chat_id not in active_chats:
         await start(chat_id)
+        active_chats[chat_id] = {'playing': True, 'muted': False}
     get_instance(chat_id).input_filename = file
     song = queues.get(chat_id)
     await control.send_photo(

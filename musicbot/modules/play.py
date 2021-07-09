@@ -83,7 +83,11 @@ async def skip(_,message:Message):
 @Client.on_message(command("s") & ~filters.edited)
 async def state(_,message:Message):
     chat_id = get_chat_id(message.chat)
-    print("queue:\n",queues.getlist(chat_id) )
-    print("inputfile:\n",callsmusic.instances[chat_id].input_filename)
-    print("state",callsmusic.active_chats[chat_id])
+    try:
+        print("instances:\n",callsmusic.instances,"\n")
+        print("queue:\n",queues.getlist(chat_id),"\n")
+        print("active_chats",callsmusic.active_chats,"\n")
+        print("inputfile:\n",callsmusic.instances[chat_id].input_filename,"\n")
+    except Exception as e:
+        print(e)
     await message.delete()
