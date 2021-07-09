@@ -16,30 +16,32 @@ def init_instance(chat_id: int):
         instances[chat_id] = GroupCall(client)
         instances[chat_id].play_on_repeat = False
 
-    instance = instances[chat_id]
+        instance = instances[chat_id]
+        print(instance)
 
-    @instance.on_playout_ended
-    async def ___(__, _):
-        queues.task_done(chat_id)
-        if queues.is_empty(chat_id):
-            # 如果队列里的内容没有了，退出
-            # await stop(chat_id)
+        @instance.on_playout_ended
+        async def ___(__, _):
             file = instance.input_filename
+            print(f"要删除{instance.input_filename},{queues.qsize(chat_id)}")
             try:
                 os.remove(file)
             except FileNotFoundError as err:
                 # 不知道为什么，播放完之后会调用两次on_playout_ended
                 print(err)
-            await control.clean(chat_id)
-        else:
-            song = queues.get(chat_id)
-            instance.input_filename = song['file']
-            await control.send_photo(
-                chat_id,
-                song['thumbnail'],
-                caption=f"正在播放 {song['user'].first_name} 点播的\n`{song['title']}` by `{song['singers']}` {song['sduration']}\n 还有 {queues.qsize(chat_id)} 待播放")
-
-
+            queues.task_done(chat_id)
+            if queues.is_empty(chat_id):
+                # 如果队列里的内容没有了，退出
+                # await stop(chat_id)
+                await control.clean(chat_id)
+            else:
+                song = queues.get(chat_id)
+                instance.input_filename = song['file']
+                print(f"新加入{instance.input_filename}")
+                await control.send_photo(
+                    chat_id,
+                    song['thumbnail'],
+                    caption=f"正在播放 {song['user'].first_name} 点播的\n`{song['title']}` by `{song['singers']}` {song['sduration']}"
+            )
 
 def remove(chat_id: int):
     if chat_id in instances:
@@ -67,7 +69,7 @@ async def stop(chat_id: int):
 
     if chat_id in active_chats:
         del active_chats[chat_id]
-    await control.init_instances(chat_id)    
+    await control.init_instance(chat_id)    
 
 
 async def set_stream(chat_id: int, file: str):
@@ -78,7 +80,8 @@ async def set_stream(chat_id: int, file: str):
     await control.send_photo(
         chat_id,
         song['thumbnail'],
-        caption=f"正在播放 {song['user'].first_name} 点播的\n`{song['title']}` by `{song['singers']}` {song['sduration']}\n 还有 {queues.qsize(chat_id)} 待播放")
+        caption=f"正在播放 {song['user'].first_name} 点播的\n`{song['title']}` by `{song['singers']}` {song['sduration']}"
+    )
 
 def pause(chat_id: int) -> bool:
     if chat_id not in active_chats:
