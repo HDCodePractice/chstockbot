@@ -2,11 +2,13 @@ import asyncio
 from os import path,remove
 
 from musicbot.helpers.errors import FFmpegReturnCodeError
+import datetime
 
 import ffmpeg
 
 async def convert(file_path: str) -> str:
-    out = path.join('raw_files', path.basename(file_path + '.raw'))
+    t = int(datetime.datetime.utcnow().timestamp())
+    out = path.join('raw_files', path.basename(f"{file_path}-{t}.raw"))
     if path.isfile(out):
         return out
     ffmpeg.input(file_path).output(
