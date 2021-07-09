@@ -1,5 +1,6 @@
 import pickle
 import pandas as pd
+from requests.exceptions import URLRequired
 import stooq
 
 
@@ -21,9 +22,9 @@ def get_sp500_tickers():
     return df['Symbol'].tolist()
 
 def get_ndx100_tickers():
-    table = pd.read_html('https://www.nasdaq.com/market-activity/quotes/Nasdaq-100-Index-Components')
-    df = table[0]
-    return df['Symbol'].tolist() 
+    table = pd.read_html('https://en.wikipedia.org/wiki/Nasdaq-100')
+    df = table[3]
+    return df['Ticker'].tolist() 
 
 def save_list(list,filename):
     # with open("sp500tickers.pickle", "wb") as f:
@@ -51,3 +52,4 @@ if __name__ == '__main__':
     #         else:
     #             down.append(symbol)
     # print(f"{index}共有{len(up)+len(down)}支股票，共有{len(up)/(len(up)+len(down))*100:.2f}%高于50周期均线")
+    print(ndx100)
