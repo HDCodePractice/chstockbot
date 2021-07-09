@@ -17,17 +17,11 @@ def init_instance(chat_id: int):
         instances[chat_id].play_on_repeat = False
 
         instance = instances[chat_id]
-        print(instance)
 
         @instance.on_playout_ended
         async def ___(__, _):
             file = instance.input_filename
-            print(f"要删除{instance.input_filename},{queues.qsize(chat_id)}")
-            try:
-                os.remove(file)
-            except FileNotFoundError as err:
-                # 不知道为什么，播放完之后会调用两次on_playout_ended
-                print(err)
+            os.remove(file)
             queues.task_done(chat_id)
             if queues.is_empty(chat_id):
                 # 如果队列里的内容没有了，退出
@@ -36,7 +30,6 @@ def init_instance(chat_id: int):
             else:
                 song = queues.get(chat_id)
                 instance.input_filename = song['file']
-                print(f"新加入{instance.input_filename}")
                 await control.send_photo(
                     chat_id,
                     song['thumbnail'],
