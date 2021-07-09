@@ -58,6 +58,7 @@ async def play(_,message:Message):
 
 @Client.on_message(command("volume") & ~filters.edited)
 async def volume(_,message:Message):
+    mm = None
     if len(message.command) < 2:
         mm = await message.reply("请告诉我音量(0-200)值")
     else:

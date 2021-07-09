@@ -37,11 +37,7 @@ async def _skip(chat_id):
     else:
         song = queues.get(chat_id)
         instance.input_filename = song['file']
-        await control.send_photo(
-            chat_id,
-            song['thumbnail'],
-            caption=f"正在播放 {song['user'].first_name} 点播的\n`{song['title']}` by `{song['singers']}` {song['sduration']}"
-        )
+        await control.send_playing(chat_id,song)
 
 def remove(chat_id: int):
     if chat_id in instances:
@@ -75,11 +71,7 @@ async def set_stream(chat_id: int, file: str):
         active_chats[chat_id] = {'playing': True, 'muted': False}
     get_instance(chat_id).input_filename = file
     song = queues.get(chat_id)
-    await control.send_photo(
-        chat_id,
-        song['thumbnail'],
-        caption=f"正在播放 {song['user'].first_name} 点播的\n`{song['title']}` by `{song['singers']}` {song['sduration']}"
-    )
+    await control.send_playing(chat_id,song)
 
 def pause(chat_id: int) -> bool:
     if chat_id not in active_chats:
