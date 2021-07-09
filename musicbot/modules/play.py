@@ -84,10 +84,12 @@ async def skip(_,message:Message):
 async def state(_,message:Message):
     chat_id = get_chat_id(message.chat)
     try:
+        print("===========================================")
         print("instances:\n",callsmusic.instances,"\n")
         print("queue:\n",queues.getlist(chat_id),"\n")
         print("active_chats",callsmusic.active_chats,"\n")
         print("inputfile:\n",callsmusic.instances[chat_id].input_filename,"\n")
+        print("===========================================")
     except Exception as e:
         print(e)
     await message.delete()
