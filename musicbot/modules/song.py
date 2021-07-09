@@ -19,7 +19,7 @@ from ..services.callsmusic import callsmusic
 session = ClientSession()
 arq = ARQ("https://thearq.tech",config.ARQ_API_KEY,session)
 
-@Client.on_message(command("s") & ~filters.edited)
+@Client.on_message(command("y") & ~filters.edited)
 async def song(_,message: Message):
     query = message.text.split(None, 1)
     chat_id = get_chat_id(message.chat)
@@ -56,7 +56,7 @@ async def song(_,message: Message):
             await message.delete()
             return
     await m.delete()
-    m = await message.reply_photo(thumbnail,caption=f"{title} {sduration} 小水管尽力下载中...")
+    m = await message.reply_photo(thumbnail,caption=f"{title} {sduration} 小水管尽力下载中...")            
     file_path = await convert(youtube.download(slink))
     position = await queues.put(
         chat_id,slink=slink,
@@ -64,8 +64,12 @@ async def song(_,message: Message):
         thumbnail=thumbnail,sduration=sduration,
         views=views,file=file_path,
         user=message.from_user)
-    await m.edit_caption(f"{title} {sduration} 成功加入播放队列... 共有 {position} 首待播")
-    await callsmusic.set_stream(chat_id,file_path)
+    if chat_id in callsmusic.active_chats:
+        await m.edit_caption(f"{title} {sduration} 成功加入播放队列... 共有 {position} 首待播")
+    else:
+        await m.edit_caption(f"{title} {sduration} 开始播放")
+        await callsmusic.set_stream(chat_id,file_path)
+    # 等待5秒把搜索和搜索结果都清除
     await sleep(5)
     await m.delete()
-    # await message.delete()
+    await message.delete()
