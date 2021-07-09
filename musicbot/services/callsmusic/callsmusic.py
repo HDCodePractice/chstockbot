@@ -20,21 +20,28 @@ def init_instance(chat_id: int):
 
         @instance.on_playout_ended
         async def ___(__, _):
-            file = instance.input_filename
-            os.remove(file)
-            queues.task_done(chat_id)
-            if queues.is_empty(chat_id):
-                # 如果队列里的内容没有了，退出
-                # await stop(chat_id)
-                await control.clean(chat_id)
-            else:
-                song = queues.get(chat_id)
-                instance.input_filename = song['file']
-                await control.send_photo(
-                    chat_id,
-                    song['thumbnail'],
-                    caption=f"正在播放 {song['user'].first_name} 点播的\n`{song['title']}` by `{song['singers']}` {song['sduration']}"
-            )
+            await _skip(chat_id)
+
+async def _skip(chat_id):
+    instance = instances[chat_id]
+
+    file = instance.input_filename
+    os.remove(file)
+    queues.task_done(chat_id)
+    if queues.is_empty(chat_id):
+        # pause(chat_id)
+        instance.stop_playout()
+        if chat_id in active_chats:
+            del active_chats[chat_id]
+        await control.init_instance(chat_id)   
+    else:
+        song = queues.get(chat_id)
+        instance.input_filename = song['file']
+        await control.send_photo(
+            chat_id,
+            song['thumbnail'],
+            caption=f"正在播放 {song['user'].first_name} 点播的\n`{song['title']}` by `{song['singers']}` {song['sduration']}"
+        )
 
 def remove(chat_id: int):
     if chat_id in instances:
@@ -46,16 +53,13 @@ def remove(chat_id: int):
     if chat_id in active_chats:
         del active_chats[chat_id]
 
-
 def get_instance(chat_id: int) -> GroupCall:
     init_instance(chat_id)
     return instances[chat_id]
 
-
 async def start(chat_id: int):
     await get_instance(chat_id).start(chat_id)
     active_chats[chat_id] = {'playing': True, 'muted': False}
-
 
 async def stop(chat_id: int):
     await get_instance(chat_id).stop()
@@ -63,7 +67,6 @@ async def stop(chat_id: int):
     if chat_id in active_chats:
         del active_chats[chat_id]
     await control.init_instance(chat_id)    
-
 
 async def set_stream(chat_id: int, file: str):
     if chat_id not in active_chats:
@@ -85,7 +88,6 @@ def pause(chat_id: int) -> bool:
     get_instance(chat_id).pause_playout()
     active_chats[chat_id]['playing'] = False
     return True
-
 
 def resume(chat_id: int) -> bool:
     if chat_id not in active_chats:
@@ -119,3 +121,14 @@ def unmute(chat_id: int) -> int:
     get_instance(chat_id).set_is_mute(False)
     active_chats[chat_id]['muted'] = False
     return 0
+
+async def volume(chat_id: int,vol: int) -> bool:
+    if chat_id not in active_chats:
+        return False
+    await get_instance(chat_id).set_my_volume(vol)
+
+async def skip(chat_id: int) -> bool:
+    if chat_id not in active_chats:
+        return False
+    await _skip(chat_id)
+    return True
