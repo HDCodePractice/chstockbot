@@ -4,18 +4,45 @@ import datetime
 from telegram import Bot
 from pandas_datareader._utils import RemoteDataError
 from requests.exceptions import ConnectionError
-from stockutil import stooq
+from stockutil import stooq, wikipedia
 
 
 
 def help():
     return "'sendxyh.py -c configpath'"
 
-def get_spx_ndx_avg_msg():
+
+
+def get_spx_ndx_avg_msg(indexes:str, index_ticker_lists:list):
     """
     获取spx和ndx在50MA之上的股票数量的百分比信息，返回发给用户的信息。
     """
-    return ""
+    message = ""
+    index_ticker_lists = [wikipedia.get_sp500_tickers(),wikipedia.get_ndx100_tickers()]
+    num = 0
+    percent = []
+    #above_list = []
+    
+    for index in indexes:
+        for index_ticker_list in index_ticker_lists:
+            if index_ticker_list == index_ticker_lists[0]:
+                for symbol in index_ticker_list:
+                    if stooq.symbol_above_moving_average(symbol):
+                        num += 1
+                        #above_list.append(symbol)
+                percent = '{:.2%}'.format(num/len(index_ticker_list))
+                message += f"今日在{index}中有{percent}的股票高于MA50 \n"
+        continue
+        for index_ticker_list in index_ticker_lists:
+            if index_ticker_list == index_ticker_lists[1]:
+                for symbol in index_ticker_list:
+                    if stooq.symbol_above_moving_average(symbol):
+                        num += 1
+                        #above_list.append(symbol)
+                percent = '{:.2%}'.format(num/len(index_ticker_list))
+                message += f"今日在{index}中有{percent}的股票高于MA50 \n"
+        continue
+    return f"{message}"
 
 def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
     start = end - datetime.timedelta(days=365)
@@ -82,6 +109,8 @@ if __name__ == '__main__':
     adminchat = CONFIG['xyhlog']
     debug = CONFIG['DEBUG']
     ds = CONFIG['xyhsource']
+    indexes=CONFIG['xyhindex']
+    
 
     notify_message = ""
     admin_message = ""
