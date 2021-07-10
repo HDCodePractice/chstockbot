@@ -1,22 +1,34 @@
 import getopt,sys,config,os
+from requests.sessions import extract_cookies_to_jar
 import pandas_datareader.data as web
 import datetime
 from telegram import Bot
 from pandas_datareader._utils import RemoteDataError
 from requests.exceptions import ConnectionError
-
+from stockutil import wikipedia
+from stockutil import stooq
 
 
 def help():
     return "'sendxyh.py -c configpath'"
 
-def get_spx_ndx_avg_msg():
+def get_spx_ndx_avg_msg(index, term = 50, end=datetime.date(2021,7,2)):
     """
     获取spx和ndx在50MA之上的股票数量的百分比信息，返回发给用户的信息。
     """
-    return ""
+    num = 0
+    market_msg = ""
+    error_msg = ""
+    for symbol in index:
+        try:
+            if stooq.symbol_above_moving_average(symbol.lower(),term,path="~/Downloads/data",end=datetime.date(2021,7,2)):
+                num = num + 1 
+            market_msg = f"{index} 有{(num/len(index))*100:.2f}%的股票高于50周期均线。"
+        except Exception as e:
+            error_msg += f"出错了，具体错误信息是{e}"
+    return market_msg,error_msg
 
-def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
+def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date(2021,7,9)):
     start = end - datetime.timedelta(days=365)
     successful_msg = ""
     err_msg = ""
@@ -35,7 +47,7 @@ def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
                             flag = "🔴"
                         else:
                             flag = "🟢"
-                        successful_msg += f"{flag} {avg} 周期均价：{df.tail(avg)['Adj Close'].mean():0.2f}\n"
+                        successful_msg += f"{flag} {avg} 周期均价：{df.tail(avg)['Adj Close'].mean():0.2f} ({(df['Adj Close'][-1]/df.tail(avg)['Adj Close'].mean()-1)*100:.2f}%)\n"
                     else:
                         successful_msg += f"{avg} 周期均价因时长不足无法得出\n"         
             else: #当天不是交易日时 返回false
@@ -103,3 +115,20 @@ if __name__ == '__main__':
             sendmsg(bot,adminchat,admin_message,debug)
     except Exception as err:
         sendmsg(bot,adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}",debug)
+
+
+    sp500 = wikipedia.get_sp500_tickers()
+    ndx100 = wikipedia.get_ndx100_tickers()   
+    indexes = [sp500, ndx100]
+    market_sum = ""
+    market_error = ""
+    for index in indexes:
+        market_msg,error_msg = get_spx_ndx_avg_msg(index,term = 50, end = datetime.date(2021,7,9))
+        if market_msg:
+            market_sum += market_msg
+        if error_msg:
+            market_error += market_error
+    if market_msg:
+        sendmsg(bot,notifychat,market_sum,debug)
+    if market_error:
+        sendmsg(bot,adminchat,market_error,debug)

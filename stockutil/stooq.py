@@ -1,4 +1,4 @@
-import datetime
+import datetime  
 import pandas as pd
 import datetime
 import requests
@@ -11,7 +11,7 @@ class markCloseError(Exception):
 class maNotEnoughError(Exception):
     pass
 
-def download_file(url="https://static.stooq.com/db/h/d_us_txt.zip",dict="~/Downloads/d_us_txt.zip"):
+def download_file(url="https://static.stooq.com/db/h/d_us_txt.zip",dict="~/Downloads"):
     msg = ""
     err = ""
     try:
@@ -123,12 +123,15 @@ def symbol_above_moving_average(symbol,ma=50,path="~/Downloads/data",end=datetim
 
 
 if __name__ == '__main__':
-    #tiker_file = search_file("tlry.us.txt",os.path.expanduser("~/Downloads/data"))
-    #print(read_stooq_file(path=tiker_file[0]))
-    #print(download_file())
-    try:
-        print(symbol_above_moving_average("qqq",50,path="~/Downloads/data",end=datetime.date(2021,6,15)))
-    except maNotEnoughError as err:
-        print(err)
-    except markCloseError as err:
-        print(err)
+    tiker_file = search_file("atvi.us.txt",os.path.expanduser("~/Downloads/data"))
+    print(read_stooq_file(path=tiker_file[0]))
+    print(download_file())
+    # for ticker in sp500:
+    #     msg = 0
+    #     try:
+    #         if symbol_above_moving_average("ticker",50,path="~/Downloads/data",end=datetime.date(2021,7,2)):
+    #             msg += 1
+    #     except maNotEnoughError as err:
+    #         print(err)
+    #     except markCloseError as err:
+    #         print(err)
