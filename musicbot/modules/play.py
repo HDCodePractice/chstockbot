@@ -58,6 +58,7 @@ async def play(_,message:Message):
 
 @Client.on_message(command("volume") & ~filters.edited)
 async def volume(_,message:Message):
+    mm = None
     if len(message.command) < 2:
         mm = await message.reply("请告诉我音量(0-200)值")
     else:
@@ -78,7 +79,6 @@ async def skip(_,message:Message):
     else:
         await callsmusic.skip(chat_id)
     await message.delete()
-
 
 @Client.on_message(command("s") & ~filters.edited)
 async def state(_,message:Message):
