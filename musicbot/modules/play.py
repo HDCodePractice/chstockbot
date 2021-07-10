@@ -80,7 +80,6 @@ async def skip(_,message:Message):
         await callsmusic.skip(chat_id)
     await message.delete()
 
-
 @Client.on_message(command("s") & ~filters.edited)
 async def state(_,message:Message):
     chat_id = get_chat_id(message.chat)

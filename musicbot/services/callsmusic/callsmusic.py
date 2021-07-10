@@ -4,7 +4,7 @@ from pytgcalls import GroupCall
 
 from . import client
 from .. import queues
-from ..modules import control
+from ...modules import control
 import os
 
 instances: Dict[int, GroupCall] = {}
