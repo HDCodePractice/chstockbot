@@ -1,7 +1,7 @@
 from asyncio import sleep
+from typing import List
 from pyrogram import Client,filters
 from pyrogram.types.messages_and_media.message import Message
-from pyrogram.types import InputMediaPhoto
 from .. import config
 from ..helpers.filters import command
 from ..helpers.chat_id import get_chat_id
@@ -13,14 +13,14 @@ from ..services.downloaders import youtube
 from ..services.converter import convert
 from musicbot.config import DURATION_LIMIT
 from ..services.callsmusic import callsmusic
-
+from youtube_search import YoutubeSearch
 
 # 初始化ARQ API
 session = ClientSession()
 arq = ARQ("https://thearq.tech",config.ARQ_API_KEY,session)
 
-@Client.on_message(command("y") & ~filters.edited)
-async def song(_,message: Message):
+@Client.on_message(command("yt") & ~filters.edited)
+async def y_song(_,message: Message):
     query = message.text.split(None, 1)
     chat_id = get_chat_id(message.chat)
     if len(query) == 1:
@@ -42,6 +42,10 @@ async def song(_,message: Message):
         await message.delete()
         return
     results= res.result
+    await youtube_proc(results,message,m)
+
+async def youtube_proc(results:List,message: Message,m: Message):
+    chat_id = get_chat_id(message.chat)
     slink= f"https://youtube.com{results[0]['url_suffix']}"
     title = results[0]["title"]
     singers = results[0]["channel"]
@@ -73,3 +77,17 @@ async def song(_,message: Message):
     await sleep(5)
     await m.delete()
     await message.delete()
+
+
+@Client.on_message(command("y") & ~filters.edited)
+async def yt_song(_,message: Message):
+    if len(message.command) == 1:
+        m = await message.reply_text("请使用 '/yt 歌曲名' 来搜索歌曲")
+        await sleep(5)
+        await m.delete()
+        await message.delete()
+        return
+    query = message.text.split(None, 1)[1]
+    m = await message.reply_text(f"在油管上疯狂搜索 `{query}` 中")
+    results = YoutubeSearch(query, max_results=1).to_dict()
+    await youtube_proc(results,message,m)
