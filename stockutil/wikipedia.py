@@ -1,8 +1,6 @@
 import datetime
 import pickle
 import pandas as pd
-from stockutil import stooq
-
 
 # import requests
 # import bs4 as bs
@@ -39,13 +37,14 @@ def load_list(filename):
     return tickers
 
 if __name__ == '__main__':
-
+    import stooq
     # 本程序只是用于测试，正常使用请from stockutil import wikipedia
     sp500 = get_sp500_tickers()
     ndx100 = get_ndx100_tickers()
     #save_list(sp500,"sp500.pickle")
     #save_list(ndx100,"ndx100.pickle")
     indexes = {"sp500": sp500, "ndx100": ndx100}
+
     for key in indexes:
         print(key)
         up = []
@@ -58,5 +57,4 @@ if __name__ == '__main__':
                     down.append(symbol)
             except Exception as e:
                 print(f"unreachable stock: {symbol}\nerror message: {e}\n")
-                down.append(symbol)
         print(f"{key}共有{len(up)+len(down)}支股票，共有{len(up)/(len(up)+len(down))*100:.2f}%高于50周期均线")
