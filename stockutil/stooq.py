@@ -30,13 +30,13 @@ def download_file(url="https://static.stooq.com/db/h/d_us_txt.zip",dict="~/Downl
     return msg,err
 
 def check_stock_data(path="~/Downloads/data/daily/us/nasdaq stocks/3/tlry.us.txt"):
-    now = datetime.date.today()
+    update_time = datetime.datetime.now().replace(hour=22, minute=00)
     msg = ""
     err = ""
     try:#verify creation time of the data
         if os.path.exists(os.path.expanduser(path)):
             stat = os.path.getmtime(os.path.expanduser(path))
-            if datetime.datetime.fromtimestamp(stat).date() == now:
+            if datetime.datetime.fromtimestamp(stat) > update_time:
                 msg += "数据是最新的，不需要下载"
             else:#download file and unzip it
                 dl_msg,dl_err = download_file()
@@ -104,8 +104,6 @@ def symbol_above_moving_average(symbol,ma=50,path="~/Downloads/data",end=datetim
     end : datetime.date, default today
         计算到的截止日期，默认为当天
     """
-    err_msg = ""
-    successful_msg = ""
     tiker_file = search_file(symbol.lower().replace(".","-") + ".us.txt",os.path.expanduser(path))
     df = read_stooq_file(path=tiker_file[0])
     #filter df based on end time
@@ -125,7 +123,8 @@ def symbol_above_moving_average(symbol,ma=50,path="~/Downloads/data",end=datetim
 
 if __name__ == '__main__':
     try:
-        print(symbol_above_moving_average("qqq",50,path="~/Downloads/data",end=datetime.date(2021,6,15)))
+        print(check_stock_data())
+        #print(symbol_above_moving_average("qqq",50,path="~/Downloads/data",end=datetime.date(2021,6,15)))
     except maNotEnoughError as err:
         print(err)
     except markCloseError as err:
