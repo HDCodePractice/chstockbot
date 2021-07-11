@@ -9,3 +9,4 @@ youtube_dl
 python-dotenv
 python-arq
 ffmpeg-python
+youtube_search
