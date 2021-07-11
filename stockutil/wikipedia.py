@@ -1,9 +1,8 @@
-from os import terminal_size
+import datetime
 import pickle
 import datetime
 from numpy import msort
 import pandas as pd
-from requests.sessions import merge_setting
 
 # import requests
 # import bs4 as bs
@@ -26,6 +25,9 @@ def get_ndx100_tickers():
     table = pd.read_html('https://en.wikipedia.org/wiki/Nasdaq-100')
     df = table[3]
     return df['Ticker'].tolist() 
+    # table = pd.read_html('https://dailypik.com/nasdaq-100-companies/')
+    # df = table[0]
+    # return df['Symbol'].tolist() 
 
 def save_list(list,filename):
     # with open("sp500tickers.pickle", "wb") as f:
@@ -39,25 +41,25 @@ def load_list(filename):
         tickers = pickle.load(f)
     return tickers
 
-# if __name__ == '__main__':
-#   import stooq
-#     # 本程序只是用于测试，正常使用请from stockutil import wikipedia
-#     sp500 = get_sp500_tickers()
-#     # ndx100 = get_ndx100_tickers()
-#     # indexes = [sp500,ndx100]
-#     # up = []
-#     # down = []
-#     # for index in indexes:
-#     #     #for symbol in index:
-#         #     if stooq.symbol_above_moving_average(symbol.lower(),50,end=datetime.date(2021,7,2)):
-#         #         up.append(symbol)
-#         #     else:
-#         #         down.append(symbol)
-#     # print(f"{index} 共有{len(up)+len(down)}支股票，共有{len(up)/(len(up)+len(down))*100:.2f}%高于50周期均线")
-#     num = 0
-#     ma = 50
-#     for symbol in sp500:
-#         if stooq.symbol_above_moving_average(symbol.lower(),ma=50,path="~/Downloads/data",end=datetime.date(2021,7,9)):
-#             num = num + 1
-#     msg = f"sp500 有{(num/len(sp500))*100:.2f}%的股票高于 {ma} 周期均线。\n"
-#     print(msg)
+if __name__ == '__main__':
+    import stooq
+    # 本程序只是用于测试，正常使用请from stockutil import wikipedia
+    sp500 = get_sp500_tickers()
+    ndx100 = get_ndx100_tickers()
+    #save_list(sp500,"sp500.pickle")
+    #save_list(ndx100,"ndx100.pickle")
+    indexes = {"sp500": sp500, "ndx100": ndx100}
+
+    for key in indexes:
+        print(key)
+        up = []
+        down = []       
+        for symbol in indexes[key]:
+            try:
+                if stooq.symbol_above_moving_average(symbol,end=datetime.date(2021,6,15)):
+                    up.append(symbol)
+                else:
+                    down.append(symbol)
+            except Exception as e:
+                print(f"unreachable stock: {symbol}\nerror message: {e}\n")
+        print(f"{key}共有{len(up)+len(down)}支股票，共有{len(up)/(len(up)+len(down))*100:.2f}%高于50周期均线")
