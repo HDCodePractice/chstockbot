@@ -16,16 +16,21 @@ def download_file(url="https://static.stooq.com/db/h/d_us_txt.zip",dict="~/Downl
     err = ""
     try:
         request = requests.get(url)
-        with open(os.path.expanduser(dict), 'wb') as f:
+        if not os.path.exits(os.path.expanduser(dict)):
+            os.makedirs(os.path.expanduser(dict))
+        with open(os.path.expanduser(f"{dict}/{url.split('/')[-1]}"), 'wb') as f:
             f.write(request.content)
         f.close
 
-        zf = ZipFile(os.path.expanduser(dict), 'r')
-        zf.extractall(os.path.expanduser('~/Downloads'))
+        zf = ZipFile(os.path.expanduser(f"{dict}/{url.split('/')[-1]}"), 'r')
+        zf.extractall(os.path.expanduser(dict))
         zf.close()
         msg += f"下载和解压成功"
+    # 网站服务器当机无法下载 用Exception解决
+    # 解压文件受损，无法解压 用Exception解决
     except Exception as e:
         err += f"下载和解压出错了；具体错误是：{e}"
+        
     return msg,err
 
 def check_stock_data(path="~/Downloads/data/daily/us/nasdaq stocks/3/tlry.us.txt"):
@@ -53,6 +58,11 @@ def check_stock_data(path="~/Downloads/data/daily/us/nasdaq stocks/3/tlry.us.txt
 def read_stooq_file(path="~/Downloads/data/daily/us/nasdaq stocks/3/tlry.us.txt"):
     """
     适配 Yahoo 格式
+
+    Parameters
+    ----------
+    path: 读取stooq的文件路径
+
     """
     df = pd.read_csv(path, parse_dates=True)
     df = df.rename(columns={
@@ -88,7 +98,7 @@ def search_file(rule=".txt", path='.')->list:
                 all.append(filename)
     return all
 
-def symbol_above_moving_average(symbol,ma=50,path="~/Downloads/data",end=datetime.date.today()):
+def symbol_above_moving_average(symbol:str,ma=50,path="~/Downloads/data",end=datetime.date.today())->bool:
     """
     获取一个股票代码是否高于指定的历史平均价。返回True高于avg，Flase低于avg
 

@@ -4,7 +4,6 @@ import datetime
 from numpy import msort
 import pandas as pd
 from requests.sessions import merge_setting
-import stooq
 
 # import requests
 # import bs4 as bs
@@ -41,6 +40,7 @@ def load_list(filename):
     return tickers
 
 # if __name__ == '__main__':
+#   import stooq
 #     # 本程序只是用于测试，正常使用请from stockutil import wikipedia
 #     sp500 = get_sp500_tickers()
 #     # ndx100 = get_ndx100_tickers()
