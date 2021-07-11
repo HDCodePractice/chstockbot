@@ -11,17 +11,18 @@ class markCloseError(Exception):
 class maNotEnoughError(Exception):
     pass
 
-def download_file(url="https://static.stooq.com/db/h/d_us_txt.zip",dict="~/Downloads/d_us_txt.zip"):
+def download_file(url="https://static.stooq.com/db/h/d_us_txt.zip",dict="~/Downloads"):
     msg = ""
     err = ""
+    filename = url.split("/")[-1]
     try:
         request = requests.get(url)
-        with open(os.path.expanduser(dict), 'wb') as f:
+        with open(os.path.expanduser(dict + "/" + filename), 'wb') as f:
             f.write(request.content)
         f.close
 
-        zf = ZipFile(os.path.expanduser(dict), 'r')
-        zf.extractall(os.path.expanduser('~/Downloads'))
+        zf = ZipFile(os.path.expanduser(dict + "/" + filename), 'r')
+        zf.extractall(os.path.expanduser(dict))
         zf.close()
         msg += f"下载和解压成功"
     except Exception as e:
@@ -105,7 +106,7 @@ def symbol_above_moving_average(symbol,ma=50,path="~/Downloads/data",end=datetim
     """
     err_msg = ""
     successful_msg = ""
-    tiker_file = search_file(symbol.lower() + ".us.txt",os.path.expanduser(path))
+    tiker_file = search_file(symbol.lower().replace(".","-") + ".us.txt",os.path.expanduser(path))
     df = read_stooq_file(path=tiker_file[0])
     #filter df based on end time
     if end in df.index.date:
@@ -123,9 +124,6 @@ def symbol_above_moving_average(symbol,ma=50,path="~/Downloads/data",end=datetim
 
 
 if __name__ == '__main__':
-    #tiker_file = search_file("tlry.us.txt",os.path.expanduser("~/Downloads/data"))
-    #print(read_stooq_file(path=tiker_file[0]))
-    #print(download_file())
     try:
         print(symbol_above_moving_average("qqq",50,path="~/Downloads/data",end=datetime.date(2021,6,15)))
     except maNotEnoughError as err:
