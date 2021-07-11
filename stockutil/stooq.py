@@ -1,4 +1,4 @@
-import datetime
+import datetime  
 import pandas as pd
 import datetime
 import requests
@@ -11,31 +11,37 @@ class markCloseError(Exception):
 class maNotEnoughError(Exception):
     pass
 
-def download_file(url="https://static.stooq.com/db/h/d_us_txt.zip",dict="~/Downloads/d_us_txt.zip"):
+def download_file(url="https://static.stooq.com/db/h/d_us_txt.zip",dict="~/Downloads"):
     msg = ""
     err = ""
+    filename = url.split("/")[-1]
     try:
         request = requests.get(url)
-        with open(os.path.expanduser(dict), 'wb') as f:
+        if not os.path.exits(os.path.expanduser(dict)):
+            os.makedirs(os.path.expanduser(dict))
+        with open(os.path.expanduser(f"{dict}/{url.split('/')[-1]}"), 'wb') as f:
             f.write(request.content)
         f.close
 
-        zf = ZipFile(os.path.expanduser(dict), 'r')
-        zf.extractall(os.path.expanduser('~/Downloads'))
+        zf = ZipFile(os.path.expanduser(f"{dict}/{url.split('/')[-1]}"), 'r')
+        zf.extractall(os.path.expanduser(dict))
         zf.close()
         msg += f"下载和解压成功"
+    # 网站服务器当机无法下载 用Exception解决
+    # 解压文件受损，无法解压 用Exception解决
     except Exception as e:
         err += f"下载和解压出错了；具体错误是：{e}"
+        
     return msg,err
 
 def check_stock_data(path="~/Downloads/data/daily/us/nasdaq stocks/3/tlry.us.txt"):
-    now = datetime.date.today()
+    update_time = datetime.datetime.now().replace(hour=22, minute=00)
     msg = ""
     err = ""
     try:#verify creation time of the data
         if os.path.exists(os.path.expanduser(path)):
             stat = os.path.getmtime(os.path.expanduser(path))
-            if datetime.datetime.fromtimestamp(stat).date() == now:
+            if datetime.datetime.fromtimestamp(stat) > update_time:
                 msg += "数据是最新的，不需要下载"
             else:#download file and unzip it
                 dl_msg,dl_err = download_file()
@@ -53,6 +59,11 @@ def check_stock_data(path="~/Downloads/data/daily/us/nasdaq stocks/3/tlry.us.txt
 def read_stooq_file(path="~/Downloads/data/daily/us/nasdaq stocks/3/tlry.us.txt"):
     """
     适配 Yahoo 格式
+
+    Parameters
+    ----------
+    path: 读取stooq的文件路径
+
     """
     df = pd.read_csv(path, parse_dates=True)
     df = df.rename(columns={
@@ -88,7 +99,7 @@ def search_file(rule=".txt", path='.')->list:
                 all.append(filename)
     return all
 
-def symbol_above_moving_average(symbol,ma=50,path="~/Downloads/data",end=datetime.date.today()):
+def symbol_above_moving_average(symbol:str,ma=50,path="~/Downloads/data",end=datetime.date.today())->bool:
     """
     获取一个股票代码是否高于指定的历史平均价。返回True高于avg，Flase低于avg
 
@@ -103,9 +114,7 @@ def symbol_above_moving_average(symbol,ma=50,path="~/Downloads/data",end=datetim
     end : datetime.date, default today
         计算到的截止日期，默认为当天
     """
-    err_msg = ""
-    successful_msg = ""
-    tiker_file = search_file(symbol.lower() + ".us.txt",os.path.expanduser(path))
+    tiker_file = search_file(symbol.lower().replace(".","-") + ".us.txt",os.path.expanduser(path))
     df = read_stooq_file(path=tiker_file[0])
     #filter df based on end time
     if end in df.index.date:
@@ -123,12 +132,15 @@ def symbol_above_moving_average(symbol,ma=50,path="~/Downloads/data",end=datetim
 
 
 if __name__ == '__main__':
-    #tiker_file = search_file("tlry.us.txt",os.path.expanduser("~/Downloads/data"))
-    #print(read_stooq_file(path=tiker_file[0]))
-    #print(download_file())
-    try:
-        print(symbol_above_moving_average("qqq",50,path="~/Downloads/data",end=datetime.date(2021,6,15)))
-    except maNotEnoughError as err:
-        print(err)
-    except markCloseError as err:
-        print(err)
+    tiker_file = search_file("atvi.us.txt",os.path.expanduser("~/Downloads/data"))
+    print(read_stooq_file(path=tiker_file[0]))
+    print(download_file(url="https://static.stooq.com/db/h/h_hu_txt.zip",dict=("~/Download/tmp")))
+    # for ticker in sp500:
+    #     msg = 0
+    #     try:
+    #         if symbol_above_moving_average("ticker",50,path="~/Downloads/data",end=datetime.date(2021,7,2)):
+    #             msg += 1
+    #     except maNotEnoughError as err:
+    #         print(err)
+    #     except markCloseError as err:
+    #         print(err)
