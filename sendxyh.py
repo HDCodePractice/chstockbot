@@ -108,7 +108,8 @@ if __name__ == '__main__':
 
     notify_message = ""
     admin_message = ""
-    d = datetime.date(2021,7,7)
+    d = datetime.date.today()
+    # d = datetime.date(2021,7,7)
     try:
         for symbol in symbols:
             successful_msg, err_msg = cal_symbols_avg(ds,symbol[0],symbol[1:],end=d)#debug的end变量需要被删除: ,end=datetime.date(2021,7,1)
