@@ -54,8 +54,8 @@ def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
                             flag = "🔴"
                         else:
                             flag = "🟢"
-                        percentage = (df['Adj Close'][-1] - df.tail(avg)['Adj Close'].mean())/df['Adj Close'][-1] * 100
-                        successful_msg += f"{flag} {avg} 周期均价：{df.tail(avg)['Adj Close'].mean():0.2f} ({abs(percentage):0.2f}%)\n"
+                        percentage = (df['Adj Close'][-1] - df.tail(avg)['Adj Close'].mean())/df.tail(avg)['Adj Close'].mean() * 100
+                        successful_msg += f"{flag} {avg} 周期均价：{df.tail(avg)['Adj Close'].mean():0.2f} ({percentage:0.2f}%)\n"
                     else:
                         successful_msg += f"{avg} 周期均价因时长不足无法得出\n"         
             else: #当天不是交易日时 返回false
