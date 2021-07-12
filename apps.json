@@ -1,0 +1,51 @@
+{
+    "name": "chstockbot",
+    "description": "chstock Telegram Bot",
+    "keywords": [
+      "telegram",
+      "bot",
+      "telegram_bot",
+      "music",
+      "youtube",
+      "soundcloud",
+      "mixcloud",
+      "youtube-dl",
+      "python"
+    ],
+    "repository": "https://github.com/HDCodePractice/chstockbot",
+    "logo": "https://avatars.githubusercontent.com/u/59294144?s=200&v=4",
+    "env": {
+      "API_ID": {
+        "description": "api_id part of your Telegram API Key from my.telegram.org/apps",
+        "required": true
+      },
+      "API_HASH": {
+        "description": "api_hash part of your Telegram API Key from my.telegram.org/apps",
+        "required": true
+      },
+      "BOT_TOKEN": {
+        "description": "Bot token get from BotFather https://t.me/BotFather",
+        "required": true
+      },
+      "ARQ_API_KEY": {
+        "description": "ARQ API Key",
+        "required": true
+      },
+      "BOT_ID": {
+        "description": "Bot Username",
+        "required": true
+      },
+      "DURATION_LIMIT": {
+        "description": "Music Duration Limit",
+        "required": true
+      }
+    },
+    "buildpacks": [
+      {
+        "url": "https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest"
+      },
+      {
+        "url": "heroku/python"
+      }
+    ]
+  }

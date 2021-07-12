@@ -15,4 +15,5 @@ BOT_ID = ""
 # bot username，识别命令@username
 BOT_USERNAME = getenv("BOT_USERNAME","")
 # 音乐长度（分钟）限制
-DURATION_LIMIT = getenv("DURATION_LIMIT",60)
+DURATION_LIMIT = int(getenv("DURATION_LIMIT","60"))
+bot=None
