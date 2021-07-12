@@ -25,7 +25,7 @@ def get_spx_ndx_avg_msg(ma=50,end=datetime.date.today()):
         down = []       
         for symbol in indexes[key]:
             try:
-                if stooq.symbol_above_moving_average(symbol,ma=ma,end=end): 
+                if stooq.symbol_above_moving_average(symbol,ma=ma,path=f"{config.config_path}/data",end=end): 
                     up.append(symbol)
                 else:
                     down.append(symbol)
