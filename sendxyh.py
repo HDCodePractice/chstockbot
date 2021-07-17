@@ -30,7 +30,7 @@ def get_spx_ndx_avg_msg(ma=50,end=datetime.date.today()):
                 else:
                     down.append(symbol)
             except stooq.markCloseError:
-                err_msg += f"{key}: {end.strftime('%Y-%m-%d')}没有数据，请确保输入的日期当天有开市\n"
+                err_msg += f"{key}: {symbol} {end.strftime('%Y-%m-%d')}没有数据，请确保输入的日期当天有开市\n"
                 break
             except Exception as e:
                 err_msg += f"unreachable stock: {symbol}\nerror message: {e}\n"
@@ -83,7 +83,7 @@ def sendmsg(bot,chatid,msg,debug=True):
 
 if __name__ == '__main__':
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hc:", ["config="])
+        opts, args = getopt.getopt(sys.argv[1:], "hc:d:", ["config=","datetime="])
     except getopt.GetoptError:
         print(help())
         sys.exit(2)
@@ -93,7 +93,9 @@ if __name__ == '__main__':
             print(help())
             sys.exit()
         elif opt in ("-c", "--config"):
-            config.config_path = arg          
+            config.config_path = arg  
+        elif opt in ("-d", "--datetime"): #setup datetime format "yyyy/mm/dd"
+            target_time = arg.split("/")
 
     config.config_file = os.path.join(config.config_path, "config.json")
     try:
@@ -112,8 +114,11 @@ if __name__ == '__main__':
 
     notify_message = ""
     admin_message = ""
-    d = datetime.date.today()
-    # d = datetime.date(2021,7,7)
+    try:
+        d = datetime.date(int(target_time[0]),int(target_time[1]),int(target_time[2]))
+    except:
+        d = datetime.date.today()
+
     try:
         for symbol in symbols:
             successful_msg, err_msg = cal_symbols_avg(ds,symbol[0],symbol[1:],end=d)#debug的end变量需要被删除: ,end=datetime.date(2021,7,1)
@@ -125,7 +130,7 @@ if __name__ == '__main__':
         if err:
             admin_message += err
         if notify_message:
-            notify_message = f"🌈🌈🌈当日天相🌈🌈🌈: \n{notify_message}\n{msg}\n贡献者:毛票教的大朋友们"
+            notify_message = f"🌈🌈🌈{datetime.date.today().strftime('%Y/%m/%d')}天相🌈🌈🌈: \n{notify_message}\n{msg}\n贡献者:毛票教的大朋友们"
             sendmsg(bot,notifychat,notify_message,debug)
         if admin_message:
             sendmsg(bot,adminchat,admin_message,debug)
