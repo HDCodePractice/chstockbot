@@ -149,12 +149,10 @@ if __name__ == '__main__':
         if 'Weekly Price' in get_price_data(symbol,start = start,end = d):
             ticker_weekly = get_price_data(symbol,start = start,end = d)['Weekly Price']
             profit_rate, err_msg, cost, cur_value = get_invest_profit(ticker_weekly, start, end=d)
-            if profit_rate:
-                weekly_profit_msg += f"如果从{start}开始，每周三定投{symbol.upper()} 100元，截止到{d}，累计投入{cost}，市值为{cur_value}，利润率为 {profit_rate}\n"
+            weekly_profit_msg += f"如果从{start}开始，每周三定投{symbol.upper()} 100元，截止到{d}，累计投入{cost}，市值为{cur_value}，利润率为 {profit_rate}\n"
         if 'Error' in get_price_data(symbol,start = start,end = d):
             err_msg = get_price_data(symbol,start = start,end = d)['Error']
-            if err_msg:
-                weekly_err_msg += f"{err_msg}"
+            weekly_err_msg += f"{err_msg}"
         elif 'Data Error' in get_price_data(symbol,start = start,end = d):
             weekly_err_msg = f"{get_price_data(symbol,start = start,end = d)['Date Error']}"
     if weekly_profit_msg:
@@ -170,12 +168,10 @@ if __name__ == '__main__':
         if 'Monthly Price' in get_price_data(symbol,start = start,end = d):
             ticker_monthly = get_price_data(symbol,start = start,end = d)['Monthly Price']
             profit_rate, err_msg, cost, cur_value = get_invest_profit(ticker_monthly, start = start, end = d)
-            if profit_rate:
-                monthly_profit_msg += f"如果从{start}开始，每月第二周的周三定投{symbol.upper()} 100元，截止到{d}，累计投入{cost}，市值为{cur_value}，利润率为 {profit_rate}\n"
+            monthly_profit_msg += f"如果从{start}开始，每月第二周的周三定投{symbol.upper()} 100元，截止到{d}，累计投入{cost}，市值为{cur_value}，利润率为 {profit_rate}\n"
         if 'Error' in get_price_data(symbol,start = start,end = d):
             err_msg = get_price_data(symbol,start = start,end = d)['Error']
-            if err_msg:
-                monthly_err_msg += f"{err_msg}"
+            monthly_err_msg += f"{err_msg}"
         elif 'Data Error' in get_price_data(symbol,start = start,end = d):
             Monthly_err_msg = f"{get_price_data(symbol,start = start,end = d)['Date Error']}"
     if monthly_profit_msg:
