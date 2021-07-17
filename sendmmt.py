@@ -1,6 +1,6 @@
 import getopt,sys,config,os
 from numpy.lib.function_base import append
-from numpy import e, mafromtxt, result_type
+from numpy import cos, e, mafromtxt, result_type
 from requests.api import get
 from requests.sessions import extract_cookies_to_jar
 import time, datetime
@@ -25,9 +25,10 @@ def get_week_num(year, month, day):
     #     result = week_num -1
     return week_num
 
-def get_weekly_data(symbol,start = datetime.date(2021,1,1), end = datetime.date.today()):
+def get_price_data(symbol,start = datetime.date(2021,1,1), end = datetime.date.today()):
     """
-    得到某ticker的每周三的数据
+    得到某ticker指定时间段特定的数据。
+    特定时间为每周三和每月第二周的周三。
 
     Parameters
     ----------
@@ -35,28 +36,40 @@ def get_weekly_data(symbol,start = datetime.date(2021,1,1), end = datetime.date.
     start : 开始的日期，默认2021-01-01
     end : 结束日期，默认程序运行当天
     """
+    ticker_price_data = {}
     try:
         ticker_file = stooq.search_file(symbol.lower().replace(".","-") + ".us.txt",os.path.expanduser("~/Downloads/data"))
         df = stooq.read_stooq_file(path=ticker_file[0])["Adj Close"]   
         df_w = []
+        df_m = []
         err_msg =""
         for date in df.index:
             if date > start and date < end:
                 if date.weekday() == 3:
                     df_w.append(df[date])
+                    ticker_price_data['Weekly Price'] = [df_w, err_msg]
+                    continue
+                if get_week_num(date.year,date.month,date.day) == 2:
+                    df_m.append(df[date])
+                    ticker_price_data['Monthly Price'] = [df_w, err_msg]
     except Exception as e:
         err_msg = f"提取{symbol}数据出错了。\nerror message: {e}\n"
-    return df_w, err_msg
+    return ticker_price_data
     
-def count_weekly_invest_profit(symbol, start, end = datetime.date.today()):
+def get_invest_profit(ticker_price, start = datetime.date(2021,1,1), end = datetime.date.today()):
     """
-    计算周定投计划的利润率（每周三投）
+    计算某ticker指定时间段的利润率。
+
+    Parameters
+    ----------
+    ticker_price : 每个定投日的收盘价格列表。 
+    start : 开始的日期，默认2021-01-01
+    end : 结束日期，默认程序运行当天
     """
-    weekly_data = get_weekly_data(symbol, start, end)
-    price_list = weekly_data[0]
-    err_msg = weekly_data[1]
+    #每周投入金额一样
+    price_list = ticker_price[0]
+    err_msg = ticker_price[1]
     times = len(price_list)
-    # 每周投入的金额相等
     stock_num = 0
     for i in range (times):    
         stock_num += 100/price_list[i]
@@ -67,54 +80,12 @@ def count_weekly_invest_profit(symbol, start, end = datetime.date.today()):
     #每周买入股数一样
     # cost = 0
     # for i in range (times):    
-    #     cost += 1 * price[i]
+    #     cost += 1 * price_list[i]
     # stock_num = 1 * times
-    # cur_value = stock_num * price[times-1]
+    # cur_value = stock_num * price_list[times-1]
     # profit = cur_value - cost
 
-    return f"{(profit/cost)*100:.2f}%", err_msg, cost, cur_value
-
-def get_monthly_data(symbol,start = datetime.date(2021,1,1), end = datetime.date.today()):
-    """
-    得到某ticker的每月第二周的周三收盘价
-
-    Parameters
-    ----------
-    symbol : 股票代码 
-    start : 开始的日期，默认2021-01-01
-    end : 结束日期，默认程序运行当天
-    """
-    try:
-        ticker_file = stooq.search_file(symbol.lower().replace(".","-") + ".us.txt",os.path.expanduser("~/Downloads/data"))
-        df = stooq.read_stooq_file(path=ticker_file[0])["Adj Close"]   
-        df_m = []
-        err_msg = ""
-        for date in df.index:
-            if date > start and date < end:
-                if get_week_num(date.year,date.month,date.day) == 2:
-                    df_m.append(df[date])
-    except Exception as e:
-        err_msg = f"提取{symbol}数据出错了。\nerror message: {e}\n"
-
-    return df_m, err_msg
-
-def get_monthly_invest_profit(symbol, start, end = datetime.date.today()):
-    """
-    计算月定投计划的利润率（每月第二个周三投）    
-    """ 
-    monthly_data = get_monthly_data(symbol, start, end)
-    price_list = monthly_data[0]
-    err_msg = monthly_data[1]
-    times = len(price_list)
-    stock_num = 0
-    for i in range (len(price_list)):    
-        stock_num += 100/price_list[i]
-    cost = 100 * times
-    cur_value = stock_num * price_list[times-1]
-    profit = cur_value - cost
-    
-    return f"{(profit/cost)*100:.2f}%", err_msg, cost, cur_value
-
+    return [f"{(profit/cost)*100:.2f}%", err_msg, cost, f"{cur_value:.2f}"]
 
 def sendmsg(bot,chatid,msg,debug=True):
     if debug:
@@ -155,7 +126,7 @@ if __name__ == '__main__':
 
     start = datetime.date(2021,1,1)
     d = datetime.date.today()  
-    d = datetime.date(2021,7,1)
+    d = datetime.date(2021,7,5)
 
     mmt_week = "如果你每周定投，哪么今天是投 #小毛毛 的日子啦，今天是周三 请向小🐷🐷中塞入你虔诚的🪙吧～"
     mmt_month = "如果你每月定投，哪么今天是投 #大毛毛 的日子啦，今天是本月第二周的周三 请向小🐷🐷中塞入你虔诚的💰吧～ \n 如果你每周定投，今天依然是投 #小毛毛 的日子 放入🪙，哪么今天照常放入虔诚的🪙吧～"
@@ -165,28 +136,41 @@ if __name__ == '__main__':
     else:
         sendmsg(bot,notifychat,mmt_week,debug)
 
+
+    ticker_price_list = get_price_data('qqq', start, end=d)
+#    print (ticker_price_list)
+#    print (ticker_price_list['Weekly Price'])
+    ticker_weekly = ticker_price_list['Weekly Price']
+    ticker_profit = get_invest_profit(ticker_weekly, start, end=d)
+#    print (ticker_profit)
+    profit_rate, err_msg, cost, cur_value = ticker_profit
+#    print (profit_rate, err_msg,cost, cur_value)
+
+
     weekly_profit_msg = ""
     weekly_err_msg = ""
+    monthly_profit_msg = ""
+    monthly_err_msg = ""
     for symbol in tickers:
-        profit_rate, err_msg, cost, cur_value = count_weekly_invest_profit(symbol, start = start, end = d)
+        ticker_weekly = get_price_data(symbol,start = start,end = d)['Weekly Price']
+        profit_rate, err_msg, cost, cur_value = get_invest_profit(ticker_weekly, start, end=d)
         if profit_rate:
-            weekly_profit_msg += f"如果从{start}开始，每周三定投{symbol.upper()} 100元，截止到到{d}，累计投入{cost}，市值为{cur_value:0.2f}，利润率为 {profit_rate}\n"
+            weekly_profit_msg += "如果从{start}开始，每周三定投{symbol.upper()} 100元，截止到到{d}，累计投入{cost}，市值为{cur_value:0.2f}，利润率为 {profit_rate}\n"
         if err_msg:
             weekly_err_msg += f"{err_msg}"
     if weekly_profit_msg:
         sendmsg(bot,notifychat, weekly_profit_msg,debug)
     if weekly_err_msg:
         sendmsg(bot, adminchat, weekly_err_msg, debug)
-        
-    monthly_profit_msg = ""
-    monthly_err_msg = ""
+
     for symbol in tickers:
-        profit_rate, err_msg, cost, cur_value = get_monthly_invest_profit(symbol, start = start, end = d)
+        ticker_monthly = get_price_data(symbol,start = start,end = d)['Monthly Price']
+        profit_rate, err_msg, cost, cur_value = get_invest_profit(ticker_monthly, start = start, end = d)
         if profit_rate:
-            monthly_profit_msg += f"如果从{start}开始，每月第二周的周三定投{symbol.upper()} 100元，截止到到{d}，累计投入{cost}，市值为{cur_value:0.2f}，利润率为 {profit_rate}\n"
+            monthly_profit_msg += "如果从{start}开始，每月第二周的周三定投{symbol.upper()} 100元，截止到到{d}，累计投入{cost}，市值为{cur_value:0.2f}，利润率为 {profit_rate}\n"
         if err_msg:
-            weekly_err_msg += f"{err_msg}"
-    if weekly_profit_msg:
+            monthly_err_msg += f"{err_msg}"
+    if monthly_profit_msg:
         sendmsg(bot,notifychat, monthly_profit_msg,debug)
-    if weekly_err_msg:
+    if monthly_err_msg:
         sendmsg(bot, adminchat, monthly_err_msg, debug)
