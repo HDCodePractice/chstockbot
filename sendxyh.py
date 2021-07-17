@@ -25,7 +25,7 @@ def get_spx_ndx_avg_msg(ma=50,end=datetime.date.today()):
         down = []       
         for symbol in indexes[key]:
             try:
-                if stooq.symbol_above_moving_average(symbol,ma=ma,end=end): 
+                if stooq.symbol_above_moving_average(symbol,ma=ma,path = f"{CONFIG['config_path']}/data", end=end): 
                     up.append(symbol)
                 else:
                     down.append(symbol)
@@ -38,7 +38,7 @@ def get_spx_ndx_avg_msg(ma=50,end=datetime.date.today()):
             msg += f"{key}共有{len(up)+len(down)}支股票，共有{len(up)/(len(up)+len(down))*100:.2f}%高于{ma}周期均线\n"
     return msg, err_msg
 
-def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date(2021,7,9)):
+def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
     start = end - datetime.timedelta(days=365)
     successful_msg = ""
     err_msg = ""
@@ -113,19 +113,19 @@ if __name__ == '__main__':
     notify_message = ""
     admin_message = ""
     d = datetime.date.today()
-    # d = datetime.date(2021,7,7)
+    #d = datetime.date(2021,7,7)
     try:
         for symbol in symbols:
             successful_msg, err_msg = cal_symbols_avg(ds,symbol[0],symbol[1:],end=d)#debug的end变量需要被删除: ,end=datetime.date(2021,7,1)
             if successful_msg:
-                notify_message += successful_msg
+                notify_message += f"{successful_msg}\n"
             if err_msg:
                 admin_message += err_msg
         msg,err  = get_spx_ndx_avg_msg(end=d)
         if err:
             admin_message += err
         if notify_message:
-            notify_message = f"🌈🌈🌈当日天相🌈🌈🌈: \n{notify_message}\n{msg}\n贡献者:毛票教的大朋友们"
+            notify_message = f"🌈🌈🌈{d}天相🌈🌈🌈: \n\n{notify_message}\n{msg}\n贡献者:毛票教的大朋友们"
             sendmsg(bot,notifychat,notify_message,debug)
         if admin_message:
             sendmsg(bot,adminchat,admin_message,debug)
