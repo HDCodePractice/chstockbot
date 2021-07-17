@@ -94,8 +94,8 @@ if __name__ == '__main__':
             sys.exit()
         elif opt in ("-c", "--config"):
             config.config_path = arg  
-        elif opt in ("-d", "--datetime"): #setup datetime format "yyyy/mm/dd"
-            target_time = arg.split("/")
+        elif opt in ("-d", "--datetime"): #setup datetime format "yyyy-mm-dd"
+            target_time = arg
 
     config.config_file = os.path.join(config.config_path, "config.json")
     try:
@@ -114,11 +114,10 @@ if __name__ == '__main__':
 
     notify_message = ""
     admin_message = ""
-    try:
-        d = datetime.date(int(target_time[0]),int(target_time[1]),int(target_time[2]))
+    try: #尝试对从参数中读取的日期进行日期格式转换，如果没有参数，则使用当天日期
+        d = datetime.datetime.strptime(target_time,"%Y%m%d").date()
     except:
         d = datetime.date.today()
-
     try:
         for symbol in symbols:
             successful_msg, err_msg = cal_symbols_avg(ds,symbol[0],symbol[1:],end=d)#debug的end变量需要被删除: ,end=datetime.date(2021,7,1)
