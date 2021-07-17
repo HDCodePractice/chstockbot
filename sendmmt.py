@@ -45,11 +45,10 @@ def get_price_data(symbol,start = datetime.date(2021,1,1), end = datetime.date.t
             df_m = []
             err_msg =""
             for date in df.index:
-                if date > start and date < end:
-                    if date.weekday() == 3:
-                        df_w.append(df[date])
-                        ticker_price_data['Weekly Price'] = [df_w, err_msg]
-                        continue
+                if date > start and date < end and date.weekday() == 3:
+                    df_w.append(df[date])
+                    ticker_price_data['Weekly Price'] = [df_w, err_msg]
+                
                     if get_week_num(date.year,date.month,date.day) == 2:
                         df_m.append(df[date])
                         ticker_price_data['Monthly Price'] = [df_m, err_msg]
@@ -127,11 +126,11 @@ if __name__ == '__main__':
     debug = CONFIG['DEBUG']
     ds = CONFIG['xyhsource']
     tickers = CONFIG['mmtticker']
-    #tickers = ['qqq','spy']
+    #tickers = ['qqq']
 
     start = datetime.date(2021,1,1)
     d = datetime.date.today()  
-    d = datetime.date(2021,5,1)
+    d = datetime.date(2021,6,15)
 
     mmt_week = "如果你每周定投，哪么今天是投 #小毛毛 的日子啦，今天是周三 请向小🐷🐷中塞入你虔诚的🪙吧～"
     mmt_month = "如果你每月定投，哪么今天是投 #大毛毛 的日子啦，今天是本月第二周的周三 请向小🐷🐷中塞入你虔诚的💰吧～ \n 如果你每周定投，今天依然是投 #小毛毛 的日子 放入🪙，哪么今天照常放入虔诚的🪙吧～"
