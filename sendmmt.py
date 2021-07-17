@@ -52,9 +52,9 @@ def get_price_data(symbol,start = datetime.date(2021,1,1), end = datetime.date.t
                         continue
                     if get_week_num(date.year,date.month,date.day) == 2:
                         df_m.append(df[date])
-                        ticker_price_data['Monthly Price'] = [df_w, err_msg]
+                        ticker_price_data['Monthly Price'] = [df_m, err_msg]
         except Exception as e:
-            ticker_price_data['Error'] = [f"提取{symbol}数据出错了。\nerror message: {e}\n"]
+            ticker_price_data['Error'] = [f"提取{symbol.upper()}数据出错了。\nerror message: {e}\n"]
     else:
         ticker_price_data['Date Error'] = ["输入的日期可能有误，请检查。"]
 
@@ -70,10 +70,11 @@ def get_invest_profit(ticker_price, start = datetime.date(2021,1,1), end = datet
     start : 开始的日期，默认2021-01-01
     end : 结束日期，默认程序运行当天
     """
-    #每周投入金额一样
     price_list = ticker_price[0]
     err_msg = ticker_price[1]
     times = len(price_list)
+
+    #每周投入金额一样
     stock_num = 0
     for i in range (times):    
         stock_num += 100/price_list[i]
@@ -89,7 +90,7 @@ def get_invest_profit(ticker_price, start = datetime.date(2021,1,1), end = datet
     # cur_value = stock_num * price_list[times-1]
     # profit = cur_value - cost
 
-    return [f"{(profit/cost)*100:.2f}%", err_msg, cost, f"{cur_value:.2f}"]
+    return [f"{(profit/cost)*100:.2f}%", err_msg, f"{cost:.2f}", f"{cur_value:.2f}"]
 
 def sendmsg(bot,chatid,msg,debug=True):
     if debug:
@@ -125,12 +126,12 @@ if __name__ == '__main__':
     adminchat = CONFIG['xyhlog']
     debug = CONFIG['DEBUG']
     ds = CONFIG['xyhsource']
-    #tickers = CONFIG['mmtticker']
-    tickers = ['qqq','spy']
+    tickers = CONFIG['mmtticker']
+    #tickers = ['qqq','spy']
 
-    start = datetime.date(2021,7,1)
+    start = datetime.date(2021,1,1)
     d = datetime.date.today()  
-    d = datetime.date(2021,7,1)
+    d = datetime.date(2021,5,1)
 
     mmt_week = "如果你每周定投，哪么今天是投 #小毛毛 的日子啦，今天是周三 请向小🐷🐷中塞入你虔诚的🪙吧～"
     mmt_month = "如果你每月定投，哪么今天是投 #大毛毛 的日子啦，今天是本月第二周的周三 请向小🐷🐷中塞入你虔诚的💰吧～ \n 如果你每周定投，今天依然是投 #小毛毛 的日子 放入🪙，哪么今天照常放入虔诚的🪙吧～"
@@ -143,34 +144,39 @@ if __name__ == '__main__':
 
     weekly_profit_msg = ""
     weekly_err_msg = ""
-    monthly_profit_msg = ""
-    monthly_err_msg = ""
+
     for symbol in tickers:
         if 'Weekly Price' in get_price_data(symbol,start = start,end = d):
             ticker_weekly = get_price_data(symbol,start = start,end = d)['Weekly Price']
-            err_msg = get_price_data(symbol,start = start,end = d)['Error']
             profit_rate, err_msg, cost, cur_value = get_invest_profit(ticker_weekly, start, end=d)
             if profit_rate:
-                weekly_profit_msg += f"如果从{start}开始，每周三定投{symbol.upper()}100元，截止到{d}，累计投入{cost}，市值为{cur_value}，利润率为 {profit_rate}\n"
+                weekly_profit_msg += f"如果从{start}开始，每周三定投{symbol.upper()} 100元，截止到{d}，累计投入{cost}，市值为{cur_value}，利润率为 {profit_rate}\n"
+        if 'Error' in get_price_data(symbol,start = start,end = d):
+            err_msg = get_price_data(symbol,start = start,end = d)['Error']
             if err_msg:
                 weekly_err_msg += f"{err_msg}"
-        else:
+        elif 'Data Error' in get_price_data(symbol,start = start,end = d):
             weekly_err_msg = f"{get_price_data(symbol,start = start,end = d)['Date Error']}"
     if weekly_profit_msg:
         sendmsg(bot,notifychat, weekly_profit_msg,debug)
     if weekly_err_msg:
         sendmsg(bot, adminchat, weekly_err_msg, debug)
 
+
+    monthly_profit_msg = ""
+    monthly_err_msg = ""
+
     for symbol in tickers:
         if 'Monthly Price' in get_price_data(symbol,start = start,end = d):
             ticker_monthly = get_price_data(symbol,start = start,end = d)['Monthly Price']
-            err_msg = get_price_data(symbol,start = start,end = d)['Error']
             profit_rate, err_msg, cost, cur_value = get_invest_profit(ticker_monthly, start = start, end = d)
             if profit_rate:
-                monthly_profit_msg += f"如果从{start}开始，每月第二周的周三定投{symbol.upper()}100元，截止到{d}，累计投入{cost}，市值为{cur_value}，利润率为 {profit_rate}\n"
+                monthly_profit_msg += f"如果从{start}开始，每月第二周的周三定投{symbol.upper()} 100元，截止到{d}，累计投入{cost}，市值为{cur_value}，利润率为 {profit_rate}\n"
+        if 'Error' in get_price_data(symbol,start = start,end = d):
+            err_msg = get_price_data(symbol,start = start,end = d)['Error']
             if err_msg:
                 monthly_err_msg += f"{err_msg}"
-        else:
+        elif 'Data Error' in get_price_data(symbol,start = start,end = d):
             Monthly_err_msg = f"{get_price_data(symbol,start = start,end = d)['Date Error']}"
     if monthly_profit_msg:
         sendmsg(bot,notifychat, monthly_profit_msg,debug)
