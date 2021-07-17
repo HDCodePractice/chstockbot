@@ -94,7 +94,7 @@ if __name__ == '__main__':
             sys.exit()
         elif opt in ("-c", "--config"):
             config.config_path = arg  
-        elif opt in ("-d", "--datetime"): #setup datetime format "yyyy-mm-dd"
+        elif opt in ("-d", "--datetime"): #setup datetime format "yyyymmdd"
             target_time = arg
 
     config.config_file = os.path.join(config.config_path, "config.json")
@@ -118,6 +118,9 @@ if __name__ == '__main__':
         d = datetime.datetime.strptime(target_time,"%Y%m%d").date()
     except:
         d = datetime.date.today()
+
+
+
     try:
         for symbol in symbols:
             successful_msg, err_msg = cal_symbols_avg(ds,symbol[0],symbol[1:],end=d)#debug的end变量需要被删除: ,end=datetime.date(2021,7,1)
