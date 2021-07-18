@@ -8,7 +8,7 @@ from requests.exceptions import ConnectionError
 from stockutil import stooq, wikipedia
 
 def help():
-    return "'sendxyh.py -c configpath'"
+    return "'sendxyh.py -c configpath -d yyyymmdd'"
 
 def get_spx_ndx_avg_msg(ma=50,end=datetime.date.today()):
     """
@@ -95,7 +95,11 @@ if __name__ == '__main__':
         elif opt in ("-c", "--config"):
             config.config_path = arg  
         elif opt in ("-d", "--datetime"): #setup datetime format "yyyymmdd"
-            target_time = arg
+            try: #尝试对从参数中读取的日期进行日期格式转换，如果没有参数，则使用1/26/2021
+                target_time = datetime.datetime.strptime(arg,"%Y%m%d").date()
+            except:
+                print(f"无法读取日期：\n{help()}")
+                sys.exit(2)
 
     config.config_file = os.path.join(config.config_path, "config.json")
     try:
@@ -114,12 +118,11 @@ if __name__ == '__main__':
 
     notify_message = ""
     admin_message = ""
-    try: #尝试对从参数中读取的日期进行日期格式转换，如果没有参数，则使用当天日期
-        d = datetime.datetime.strptime(target_time,"%Y%m%d").date()
+    d = datetime.date.today()
+    try: 
+        d= target_time
     except:
-        d = datetime.date.today()
-
-
+        d
 
     try:
         for symbol in symbols:

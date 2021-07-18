@@ -11,6 +11,9 @@ from requests.exceptions import ConnectionError
 from stockutil import stooq, wikipedia
 from sendxyh import sendmsg
 
+def help():
+    return "'sendxyh.py -c configpath -s yyyymmdd -e yyyymmdd'"
+
 def cal_mmt_profit(symbol,ds,principle=100,start=datetime.date.today(),end=datetime.date.today()):
     err_msg = "" #定义错误信息
     dmm_stock_number = 0 #初始化 大毛毛股数
@@ -18,24 +21,27 @@ def cal_mmt_profit(symbol,ds,principle=100,start=datetime.date.today(),end=datet
     xmm_msg ="" #定义大毛毛信息
     dmm_msg ="" #定义小毛毛信息
     #获得指定日期中所有的周三
+    xmm_profit_arr = []
+    dmm_profit_arr = []
     date_list = pd.date_range(start=start, end=end, freq='W-WED').strftime('%Y-%m-%d').tolist()
     second_wednesday_count = 0 #初始化 大毛毛每月第二个周三的个数
     for datasource in ds:
         try:
             df = web.DataReader(symbol.upper(), datasource,start=start,end=end)
             df = df.sort_values(by="Date") #将排序这个步骤放在了判断df是否存在之后
-            if "Adj Close" not in df.columns.values: #当数据没有adj close时，从close 数据copy给adj close
-                df["Adj Close"] = df["Close"]
             for date in date_list:
-                price = df.loc[date,"Adj Close"] #获取周三当日的收盘价
+                price = df.loc[date,"Close"] #获取周三当日的收盘价
                 if is_second_wednesday(datetime.datetime.strptime(date, "%Y-%m-%d")):
                     second_wednesday_count +=1 #如果当天是当月第二个周三，大毛毛个数+1
                     dmm_stock_number += principle/price #获取大毛毛股数
+                    dmm_profit_arr.append({"date":date,"symbol":symbol,"price":price,"stock_number": principle/price})
                 xmm_stock_number += principle/price #获取小毛毛股数
-            xmm_profit = xmm_stock_number * df["Adj Close"][0] #计算当日小毛毛获利
-            dmm_profit = dmm_stock_number * df["Adj Close"][0] #计算当日大毛毛获利
-            xmm_msg = f"如果你从{start.strftime('%Y年%m月%d日')}定投 #小毛毛 {symbol} {principle}元，到今天累计投入 {principle * len(date_list)}元，到昨日市值为 {xmm_profit:0.2f} 元，累计利润为 {(1 - principle * len(date_list)/xmm_profit)*100:0.2f}%\n"
-            dmm_msg = f"如果你从{start.strftime('%Y年%m月%d日')}定投 #大毛毛 {symbol} {principle}元，到今天累计投入 {principle * second_wednesday_count}元，到昨日市值为 {dmm_profit:0.2f} 元，累计利润为 {(1 - principle * second_wednesday_count/dmm_profit)*100:0.2f}%\n"
+                xmm_profit_arr.append({"date":date,"symbol":symbol,"price":price,"stock_number": principle/price})
+            xmm_profit = {"current_price": df["Close"][0], "current_profit":xmm_stock_number * df["Close"][0]} #计算当日小毛毛获利
+            dmm_profit = {"current_price": df["Close"][0], "current_profit":dmm_stock_number * df["Close"][0]} #计算当日大毛毛获利
+            xmm_msg = f"如果你从{start.strftime('%Y年%m月%d日')}定投 #小毛毛 {symbol} {principle}元，到{end.strftime('%Y年%m月%d日')}累计投入 {principle * len(date_list)}元，到昨日市值为 {xmm_profit['current_profit']:0.2f} 元，累计利润为 {(1 - principle * len(date_list)/xmm_profit['current_profit'])*100:0.2f}%\n"
+            dmm_msg = f"如果你从{start.strftime('%Y年%m月%d日')}定投 #大毛毛 {symbol} {principle}元，到{end.strftime('%Y年%m月%d日')}累计投入 {principle * second_wednesday_count}元，到昨日市值为 {dmm_profit['current_profit']:0.2f} 元，累计利润为 {(1 - principle * second_wednesday_count/dmm_profit['current_profit'])*100:0.2f}%\n"
+
             break #当数据源成功读取并处理数据后，从当前程序break并返回信息； 防止程序运行所有的数据源
         except NotImplementedError:
             err_msg += f"当前数据源{datasource}不可用"
@@ -45,8 +51,17 @@ def cal_mmt_profit(symbol,ds,principle=100,start=datetime.date.today(),end=datet
             continue
         except Exception as e: 
             err_msg += f"当前{symbol}读取报错了，具体错误信息是{e}\n"
-            continue        
+            continue 
+    #print(f"小毛毛数据：{xmm_profit_arr}\n,大毛毛数据：{dmm_profit_arr}") #测试用数据
     return xmm_msg,dmm_msg,err_msg
+
+def cal_profit():
+    return
+    xmm_profit = xmm_stock_number * df["Adj Close"][0] #计算当日小毛毛获利
+    dmm_profit = dmm_stock_number * df["Adj Close"][0] #计算当日大毛毛获利
+    xmm_msg = f"如果你从{start.strftime('%Y年%m月%d日')}定投 #小毛毛 {symbol} {principle}元，到{end.strftime('%Y年%m月%d日')}累计投入 {principle * len(date_list)}元，到昨日市值为 {xmm_profit:0.2f} 元，累计利润为 {(1 - principle * len(date_list)/xmm_profit)*100:0.2f}%\n"
+    dmm_msg = f"如果你从{start.strftime('%Y年%m月%d日')}定投 #大毛毛 {symbol} {principle}元，到{end.strftime('%Y年%m月%d日')}累计投入 {principle * second_wednesday_count}元，到昨日市值为 {dmm_profit:0.2f} 元，累计利润为 {(1 - principle * second_wednesday_count/dmm_profit)*100:0.2f}%\n"
+
 
 def get_wednesday_date(start=datetime.date.today(),end=datetime.date.today()): #c获得指定日期中的周三 可以扩展成任何天数
     date_list = pd.date_range(start=start, end=end, freq='W-WED').strftime('%Y-%m-%d').tolist()
@@ -69,7 +84,7 @@ def generate_mmt_msg(): #生成定投信息
 
 if __name__ == '__main__':
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hc:d:", ["config=","datetime="])
+        opts, args = getopt.getopt(sys.argv[1:], "hc:s:e:", ["config=","starttime=","endtime="])
     except getopt.GetoptError:
         print(help())
         sys.exit(2)
@@ -80,8 +95,20 @@ if __name__ == '__main__':
             sys.exit()
         elif opt in ("-c", "--config"):
             config.config_path = arg  
-        elif opt in ("-d", "--datetime"): #setup datetime format "yyyymmdd"
-            target_time = arg
+        elif opt in ("-s", "--starttime"): #setup datetime format "yyyymmdd"
+            try: #尝试对从参数中读取的日期进行日期格式转换，如果没有参数，则使用1/26/2021
+                start_time = datetime.datetime.strptime(arg,"%Y%m%d").date()
+            except:
+                print(f"无法读取日期：\n{help()}")
+                sys.exit(2)
+        elif opt in ("-e", "--endtime"):
+            try: #尝试对从参数中读取的日期进行日期格式转换，如果没有参数，则使用1/26/2021
+                end_time = datetime.datetime.strptime(arg,"%Y%m%d").date()
+            except:
+                print(f"无法读取日期：\n{help()}")
+                sys.exit(2)
+
+        
 
     config.config_file = os.path.join(config.config_path, "config.json")
     try:
@@ -100,22 +127,27 @@ if __name__ == '__main__':
     mmtstartdate = CONFIG['mmtstartdate']
     mmt_message = ""
     admin_message = ""
-    try: #尝试对从参数中读取的日期进行日期格式转换，如果没有参数，则使用1/26/2021
-        d = datetime.datetime.strptime(target_time,"%Y%m%d").date()
+    target_end_time = datetime.date.today()
+    target_start_time = datetime.date(2021,1,1)
+    try: 
+        target_end_time= end_time
     except:
-        d = datetime.date(2021,1,26)
+        target_end_time
+    try:
+        target_start_time = start_time
+    except:
+        target_start_time
     chat_msg = generate_mmt_msg()
     mmt_message += chat_msg
     try:
         for symbol in symbols:#start日期设置为2021/5/26， 可以使用参数来进行定义（to do)
-            for date in mmtstartdate:
-                dmm_msg,xmm_msg, err_msg = cal_mmt_profit(symbol,ds,start=datetime.datetime.strptime(date,"%Y-%m-%d"))
-                if dmm_msg:
-                    mmt_message += dmm_msg
-                if xmm_msg:
-                    mmt_message += xmm_msg               
-                if err_msg:
-                    admin_message += err_msg
+            dmm_msg,xmm_msg, err_msg = cal_mmt_profit(symbol,ds,start=target_start_time,end=target_end_time)
+            if dmm_msg:
+                mmt_message += dmm_msg
+            if xmm_msg:
+                mmt_message += xmm_msg               
+            if err_msg:
+                admin_message += err_msg
             
         if mmt_message:
             sendmsg(bot,mmtchat,mmt_message,debug)
