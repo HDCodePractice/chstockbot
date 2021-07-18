@@ -8,7 +8,7 @@ from requests.exceptions import ConnectionError
 from stockutil import stooq, wikipedia
 
 def help():
-    return "'sendxyh.py -c configpath'"
+    return "sendxyh.py -c configpath -d yyyy/mm/dd"
 
 def get_spx_ndx_avg_msg(ma=50,end=datetime.date.today()):
     """
@@ -94,8 +94,14 @@ if __name__ == '__main__':
             sys.exit()
         elif opt in ("-c", "--config"):
             config.config_path = arg          
-        elif opt in ("-d", "--datetime"):   #
-            target_date = arg.split("/")    #
+        elif opt in ("-d", "--datetime"): 
+            try:
+                y,m,d = arg.split("/")
+                target_date = datetime.date(int(y),int(m),int(d))
+            except Exception:
+                print("日期无法解读")
+                print(help())
+                sys.exit(2)
 
     config.config_file = os.path.join(config.config_path, "config.json")
     try:
@@ -114,13 +120,10 @@ if __name__ == '__main__':
 
     notify_message = ""
     admin_message = ""
-    # d = datetime.date.today()
-    d = datetime.date(2021,6,9)
+    d = datetime.date.today()
+    if target_date:
+        d = target_date
 
-    try:
-        d = datetime.date(int(target_date[0]),int(target_date[1]),int(target_date[2]))
-    except:
-        d = datetime.date.today()
     try:
         for symbol in symbols:
             successful_msg, err_msg = cal_symbols_avg(ds,symbol[0],symbol[1:],end=d)#debug的end变量需要被删除: ,end=datetime.date(2021,7,1)
