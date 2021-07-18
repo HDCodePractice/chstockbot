@@ -37,8 +37,8 @@ def cal_mmt_profit(symbol,ds,principle=100,start=datetime.date.today(),end=datet
                     dmm_profit_arr.append({"date":date,"symbol":symbol,"price":price,"stock_number": principle/price})
                 xmm_stock_number += principle/price #获取小毛毛股数
                 xmm_profit_arr.append({"date":date,"symbol":symbol,"price":price,"stock_number": principle/price})
-            xmm_profit = {"current_price": df["Close"][0], "current_profit":xmm_stock_number * df["Close"][0]} #计算当日小毛毛获利
-            dmm_profit = {"current_price": df["Close"][0], "current_profit":dmm_stock_number * df["Close"][0]} #计算当日大毛毛获利
+            xmm_profit = {"current_price": df["Close"][-1], "current_profit":xmm_stock_number * df["Close"][-1]} #计算当日小毛毛获利
+            dmm_profit = {"current_price": df["Close"][-1], "current_profit":dmm_stock_number * df["Close"][-1]} #计算当日大毛毛获利
             xmm_msg = f"如果你从{start.strftime('%Y年%m月%d日')}定投 #小毛毛 {symbol} {principle}元，到{end.strftime('%Y年%m月%d日')}累计投入 {principle * len(date_list)}元，到昨日市值为 {xmm_profit['current_profit']:0.2f} 元，累计利润为 {(1 - principle * len(date_list)/xmm_profit['current_profit'])*100:0.2f}%\n"
             dmm_msg = f"如果你从{start.strftime('%Y年%m月%d日')}定投 #大毛毛 {symbol} {principle}元，到{end.strftime('%Y年%m月%d日')}累计投入 {principle * second_wednesday_count}元，到昨日市值为 {dmm_profit['current_profit']:0.2f} 元，累计利润为 {(1 - principle * second_wednesday_count/dmm_profit['current_profit'])*100:0.2f}%\n"
 
@@ -52,15 +52,8 @@ def cal_mmt_profit(symbol,ds,principle=100,start=datetime.date.today(),end=datet
         except Exception as e: 
             err_msg += f"当前{symbol}读取报错了，具体错误信息是{e}\n"
             continue 
-    #print(f"小毛毛数据：{xmm_profit_arr}\n,大毛毛数据：{dmm_profit_arr}") #测试用数据
+    #print(f"小毛毛数据：{xmm_profit_arr}\n,大毛毛数据：{dmm_profit_arr}\n,小毛毛当日收盘价:{xmm_profit}\n,大毛毛当日收盘价：{dmm_profit}\n") #测试用数据
     return xmm_msg,dmm_msg,err_msg
-
-def cal_profit():
-    return
-    xmm_profit = xmm_stock_number * df["Adj Close"][0] #计算当日小毛毛获利
-    dmm_profit = dmm_stock_number * df["Adj Close"][0] #计算当日大毛毛获利
-    xmm_msg = f"如果你从{start.strftime('%Y年%m月%d日')}定投 #小毛毛 {symbol} {principle}元，到{end.strftime('%Y年%m月%d日')}累计投入 {principle * len(date_list)}元，到昨日市值为 {xmm_profit:0.2f} 元，累计利润为 {(1 - principle * len(date_list)/xmm_profit)*100:0.2f}%\n"
-    dmm_msg = f"如果你从{start.strftime('%Y年%m月%d日')}定投 #大毛毛 {symbol} {principle}元，到{end.strftime('%Y年%m月%d日')}累计投入 {principle * second_wednesday_count}元，到昨日市值为 {dmm_profit:0.2f} 元，累计利润为 {(1 - principle * second_wednesday_count/dmm_profit)*100:0.2f}%\n"
 
 
 def get_wednesday_date(start=datetime.date.today(),end=datetime.date.today()): #c获得指定日期中的周三 可以扩展成任何天数
