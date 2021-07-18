@@ -9,7 +9,8 @@ from pandas_datareader._utils import RemoteDataError
 from requests.exceptions import ConnectionError
 from stockutil import stooq, wikipedia
 
-
+def help():
+    return "sendmmt.py -c configpath"
 
 def get_week_num(year, month, day):
     """
@@ -19,10 +20,10 @@ def get_week_num(year, month, day):
     end = int(datetime.date(year, month, day).strftime("%W"))
     week_num = end - start + 1
     # 判断是否是包含周三的第二周
-    # if datetime.date(year, month, 1).weekday() < 3: 
-    #     week_num = week_num
-    # else:
-    #     result = week_num -1
+    if datetime.date(year, month, 1).weekday() < 3: 
+        week_num = week_num
+    else:
+        week_num = week_num -1
     return week_num
 
 def get_price_data(symbol,start = datetime.date(2021,1,1), end = datetime.date.today()):
@@ -37,15 +38,16 @@ def get_price_data(symbol,start = datetime.date(2021,1,1), end = datetime.date.t
     end : 结束日期，默认程序运行当天
     """
     ticker_price_data = {}
+    # {"Weekly Price":[[df_w],""],"Monthly Price":[[df_m],""],"Error":[""],"Date Error":[""]}
     if start < end:
         try:
             ticker_file = stooq.search_file(symbol.lower().replace(".","-") + ".us.txt",os.path.expanduser("~/Downloads/data"))
-            df = stooq.read_stooq_file(path=ticker_file[0])["Adj Close"]   
+            df = stooq.read_stooq_file(path=ticker_file[0])["Close"]   
             df_w = []
             df_m = []
             err_msg =""
             for date in df.index:
-                if date > start and date < end and date.weekday() == 3:
+                if date > start and date < end and date.weekday() == 2:
                     df_w.append(df[date])
                     ticker_price_data['Weekly Price'] = [df_w, err_msg]
                 
@@ -73,7 +75,7 @@ def get_invest_profit(ticker_price, start = datetime.date(2021,1,1), end = datet
     err_msg = ticker_price[1]
     times = len(price_list)
 
-    #每周投入金额一样
+    #每周投入金额一样(100块)
     stock_num = 0
     for i in range (times):    
         stock_num += 100/price_list[i]
@@ -130,10 +132,10 @@ if __name__ == '__main__':
 
     start = datetime.date(2021,1,1)
     d = datetime.date.today()  
-    d = datetime.date(2021,6,15)
+    d = datetime.date(2021,6,9)
 
     mmt_week = "如果你每周定投，哪么今天是投 #小毛毛 的日子啦，今天是周三 请向小🐷🐷中塞入你虔诚的🪙吧～"
-    mmt_month = "如果你每月定投，哪么今天是投 #大毛毛 的日子啦，今天是本月第二周的周三 请向小🐷🐷中塞入你虔诚的💰吧～ \n 如果你每周定投，今天依然是投 #小毛毛 的日子 放入🪙，哪么今天照常放入虔诚的🪙吧～"
+    mmt_month = f"如果你每月定投，哪么今天是投 #大毛毛 的日子啦，今天是本月第二周的周三 请向小🐷🐷中塞入你虔诚的💰吧～\n{mmt_week}"
 
     if get_week_num(d.year,d.month,d.day) == 2:
         sendmsg(bot,notifychat,mmt_month,debug)
