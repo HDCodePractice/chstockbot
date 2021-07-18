@@ -97,25 +97,26 @@ if __name__ == '__main__':
     debug = CONFIG['DEBUG']
     ds = CONFIG['xyhsource']   
     mmtchat = CONFIG['mmtchat'] 
-
+    mmtstartdate = CONFIG['mmtstartdate']
     mmt_message = ""
     admin_message = ""
-    try: #尝试对从参数中读取的日期进行日期格式转换，如果没有参数，则使用当天日期
+    try: #尝试对从参数中读取的日期进行日期格式转换，如果没有参数，则使用1/26/2021
         d = datetime.datetime.strptime(target_time,"%Y%m%d").date()
     except:
         d = datetime.date(2021,1,26)
-        
     chat_msg = generate_mmt_msg()
     mmt_message += chat_msg
     try:
         for symbol in symbols:#start日期设置为2021/5/26， 可以使用参数来进行定义（to do)
-            dmm_msg,xmm_msg, err_msg = cal_mmt_profit(symbol,ds,start=d)
-            if dmm_msg:
-                mmt_message += dmm_msg
-            if xmm_msg:
-                mmt_message += xmm_msg               
-            if err_msg:
-                admin_message += err_msg
+            for date in mmtstartdate:
+                dmm_msg,xmm_msg, err_msg = cal_mmt_profit(symbol,ds,start=datetime.datetime.strptime(date,"%Y-%m-%d"))
+                if dmm_msg:
+                    mmt_message += dmm_msg
+                if xmm_msg:
+                    mmt_message += xmm_msg               
+                if err_msg:
+                    admin_message += err_msg
+            
         if mmt_message:
             sendmsg(bot,mmtchat,mmt_message,debug)
         if admin_message:
