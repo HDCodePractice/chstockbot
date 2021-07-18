@@ -136,3 +136,4 @@ test.py
 raw_files/
 unknown_errors.txt
 local.env
+data/
