@@ -5,4 +5,5 @@ RUN git clone https://github.com/HDCodePractice/chstockbot.git
 RUN cd chstockbot
 WORKDIR /chstockbot
 RUN pip install --no-cache-dir -r requirements-dev.txt
+VOLUME [ "/data" ]
 CMD [ "python", "./sendxyh.py" ]
