@@ -8,7 +8,7 @@ from requests.exceptions import ConnectionError
 from stockutil import stooq, wikipedia
 
 def help():
-    return "'sendxyh.py -c configpath'"
+    return "sendxyh.py -c configpath -d yyyy/mm/dd"
 
 def get_spx_ndx_avg_msg(ma=50,end=datetime.date.today()):
     """
@@ -29,12 +29,16 @@ def get_spx_ndx_avg_msg(ma=50,end=datetime.date.today()):
                     up.append(symbol)
                 else:
                     down.append(symbol)
+            except stooq.markCloseError:
+                err_msg += f"{key}: {end.strftime('%Y-%m-%d')}没有数据，请确保输入的日期当天有开市\n"
+                break
             except Exception as e:
                 err_msg += f"unreachable stock: {symbol}\nerror message: {e}\n"
-        msg += f"{key}共有{len(up)+len(down)}支股票，共有{len(up)/(len(up)+len(down))*100:.2f}%高于{ma}周期均线\n"
+        if down:
+            msg += f"{key}共有{len(up)+len(down)}支股票，共有{len(up)/(len(up)+len(down))*100:.2f}%高于{ma}周期均线\n"
     return msg, err_msg
 
-def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date(2021,7,9)):
+def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
     start = end - datetime.timedelta(days=365)
     successful_msg = ""
     err_msg = ""
@@ -79,7 +83,7 @@ def sendmsg(bot,chatid,msg,debug=True):
 
 if __name__ == '__main__':
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hc:", ["config="])
+        opts, args = getopt.getopt(sys.argv[1:], "hc:d:", ["config, datetime="])
     except getopt.GetoptError:
         print(help())
         sys.exit(2)
@@ -90,6 +94,14 @@ if __name__ == '__main__':
             sys.exit()
         elif opt in ("-c", "--config"):
             config.config_path = arg          
+        elif opt in ("-d", "--datetime"): 
+            try:
+                y,m,d = arg.split("/")
+                target_date = datetime.date(int(y),int(m),int(d))
+            except Exception:
+                print("日期无法解读")
+                print(help())
+                sys.exit(2)
 
     config.config_file = os.path.join(config.config_path, "config.json")
     try:
@@ -109,19 +121,21 @@ if __name__ == '__main__':
     notify_message = ""
     admin_message = ""
     d = datetime.date.today()
-    # d = datetime.date(2021,7,7)
+    if target_date:
+        d = target_date
+
     try:
         for symbol in symbols:
             successful_msg, err_msg = cal_symbols_avg(ds,symbol[0],symbol[1:],end=d)#debug的end变量需要被删除: ,end=datetime.date(2021,7,1)
             if successful_msg:
-                notify_message += successful_msg
+                notify_message += f"{successful_msg}\n"
             if err_msg:
                 admin_message += err_msg
         msg,err  = get_spx_ndx_avg_msg(end=d)
         if err:
             admin_message += err
         if notify_message:
-            notify_message = f"🌈🌈🌈当日天相🌈🌈🌈: \n{notify_message}\n{msg}\n贡献者:毛票教的大朋友们"
+            notify_message = f"🌈🌈🌈{d}天相🌈🌈🌈: \n\n{notify_message}\n{msg}\n贡献者:毛票教的大朋友们"
             sendmsg(bot,notifychat,notify_message,debug)
         if admin_message:
             sendmsg(bot,adminchat,admin_message,debug)
