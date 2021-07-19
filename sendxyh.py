@@ -7,8 +7,10 @@ from pandas_datareader._utils import RemoteDataError
 from requests.exceptions import ConnectionError
 from stockutil import stooq, wikipedia
 
+target_date = datetime.date.today()
+
 def help():
-    return "sendxyh.py -c configpath -d yyyy/mm/dd"
+    return "sendxyh.py -c configpath -d yyyymmdd"
 
 def get_spx_ndx_avg_msg(ma=50,end=datetime.date.today()):
     """
@@ -96,7 +98,7 @@ if __name__ == '__main__':
             config.config_path = arg          
         elif opt in ("-d", "--datetime"): 
             try:
-                y,m,d = arg.split("/")
+                y,m,d = arg[:4],arg[-4:-2],arg[-2:]
                 target_date = datetime.date(int(y),int(m),int(d))
             except Exception:
                 print("日期无法解读")
@@ -120,22 +122,19 @@ if __name__ == '__main__':
 
     notify_message = ""
     admin_message = ""
-    d = datetime.date.today()
-    if target_date:
-        d = target_date
 
     try:
         for symbol in symbols:
-            successful_msg, err_msg = cal_symbols_avg(ds,symbol[0],symbol[1:],end=d)#debug的end变量需要被删除: ,end=datetime.date(2021,7,1)
+            successful_msg, err_msg = cal_symbols_avg(ds,symbol[0],symbol[1:],end=target_date)#debug的end变量需要被删除: ,end=datetime.date(2021,7,1)
             if successful_msg:
                 notify_message += f"{successful_msg}\n"
             if err_msg:
                 admin_message += err_msg
-        msg,err  = get_spx_ndx_avg_msg(end=d)
+        msg,err  = get_spx_ndx_avg_msg(end=target_date)
         if err:
             admin_message += err
         if notify_message:
-            notify_message = f"🌈🌈🌈{d}天相🌈🌈🌈: \n\n{notify_message}\n{msg}\n贡献者:毛票教的大朋友们"
+            notify_message = f"🌈🌈🌈{target_date}天相🌈🌈🌈: \n\n{notify_message}\n{msg}\n贡献者:毛票教的大朋友们"
             sendmsg(bot,notifychat,notify_message,debug)
         if admin_message:
             sendmsg(bot,adminchat,admin_message,debug)
