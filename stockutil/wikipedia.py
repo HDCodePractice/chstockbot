@@ -56,7 +56,7 @@ if __name__ == '__main__':
         down = []       
         for symbol in indexes[key]:
             try:
-                if stooq.symbol_above_moving_average(symbol,end=datetime.date(2021,6,15)):
+                if stooq.symbol_above_moving_average(symbol,end=datetime.datetime.strptime("20210716","%Y%m%d").date()):
                     up.append(symbol)
                 else:
                     down.append(symbol)
