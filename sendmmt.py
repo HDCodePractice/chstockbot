@@ -46,11 +46,11 @@ def get_price_data(symbol,start = datetime.date(2021,1,1), end = datetime.date.t
             for date in df.index:
                 if date > start and date < end and date.isoweekday() == 3:
                     df_w.append(df[date])
-                    ticker_price_data['Weekly Price'] = [df_w]
+                    ticker_price_data['Weekly Price'] = df_w
                     
                     if get_week_num(date.year,date.month,date.day) == 2:
                         df_m.append(df[date])
-                        ticker_price_data['Monthly Price'] = [df_m]
+                        ticker_price_data['Monthly Price'] = df_m
         except Exception as e:
             ticker_price_data['Error'] = f"提取{symbol.upper()}数据出错了。\nerror message: {e}\n"
     else:
@@ -68,10 +68,10 @@ def get_invest_profit(ticker_price, start = datetime.date(2021,1,1), end = datet
     start : 开始的日期，默认2021-01-01
     end : 结束日期，默认程序运行当天
     """
-    price_list = ticker_price[0]
+    price_list = ticker_price
     times = len(price_list)
 
-    #每周投入金额一样
+    #每次投入金额100元
     stock_num = 0
     for i in range (times):    
         stock_num += 100/price_list[i]
@@ -80,13 +80,14 @@ def get_invest_profit(ticker_price, start = datetime.date(2021,1,1), end = datet
     profit = cur_value - cost
     profit_rate = f"{profit/cost*100:.2f}%"
     
-    #每周买入股数一样
+    #每次买入1股
     # cost = 0
     # for i in range (times):    
     #     cost += 1 * price_list[i]
     # stock_num = 1 * times
     # cur_value = stock_num * price_list[times-1]
     # profit = cur_value - cost
+    # profit_rate = f"{profit/cost*100:.2f}%"
 
     return [profit_rate, f"{cost:.2f}", f"{cur_value:.2f}"]
 
@@ -139,7 +140,7 @@ if __name__ == '__main__':
     adminchat = CONFIG['xyhlog']
     debug = CONFIG['DEBUG']
     tickers = CONFIG['mmtticker']
-    tickers = ['qqq','spy','iwm']
+    tickers = ['qqq']
     start = datetime.date(2021,1,1)
     d = datetime.date(2021,6,1)  
 
