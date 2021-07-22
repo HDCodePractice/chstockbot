@@ -5,7 +5,7 @@ __pycache__/
 
 # C extensions
 *.so
-
+data
 # Distribution / packaging
 .Python
 build/
@@ -132,6 +132,8 @@ dmypy.json
 config.json
 test.py
 # pyrogram的session文件
-session.*
+*.session
 raw_files/
 unknown_errors.txt
+local.env
+data

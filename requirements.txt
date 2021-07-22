@@ -1,12 +1,5 @@
-Pyrogram
-TgCrypto
-python-telegram-bot 
 systemd-python
+python-telegram-bot
 pandas 
 pandas-datareader
-beautifulsoup4
-pytgcalls
 python-dotenv
-python-arq
-ffmpeg-python
-youtube_search
