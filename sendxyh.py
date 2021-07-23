@@ -32,12 +32,14 @@ def get_spx_ndx_avg_msg(ma=50,end=datetime.date.today()):
                 else:
                     down.append(symbol)
             except stooq.markCloseError:
-                err_msg += f"{key}: {end.strftime('%Y-%m-%d')}没有数据，请确保输入的日期当天有开市\n"
-                break
+                err_msg += f"{key}: {symbol} {end.strftime('%Y-%m-%d')}没有数据\n"
+                #break 移除break 防止出现只有部分ticker没有数据但是大部分有数据的情况
             except Exception as e:
                 err_msg += f"unreachable stock: {symbol}\nerror message: {e}\n"
         if down:
             msg += f"{key}共有{len(up)+len(down)}支股票，共有{len(up)/(len(up)+len(down))*100:.2f}%高于{ma}周期均线\n"
+        if len(up)+len(down) + 20 < len(indexes[key]):
+            err_msg = f"{key}: {end.strftime('%Y-%m-%d')} 有超过20支股票没有数据，请确保输入的日期当天有开市\n"
     return msg, err_msg
 
 def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
