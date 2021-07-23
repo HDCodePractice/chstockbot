@@ -2,8 +2,4 @@ systemd-python
 python-telegram-bot
 pandas 
 pandas-datareader
-pytgcalls
-youtube_dl
 python-dotenv
-ffmpeg-python
-youtube_search
