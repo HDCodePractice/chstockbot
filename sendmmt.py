@@ -9,7 +9,7 @@ from requests.exceptions import ConnectionError
 from stockutil import stooq
 
 def help():
-    return "'-s yyyymmdd, -e yyyymmdd'"
+    return "-s yyyymmdd, -e yyyymmdd"
 
 def get_week_num(year, month, day):
     """
