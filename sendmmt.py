@@ -22,8 +22,6 @@ def cal_mmt_profit(symbol,ds,principle=100,start=datetime.date.today(),end=datet
     dmm_stock_number = 0 #初始化 大毛毛股数
     xmm_stock_number = 0 #初始化 小毛毛股数
     #获得指定日期中所有的周三
-    xmm_profit_arr = []
-    dmm_profit_arr = []
     date_list = pd.date_range(start=start, end=end, freq='W-WED').strftime('%Y-%m-%d').tolist()
     second_wednesday_count = 0 #初始化 大毛毛每月第二个周三的个数
     for datasource in ds:
@@ -35,9 +33,7 @@ def cal_mmt_profit(symbol,ds,principle=100,start=datetime.date.today(),end=datet
                 if is_second_wednesday(datetime.datetime.strptime(date, "%Y-%m-%d")):
                     second_wednesday_count +=1 #如果当天是当月第二个周三，大毛毛个数+1
                     dmm_stock_number += principle/price #获取大毛毛股数
-                    dmm_profit_arr.append({"date":date,"symbol":symbol,"price":price,"stock_number": principle/price})
                 xmm_stock_number += principle/price #获取小毛毛股数
-                xmm_profit_arr.append({"date":date,"symbol":symbol,"price":price,"stock_number": principle/price})
             xmm_profit = {"current_price": df["Close"][-1], "current_profit":xmm_stock_number * df["Close"][-1],"total_principle":principle * len(date_list),"profit_percentage": 1 - principle * len(date_list)/(xmm_stock_number * df["Close"][-1]) } 
             dmm_profit = {"current_price": df["Close"][-1], "current_profit":dmm_stock_number * df["Close"][-1],"total_principle":principle * second_wednesday_count, "profit_percentage": 1 - principle * second_wednesday_count/(dmm_stock_number * df["Close"][-1])} 
             break #当数据源成功读取并处理数据后，从当前程序break并返回信息； 防止程序运行所有的数据源
