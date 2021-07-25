@@ -1,13 +1,5 @@
 systemd-python
-Pyrogram
-TgCrypto
 python-telegram-bot
 pandas 
 pandas-datareader
-beautifulsoup4
-pytgcalls
-youtube_dl
 python-dotenv
-python-arq
-ffmpeg-python
-youtube_search

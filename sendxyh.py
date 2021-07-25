@@ -7,8 +7,10 @@ from pandas_datareader._utils import RemoteDataError
 from requests.exceptions import ConnectionError
 from stockutil import stooq, wikipedia
 
+target_date = datetime.date.today()
+
 def help():
-    return "'sendxyh.py -c configpath'"
+    return "sendxyh.py -c configpath -d yyyymmdd"
 
 def get_spx_ndx_avg_msg(ma=50,end=datetime.date.today()):
     """
@@ -25,17 +27,19 @@ def get_spx_ndx_avg_msg(ma=50,end=datetime.date.today()):
         down = []       
         for symbol in indexes[key]:
             try:
-                if stooq.symbol_above_moving_average(symbol,ma=ma,path = f"{config.config_path}/data", end=end): 
+                if stooq.symbol_above_moving_average(symbol,ma=ma,path=f"{config.config_path}/data",end=end): 
                     up.append(symbol)
                 else:
                     down.append(symbol)
             except stooq.markCloseError:
-                err_msg += f"{key}: {end.strftime('%Y-%m-%d')}没有数据，请确保输入的日期当天有开市\n"
-                break
+                err_msg += f"{key}: {symbol} {end.strftime('%Y-%m-%d')}没有数据\n"
+                #break 移除break 防止出现只有部分ticker没有数据但是大部分有数据的情况
             except Exception as e:
                 err_msg += f"unreachable stock: {symbol}\nerror message: {e}\n"
         if down:
             msg += f"{key}共有{len(up)+len(down)}支股票，共有{len(up)/(len(up)+len(down))*100:.2f}%高于{ma}周期均线\n"
+        if len(up)+len(down) + 20 < len(indexes[key]):
+            err_msg = f"{key}: {end.strftime('%Y-%m-%d')} 有超过20支股票没有数据，请确保输入的日期当天有开市\n"
     return msg, err_msg
 
 def cal_symbols_avg(ds:list, symbol:str, avgs:list,end=datetime.date.today()):
@@ -94,8 +98,14 @@ if __name__ == '__main__':
             sys.exit()
         elif opt in ("-c", "--config"):
             config.config_path = arg          
-        elif opt in ("-d", "--datetime"):   #
-            target_date = arg.split("/")    #
+        elif opt in ("-d", "--datetime"): 
+            try:
+                y,m,d = arg[:4],arg[-4:-2],arg[-2:]
+                target_date = datetime.date(int(y),int(m),int(d))
+            except Exception:
+                print("日期无法解读")
+                print(help())
+                sys.exit(2)
 
     config.config_file = os.path.join(config.config_path, "config.json")
     try:
@@ -114,25 +124,19 @@ if __name__ == '__main__':
 
     notify_message = ""
     admin_message = ""
-    # d = datetime.date.today()
-    d = datetime.date(2021,6,9)
 
     try:
-        d = datetime.date(int(target_date[0]),int(target_date[1]),int(target_date[2]))
-    except:
-        d = datetime.date.today()
-    try:
         for symbol in symbols:
-            successful_msg, err_msg = cal_symbols_avg(ds,symbol[0],symbol[1:],end=d)#debug的end变量需要被删除: ,end=datetime.date(2021,7,1)
+            successful_msg, err_msg = cal_symbols_avg(ds,symbol[0],symbol[1:],end=target_date)#debug的end变量需要被删除: ,end=datetime.date(2021,7,1)
             if successful_msg:
                 notify_message += f"{successful_msg}\n"
             if err_msg:
                 admin_message += err_msg
-        msg,err  = get_spx_ndx_avg_msg(end=d)
+        msg,err  = get_spx_ndx_avg_msg(end=target_date)
         if err:
             admin_message += err
         if notify_message:
-            notify_message = f"🌈🌈🌈{d}天相🌈🌈🌈: \n\n{notify_message}\n{msg}\n贡献者:毛票教的大朋友们"
+            notify_message = f"🌈🌈🌈{target_date}天相🌈🌈🌈: \n\n{notify_message}\n{msg}\n贡献者:毛票教的大朋友们"
             sendmsg(bot,notifychat,notify_message,debug)
         if admin_message:
             sendmsg(bot,adminchat,admin_message,debug)
