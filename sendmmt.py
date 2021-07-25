@@ -1,21 +1,24 @@
 import getopt,sys,config,os
 
-from numpy import e
-from requests.sessions import extract_cookies_to_jar
 import pandas_datareader.data as web
 import datetime
 import pandas as pd
 from telegram import Bot
 from pandas_datareader._utils import RemoteDataError
-from requests.exceptions import ConnectionError
-from stockutil import stooq, wikipedia
 from sendxyh import sendmsg
 
 target_end_time = datetime.date.today()
 target_start_time = datetime.date(2021,1,1)
 
 def help():
-    return "'sendxyh.py -c configpath -s yyyymmdd -e yyyymmdd'"
+    return "sendxyh.py -c configpath -s yyyymmdd -e yyyymmdd"
+
+def cal_percentage(value,cost):
+    # value = xmm_stock_number * df["Close"][-1]
+    # cost = principle * len(date_list)
+    profit = value - cost
+    percentage = profit/cost
+    return percentage
 
 def cal_mmt_profit(symbol,ds,principle=100,start=datetime.date.today(),end=datetime.date.today()):
     err_msg = "" #定义错误信息
@@ -34,8 +37,17 @@ def cal_mmt_profit(symbol,ds,principle=100,start=datetime.date.today(),end=datet
                     second_wednesday_count +=1 #如果当天是当月第二个周三，大毛毛个数+1
                     dmm_stock_number += principle/price #获取大毛毛股数
                 xmm_stock_number += principle/price #获取小毛毛股数
-            xmm_profit = {"current_price": df["Close"][-1], "current_profit":xmm_stock_number * df["Close"][-1],"total_principle":principle * len(date_list),"profit_percentage": 1 - principle * len(date_list)/(xmm_stock_number * df["Close"][-1]) } 
-            dmm_profit = {"current_price": df["Close"][-1], "current_profit":dmm_stock_number * df["Close"][-1],"total_principle":principle * second_wednesday_count, "profit_percentage": 1 - principle * second_wednesday_count/(dmm_stock_number * df["Close"][-1])} 
+            xmm_profit = {
+                "current_price": df["Close"][-1],  
+                "current_profit":xmm_stock_number * df["Close"][-1], # 这个key name与vale不符合
+                "total_principle":principle * len(date_list),
+                "profit_percentage": 1 - principle * len(date_list)/(xmm_stock_number * df["Close"][-1])  # 看来这里是错误的,请修改
+            } 
+            dmm_profit = {
+                "current_price": df["Close"][-1], 
+                "current_profit":dmm_stock_number * df["Close"][-1],"total_principle":principle * second_wednesday_count, 
+                "profit_percentage": 1 - principle * second_wednesday_count/(dmm_stock_number * df["Close"][-1])
+            } 
             break #当数据源成功读取并处理数据后，从当前程序break并返回信息； 防止程序运行所有的数据源
         except NotImplementedError:
             err_msg += f"当前数据源{datasource}不可用"
@@ -84,8 +96,8 @@ if __name__ == '__main__':
         elif opt in ("-c", "--config"):
             config.config_path = arg  
         elif opt in ("-s", "--starttime"): #setup datetime format "yyyymmdd"
-            try: #尝试对从参数中读取的日期进行日期格式转换，如果没有参数，则使用1/26/2021
-                target_start_time = datetime.datetime.strptime(arg,"%Y%m%d").date()
+            try: #尝试对从参数中读取的日期进行日期格式转换，如果没有参数，则使用20210126
+                target_start_time = datetime.strptime(arg,"%Y%m%d").date()
             except:
                 print(f"无法读取日期：\n{help()}")
                 sys.exit(2)
