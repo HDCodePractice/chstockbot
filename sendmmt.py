@@ -65,7 +65,7 @@ def generate_mmt_msg(xmm_profit:dict,dmm_profit:dict,symbol,principle=100,start=
     xmm_msg = f"如果你从{start.strftime('%Y年%m月%d日')}定投 #小毛毛 {symbol} {principle}元，到{end.strftime('%Y年%m月%d日')}累计投入 {xmm_profit['total_principle']}元，到昨日市值为 {xmm_profit['current_profit']:0.2f} 元，累计利润为 {xmm_profit['profit_percentage']*100:0.2f}%\n"
     dmm_msg = f"如果你从{start.strftime('%Y年%m月%d日')}定投 #大毛毛 {symbol} {principle}元，到{end.strftime('%Y年%m月%d日')}累计投入 {dmm_profit['total_principle']}元，到昨日市值为 {dmm_profit['current_profit']:0.2f} 元，累计利润为 {dmm_profit['profit_percentage']*100:0.2f}%\n"
 
-    if is_second_wednesday():
+    if is_second_wednesday(d=end):
         chat_msg += f"如果你每月定投，哪么今天是投 #大毛毛 的日子啦，今天是本月第二周的周三 请向小🐷🐷中塞入你虔诚的💰吧～\n"
         chat_msg += dmm_msg
     chat_msg += xmm_msg
@@ -89,13 +89,13 @@ if __name__ == '__main__':
             config.config_path = arg  
         elif opt in ("-s", "--starttime"): #setup datetime format "yyyymmdd"
             try: #尝试对从参数中读取的日期进行日期格式转换，如果没有参数，则使用1/26/2021
-                start_time = datetime.datetime.strptime(arg,"%Y%m%d").date()
+                target_start_time = datetime.datetime.strptime(arg,"%Y%m%d").date()
             except:
                 print(f"无法读取日期：\n{help()}")
                 sys.exit(2)
         elif opt in ("-e", "--endtime"):
             try: #尝试对从参数中读取的日期进行日期格式转换，如果没有参数，则使用1/26/2021
-                end_time = datetime.datetime.strptime(arg,"%Y%m%d").date()
+                target_end_time = datetime.datetime.strptime(arg,"%Y%m%d").date()
             except:
                 print(f"无法读取日期：\n{help()}")
                 sys.exit(2)
