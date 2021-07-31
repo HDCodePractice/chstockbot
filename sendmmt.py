@@ -1,14 +1,9 @@
 import getopt,sys,config,os
-
-from numpy import e
-from requests.sessions import extract_cookies_to_jar
 import pandas_datareader.data as web
 import datetime
 import pandas as pd
 from telegram import Bot
 from pandas_datareader._utils import RemoteDataError
-from requests.exceptions import ConnectionError
-from stockutil import stooq, wikipedia
 from sendxyh import sendmsg
 
 target_end_time = datetime.date.today()
@@ -113,18 +108,19 @@ if __name__ == '__main__':
     ds = CONFIG['xyhsource']   
     mmtchat = CONFIG['mmtchat'] 
     admin_message = ""
+    notify_message = ""
 
     try:
         for symbol in symbols:
             xmm_profit,dmm_profit, err_msg = cal_mmt_profit(symbol,ds,start=target_start_time,end=target_end_time)
             if xmm_profit and dmm_profit:
                 mmt_message = generate_mmt_msg(xmm_profit,dmm_profit, symbol,start=target_start_time,end=target_end_time)                      
-
+                notify_message += mmt_message
             if err_msg:
                 admin_message += err_msg
             
-        if mmt_message:
-            sendmsg(bot,mmtchat,mmt_message,debug)
+        if notify_message:
+            sendmsg(bot,mmtchat,notify_message,debug)
         if admin_message:
             sendmsg(bot,adminchat,admin_message,debug)
     except Exception as err:
