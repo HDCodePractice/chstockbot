@@ -1,4 +1,5 @@
 import getopt,sys,config,os
+from sendmmt import is_second_wednesday
 from stockutil.ticker import Ticker,sendmsg
 from numpy import e
 import pandas_datareader.data as web
@@ -58,16 +59,24 @@ if __name__ == '__main__':
     admin_message = ""
     notify_message = ""
     try:
-        for symbol in symbols:
-            ticker = Ticker(symbol)
-            ticker.load_data(type="internet",source="stooq",start=target_start_time,end=target_end_time)
-            ticker.cal_profit()
-            ticker.generate_mmt_msg(ticker.profit[0],ticker.profit[1])
-            admin_message += ticker.admin_msg
-            notify_message += ticker.notify_msg
-        if admin_message:
-            sendmsg(bot,mmtchat,admin_message,debug=debug)
-        if notify_message:
+        for datasource in ds:
+            for symbol in symbols:
+                ticker = Ticker(symbol)
+                ticker.source = datasource
+                ticker.starttime = target_start_time
+                ticker.endtime = target_end_time
+                ticker.load_web_data()
+                ticker.cal_profit()
+                ticker.generate_mmt_msg(ticker.profit[0],ticker.profit[1])
+                admin_message += ticker.admin_msg
+                notify_message += ticker.notify_msg
+            break
+        if ticker.admin_msg:
+            sendmsg(bot,mmtchat,ticker.admin_msg,debug=debug)
+        if ticker.notify_msg:
+            notify_message = f"如果你每周定投，哪么今天是投 #小毛毛 的日子啦，今天是周三 请向小🐷🐷中塞入你虔诚的🪙吧～\n{notify_message}"
+            if is_second_wednesday(d=target_end_time):
+                notify_message = f"如果你每月定投，哪么今天是投 #大毛毛 的日子啦，今天是本月第二周的周三 请向小🐷🐷中塞入你虔诚的💰吧～\n{notify_message}\n"
             sendmsg(bot,mmtchat,notify_message,debug=debug)
     except Exception as err:
         sendmsg(bot,adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}",debug)
