@@ -1,12 +1,7 @@
 import getopt,sys,config,os
-from sendmmt import is_second_wednesday
-from stockutil.ticker import Ticker,sendmsg
-from numpy import e
-import pandas_datareader.data as web
+from stockutil.ticker import Ticker,sendmsg,is_second_wednesday
 import datetime
-import pandas as pd
 from telegram import Bot
-from sendxyh import sendmsg
 
 target_end_time = datetime.date.today()
 target_start_time = datetime.date(2021,1,1)
