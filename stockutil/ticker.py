@@ -1,7 +1,6 @@
 import pandas as pd
 import datetime
 import pandas_datareader.data as web
-from stockutil import stooq,wikipedia
 from stockutil.stooq import search_file,read_stooq_file,maNotEnoughError,markCloseError
 from pandas_datareader._utils import RemoteDataError
 from telegram import Bot
@@ -12,7 +11,7 @@ class Ticker:
     df = pd.DataFrame()
     notify_msg = ""
     admin_msg = ""
-    starttime = datetime.datetime.today()
+    starttime = datetime.date(2020,1,1)
     endtime = datetime.datetime.today()
     source = "stooq"
     principle = 100
@@ -25,6 +24,8 @@ class Ticker:
         try:
             self.df = web.DataReader(self.symbol.upper(), self.source,start=self.starttime,end=self.endtime)
             self.df = self.df.sort_values(by="Date") #将排序这个步骤放在了判断df是否存在之后；最新的数据在最后
+            if "Adj Close" not in self.df.columns.values: #当数据没有adj close时，从close 数据copy给adj close
+                self.df["Adj Close"] = self.df["Close"]
             return True
         except NotImplementedError:
             self.admin_msg += f"当前数据源{self.source}不可用"
@@ -78,6 +79,45 @@ class Ticker:
             self.admin_msg += f"当前没有数据，请检查数据源是否工作\n"
         return False
 
+    def symbol_above_moving_average(self,ma=50)->bool:
+        if not self.df.empty:
+            if self.df.count()[0] > ma :
+                if self.df['Adj Close'][-1] < self.df.tail(ma)['Adj Close'].mean():
+                    return False
+                else:
+                    return True
+            else:
+                self.admin_msg += maNotEnoughError(f"{ma} 周期均价因时长不足无法得出\n")
+        else:
+            self.admin_msg += f"当前没有数据，请检查数据源是否工作\n"
+        return False
+        
+    def cal_symbols_avg(self,avgs:list):
+        if not self.df.empty:
+            try:
+                if self.endtime == self.df.index.date[-1]: #做了一个checkpoint来查找今天的数据; credit for Stephen
+                    self.notify_msg += f"{self.symbol.upper()}价格: {self.df['Adj Close'][-1]:0.2f}({self.df['Low'][-1]:0.2f} - {self.df['High'][-1]:0.2f})\n"
+                    for avg in avgs:
+                        if self.df.count()[0] > avg :
+                            #加入红绿灯的判断
+                            if self.df['Adj Close'][-1] < self.df.tail(avg)['Adj Close'].mean():
+                                flag = "🔴"
+                            else:
+                                flag = "🟢"
+                            percentage = (self.df['Adj Close'][-1] - self.df.tail(avg)['Adj Close'].mean())/self.df.tail(avg)['Adj Close'].mean() * 100
+                            self.notify_msg += f"{flag} {avg} 周期均价：{self.df.tail(avg)['Adj Close'].mean():0.2f} ({percentage:0.2f}%)\n"
+                        else:
+                            self.notify_msg += f"{avg} 周期均价因时长不足无法得出\n" 
+                    return True        
+                else: #当天不是交易日时 返回false
+                    self.admin_msg += f"今天不是交易日，不需要发送{self.symbol}信息\n"
+                #当数据源成功读取并处理数据后，从当前程序break并返回信息； 防止程序运行所有的数据源
+            except Exception as e: 
+                self.admin_msg += f"当前{self.symbol}读取报错了，具体错误信息是{e}\n"
+        else:
+            self.admin_msg += f"当前没有数据，请检查数据源是否工作\n"                
+        return False
+
     def generate_mmt_msg(self,xmm_profit:dict,dmm_profit:dict): #生成定投信息
         xmm_msg = f"如果你从{self.starttime.strftime('%Y年%m月%d日')}定投 #小毛毛 {self.symbol} {self.principle}元，到{self.endtime.strftime('%Y年%m月%d日')}累计投入 {xmm_profit['total_principle']}元，到昨日市值为 {xmm_profit['current_profit']:0.2f} 元，累计利润为 {xmm_profit['profit_percentage']*100:0.2f}%\n"
         dmm_msg = f"如果你从{self.starttime.strftime('%Y年%m月%d日')}定投 #大毛毛 {self.symbol} {self.principle}元，到{self.endtime.strftime('%Y年%m月%d日')}累计投入 {dmm_profit['total_principle']}元，到昨日市值为 {dmm_profit['current_profit']:0.2f} 元，累计利润为 {dmm_profit['profit_percentage']*100:0.2f}%\n"
@@ -86,6 +126,9 @@ class Ticker:
             self.notify_msg += dmm_msg
         self.notify_msg += xmm_msg
         return True
+
+    def generate_xyh_msg(self):
+        pass
 
 def get_wednesday_date(start=datetime.date.today(),end=datetime.date.today()): #c获得指定日期中的周三 可以扩展成任何天数
     date_list = pd.date_range(start=start, end=end, freq='W-WED').strftime('%Y-%m-%d').tolist()
@@ -145,11 +188,6 @@ if __name__ == "__main__":
     mmtchat = CONFIG['mmtchat'] 
     admin_message = ""
     ticker = Ticker("qqq")
-    ticker.load_web_data()
-    ticker.cal_profit()
-    ticker.generate_mmt_msg(ticker.profit[0],ticker.profit[1])
-    if ticker.admin_msg:
-        sendmsg(bot,mmtchat,ticker.admin_msg,debug=debug)
-    if ticker.notify_msg:
-        sendmsg(bot,mmtchat,ticker.notify_msg,debug=debug)
+    ticker.load_local_data()
+    print(ticker.symbol_above_moving_average())
 

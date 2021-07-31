@@ -71,9 +71,9 @@ if __name__ == '__main__':
                 admin_message += ticker.admin_msg
                 notify_message += ticker.notify_msg
             break
-        if ticker.admin_msg:
-            sendmsg(bot,mmtchat,ticker.admin_msg,debug=debug)
-        if ticker.notify_msg:
+        if admin_message:
+            sendmsg(bot,mmtchat,admin_message,debug=debug)
+        if notify_message:
             notify_message = f"如果你每周定投，哪么今天是投 #小毛毛 的日子啦，今天是周三 请向小🐷🐷中塞入你虔诚的🪙吧～\n{notify_message}"
             if is_second_wednesday(d=target_end_time):
                 notify_message = f"如果你每月定投，哪么今天是投 #大毛毛 的日子啦，今天是本月第二周的周三 请向小🐷🐷中塞入你虔诚的💰吧～\n{notify_message}\n"
