@@ -1,107 +1,90 @@
 import getopt,sys,config,os
-from numpy.lib.function_base import append
-from numpy import cos, e, mafromtxt, result_type
-from requests.api import get
-from requests.sessions import extract_cookies_to_jar
-import time, datetime
+
+import pandas_datareader.data as web
+import datetime
+import pandas as pd
 from telegram import Bot
 from pandas_datareader._utils import RemoteDataError
-from requests.exceptions import ConnectionError
-from stockutil import stooq, wikipedia
+from sendxyh import sendmsg
+
+target_end_time = datetime.date.today()
+target_start_time = datetime.date(2021,1,1)
 
 def help():
-    return "sendmmt.py -c configpath"
+    return "sendxyh.py -c configpath -s yyyymmdd -e yyyymmdd"
 
-def get_week_num(year, month, day):
-    """
-    获取当前日期是本月的第几周
-    """
-    start = int(datetime.date(year, month, 1).strftime("%W"))
-    end = int(datetime.date(year, month, day).strftime("%W"))
-    week_num = end - start + 1
-    # 判断是否是包含周三的第二周
-    if datetime.date(year, month, 1).weekday() < 3: 
-        week_num = week_num
-    else:
-        week_num = week_num -1
-    return week_num
+def cal_percentage(value,cost):
+    # value = xmm_stock_number * df["Close"][-1]
+    # cost = principle * len(date_list)
+    profit = value - cost
+    percentage = profit/cost
+    return percentage
 
-def get_price_data(symbol,start = datetime.date(2021,1,1), end = datetime.date.today()):
-    """
-    得到某ticker指定时间段特定的数据。
-    特定时间为每周三和每月第二周的周三。
-
-    Parameters
-    ----------
-    symbol : 股票代码 
-    start : 开始的日期，默认2021-01-01
-    end : 结束日期，默认程序运行当天
-    """
-    ticker_price_data = {}
-    # {"Weekly Price":[[df_w],""],"Monthly Price":[[df_m],""],"Error":[""],"Date Error":[""]}
-    if start < end:
+def cal_mmt_profit(symbol,ds,principle=100,start=datetime.date.today(),end=datetime.date.today()):
+    err_msg = "" #定义错误信息
+    dmm_stock_number = 0 #初始化 大毛毛股数
+    xmm_stock_number = 0 #初始化 小毛毛股数
+    #获得指定日期中所有的周三
+    date_list = pd.date_range(start=start, end=end, freq='W-WED').strftime('%Y-%m-%d').tolist()
+    second_wednesday_count = 0 #初始化 大毛毛每月第二个周三的个数
+    for datasource in ds:
         try:
-            ticker_file = stooq.search_file(symbol.lower().replace(".","-") + ".us.txt",os.path.expanduser("~/Downloads/data"))
-            df = stooq.read_stooq_file(path=ticker_file[0])["Close"]   
-            df_w = []
-            df_m = []
-            err_msg =""
-            for date in df.index:
-                if date > start and date < end and date.weekday() == 2:
-                    df_w.append(df[date])
-                    ticker_price_data['Weekly Price'] = [df_w, err_msg]
-                
-                    if get_week_num(date.year,date.month,date.day) == 2:
-                        df_m.append(df[date])
-                        ticker_price_data['Monthly Price'] = [df_m, err_msg]
-        except Exception as e:
-            ticker_price_data['Error'] = [f"提取{symbol.upper()}数据出错了。\nerror message: {e}\n"]
-    else:
-        ticker_price_data['Date Error'] = ["输入的日期可能有误，请检查。"]
+            df = web.DataReader(symbol.upper(), datasource,start=start,end=end)
+            df = df.sort_values(by="Date") #将排序这个步骤放在了判断df是否存在之后；最新的数据在最后
+            for date in date_list:
+                price = df.loc[date,"Close"] #获取周三当日的收盘价
+                if is_second_wednesday(datetime.datetime.strptime(date, "%Y-%m-%d")):
+                    second_wednesday_count +=1 #如果当天是当月第二个周三，大毛毛个数+1
+                    dmm_stock_number += principle/price #获取大毛毛股数
+                xmm_stock_number += principle/price #获取小毛毛股数
+            xmm_profit = {
+                "current_price": df["Close"][-1],  
+                "current_profit":xmm_stock_number * df["Close"][-1], # 这个key name与vale不符合
+                "total_principle":principle * len(date_list),
+                "profit_percentage": 1 - principle * len(date_list)/(xmm_stock_number * df["Close"][-1])  # 看来这里是错误的,请修改
+            } 
+            dmm_profit = {
+                "current_price": df["Close"][-1], 
+                "current_profit":dmm_stock_number * df["Close"][-1],"total_principle":principle * second_wednesday_count, 
+                "profit_percentage": 1 - principle * second_wednesday_count/(dmm_stock_number * df["Close"][-1])
+            } 
+            break #当数据源成功读取并处理数据后，从当前程序break并返回信息； 防止程序运行所有的数据源
+        except NotImplementedError:
+            err_msg += f"当前数据源{datasource}不可用"
+            continue
+        except RemoteDataError:
+            err_msg += f"在{datasource}找不到{symbol}的信息\n"
+            continue
+        except Exception as e: 
+            err_msg += f"当前{symbol}读取报错了，具体错误信息是{e}\n"
+            continue 
+    return xmm_profit,dmm_profit,err_msg
 
-    return ticker_price_data
-    
-def get_invest_profit(ticker_price, start = datetime.date(2021,1,1), end = datetime.date.today()):
-    """
-    计算某ticker指定时间段的利润率。
 
-    Parameters
-    ----------
-    ticker_price : 每个定投日的收盘价格列表。 
-    start : 开始的日期，默认2021-01-01
-    end : 结束日期，默认程序运行当天
-    """
-    price_list = ticker_price[0]
-    err_msg = ticker_price[1]
-    times = len(price_list)
+def get_wednesday_date(start=datetime.date.today(),end=datetime.date.today()): #c获得指定日期中的周三 可以扩展成任何天数
+    date_list = pd.date_range(start=start, end=end, freq='W-WED').strftime('%Y-%m-%d').tolist()
+    return date_list
 
-    #每周投入金额一样(100块)
-    stock_num = 0
-    for i in range (times):    
-        stock_num += 100/price_list[i]
-    cost = 100 * times
-    cur_value = stock_num * price_list[times-1]
-    profit = cur_value - cost
-    
-    #每周买入股数一样
-    # cost = 0
-    # for i in range (times):    
-    #     cost += 1 * price_list[i]
-    # stock_num = 1 * times
-    # cur_value = stock_num * price_list[times-1]
-    # profit = cur_value - cost
+def is_second_wednesday(d=datetime.date.today()): #计算是否是第二个周三；网上找的，很简单又很有效
+    return d.weekday() == 2 and 8 <= d.day <= 15
 
-    return [f"{(profit/cost)*100:.2f}%", err_msg, f"{cost:.2f}", f"{cur_value:.2f}"]
+def generate_mmt_msg(xmm_profit:dict,dmm_profit:dict,symbol,principle=100,start=datetime.date.today(),end=datetime.date.today()): #生成定投信息
+    chat_msg = f"如果你每周定投，哪么今天是投 #小毛毛 的日子啦，今天是周三 请向小🐷🐷中塞入你虔诚的🪙吧～\n"
+    xmm_msg = f"如果你从{start.strftime('%Y年%m月%d日')}定投 #小毛毛 {symbol} {principle}元，到{end.strftime('%Y年%m月%d日')}累计投入 {xmm_profit['total_principle']}元，到昨日市值为 {xmm_profit['current_profit']:0.2f} 元，累计利润为 {xmm_profit['profit_percentage']*100:0.2f}%\n"
+    dmm_msg = f"如果你从{start.strftime('%Y年%m月%d日')}定投 #大毛毛 {symbol} {principle}元，到{end.strftime('%Y年%m月%d日')}累计投入 {dmm_profit['total_principle']}元，到昨日市值为 {dmm_profit['current_profit']:0.2f} 元，累计利润为 {dmm_profit['profit_percentage']*100:0.2f}%\n"
 
-def sendmsg(bot,chatid,msg,debug=True):
-    if debug:
-        print(f"{chatid}\n{msg}")
-    else:
-        bot.send_message(chatid,msg)
+    if is_second_wednesday(d=end):
+        chat_msg += f"如果你每月定投，哪么今天是投 #大毛毛 的日子啦，今天是本月第二周的周三 请向小🐷🐷中塞入你虔诚的💰吧～\n"
+        chat_msg += dmm_msg
+    chat_msg += xmm_msg
+    return chat_msg
+
+
+
 
 if __name__ == '__main__':
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hc:", ["config="])
+        opts, args = getopt.getopt(sys.argv[1:], "hc:s:e:", ["config=","starttime=","endtime="])
     except getopt.GetoptError:
         print(help())
         sys.exit(2)
@@ -111,7 +94,21 @@ if __name__ == '__main__':
             print(help())
             sys.exit()
         elif opt in ("-c", "--config"):
-            config.config_path = arg          
+            config.config_path = arg  
+        elif opt in ("-s", "--starttime"): #setup datetime format "yyyymmdd"
+            try: #尝试对从参数中读取的日期进行日期格式转换，如果没有参数，则使用20210126
+                target_start_time = datetime.strptime(arg,"%Y%m%d").date()
+            except:
+                print(f"无法读取日期：\n{help()}")
+                sys.exit(2)
+        elif opt in ("-e", "--endtime"):
+            try: #尝试对从参数中读取的日期进行日期格式转换，如果没有参数，则使用1/26/2021
+                target_end_time = datetime.datetime.strptime(arg,"%Y%m%d").date()
+            except:
+                print(f"无法读取日期：\n{help()}")
+                sys.exit(2)
+
+        
 
     config.config_file = os.path.join(config.config_path, "config.json")
     try:
@@ -122,60 +119,27 @@ if __name__ == '__main__':
         sys.exit(2)
 
     bot = Bot(token = CONFIG['Token'])
-    symbols = CONFIG['xyhticker']
-    notifychat = CONFIG['xyhchat']
+    symbols = CONFIG['mmtticker']
     adminchat = CONFIG['xyhlog']
     debug = CONFIG['DEBUG']
-    ds = CONFIG['xyhsource']
-    tickers = CONFIG['mmtticker']
-    #tickers = ['qqq']
+    ds = CONFIG['xyhsource']   
+    mmtchat = CONFIG['mmtchat'] 
+    admin_message = ""
 
-    start = datetime.date(2021,1,1)
-    d = datetime.date.today()  
-    d = datetime.date(2021,6,9)
+    try:
+        for symbol in symbols:
+            xmm_profit,dmm_profit, err_msg = cal_mmt_profit(symbol,ds,start=target_start_time,end=target_end_time)
+            if xmm_profit and dmm_profit:
+                mmt_message = generate_mmt_msg(xmm_profit,dmm_profit, symbol,start=target_start_time,end=target_end_time)                      
 
-    mmt_week = "如果你每周定投，哪么今天是投 #小毛毛 的日子啦，今天是周三 请向小🐷🐷中塞入你虔诚的🪙吧～"
-    mmt_month = f"如果你每月定投，哪么今天是投 #大毛毛 的日子啦，今天是本月第二周的周三 请向小🐷🐷中塞入你虔诚的💰吧～\n{mmt_week}"
-
-    if get_week_num(d.year,d.month,d.day) == 2:
-        sendmsg(bot,notifychat,mmt_month,debug)
-    else:
-        sendmsg(bot,notifychat,mmt_week,debug)
-
-
-    weekly_profit_msg = ""
-    weekly_err_msg = ""
-
-    for symbol in tickers:
-        if 'Weekly Price' in get_price_data(symbol,start = start,end = d):
-            ticker_weekly = get_price_data(symbol,start = start,end = d)['Weekly Price']
-            profit_rate, err_msg, cost, cur_value = get_invest_profit(ticker_weekly, start, end=d)
-            weekly_profit_msg += f"如果从{start}开始，每周三定投{symbol.upper()} 100元，截止到{d}，累计投入{cost}，市值为{cur_value}，利润率为 {profit_rate}\n"
-        if 'Error' in get_price_data(symbol,start = start,end = d):
-            err_msg = get_price_data(symbol,start = start,end = d)['Error']
-            weekly_err_msg += f"{err_msg}"
-        elif 'Data Error' in get_price_data(symbol,start = start,end = d):
-            weekly_err_msg = f"{get_price_data(symbol,start = start,end = d)['Date Error']}"
-    if weekly_profit_msg:
-        sendmsg(bot,notifychat, weekly_profit_msg,debug)
-    if weekly_err_msg:
-        sendmsg(bot, adminchat, weekly_err_msg, debug)
-
-
-    monthly_profit_msg = ""
-    monthly_err_msg = ""
-
-    for symbol in tickers:
-        if 'Monthly Price' in get_price_data(symbol,start = start,end = d):
-            ticker_monthly = get_price_data(symbol,start = start,end = d)['Monthly Price']
-            profit_rate, err_msg, cost, cur_value = get_invest_profit(ticker_monthly, start = start, end = d)
-            monthly_profit_msg += f"如果从{start}开始，每月第二周的周三定投{symbol.upper()} 100元，截止到{d}，累计投入{cost}，市值为{cur_value}，利润率为 {profit_rate}\n"
-        if 'Error' in get_price_data(symbol,start = start,end = d):
-            err_msg = get_price_data(symbol,start = start,end = d)['Error']
-            monthly_err_msg += f"{err_msg}"
-        elif 'Data Error' in get_price_data(symbol,start = start,end = d):
-            Monthly_err_msg = f"{get_price_data(symbol,start = start,end = d)['Date Error']}"
-    if monthly_profit_msg:
-        sendmsg(bot,notifychat, monthly_profit_msg,debug)
-    if monthly_err_msg:
-        sendmsg(bot, adminchat, monthly_err_msg, debug)
+            if err_msg:
+                admin_message += err_msg
+            
+        if mmt_message:
+            sendmsg(bot,mmtchat,mmt_message,debug)
+        if admin_message:
+            sendmsg(bot,adminchat,admin_message,debug)
+    except Exception as err:
+        sendmsg(bot,adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}",debug)
+    
+    
