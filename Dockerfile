@@ -1,7 +1,7 @@
-FROM python:3.9
+FROM python:latest
 
 RUN cd /
-RUN git clone https://github.com/HDCodePractice/chstockbot.git
+COPY . /chstockbot/
 RUN cd chstockbot
 WORKDIR /chstockbot
 RUN pip install --no-cache-dir -r requirements-dev.txt
