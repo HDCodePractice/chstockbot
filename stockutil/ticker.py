@@ -9,14 +9,16 @@ import config
 
 class Ticker:
     df = pd.DataFrame()
-    notify_msg = ""
+    xyh_msg = ""
     admin_msg = ""
+    mmt_msg = ""
     starttime = datetime.date(2020,1,1)
     endtime = datetime.datetime.today()
     source = "stooq"
     principle = 100
     path =f"{config.config_path}/data"
     profit = []
+    xyh_price = {}
     def __init__(self,symbol):
         self.symbol = symbol
         
@@ -96,7 +98,7 @@ class Ticker:
         if not self.df.empty:
             try:
                 if self.endtime == self.df.index.date[-1]: #做了一个checkpoint来查找今天的数据; credit for Stephen
-                    self.notify_msg += f"{self.symbol.upper()}价格: {self.df['Adj Close'][-1]:0.2f}({self.df['Low'][-1]:0.2f} - {self.df['High'][-1]:0.2f})\n"
+                    self.xyh_msg += f"{self.symbol.upper()}价格: {self.df['Adj Close'][-1]:0.2f}({self.df['Low'][-1]:0.2f} - {self.df['High'][-1]:0.2f})\n"
                     for avg in avgs:
                         if self.df.count()[0] > avg :
                             #加入红绿灯的判断
@@ -105,10 +107,10 @@ class Ticker:
                             else:
                                 flag = "🟢"
                             percentage = (self.df['Adj Close'][-1] - self.df.tail(avg)['Adj Close'].mean())/self.df.tail(avg)['Adj Close'].mean() * 100
-                            self.notify_msg += f"{flag} {avg} 周期均价：{self.df.tail(avg)['Adj Close'].mean():0.2f} ({percentage:0.2f}%)\n"
+                            self.xyh_msg += f"{flag} {avg} 周期均价：{self.df.tail(avg)['Adj Close'].mean():0.2f} ({percentage:0.2f}%)\n"                          
                         else:
-                            self.notify_msg += f"{avg} 周期均价因时长不足无法得出\n" 
-                    return True        
+                            self.admin_msg += f"{avg} 周期均价因时长不足无法得出\n" 
+                    return True 
                 else: #当天不是交易日时 返回false
                     self.admin_msg += f"今天不是交易日，不需要发送{self.symbol}信息\n"
                 #当数据源成功读取并处理数据后，从当前程序break并返回信息； 防止程序运行所有的数据源
@@ -123,12 +125,10 @@ class Ticker:
         dmm_msg = f"如果你从{self.starttime.strftime('%Y年%m月%d日')}定投 #大毛毛 {self.symbol} {self.principle}元，到{self.endtime.strftime('%Y年%m月%d日')}累计投入 {dmm_profit['total_principle']}元，到昨日市值为 {dmm_profit['current_profit']:0.2f} 元，累计利润为 {dmm_profit['profit_percentage']*100:0.2f}%\n"
 
         if is_second_wednesday(d=self.endtime):
-            self.notify_msg += dmm_msg
-        self.notify_msg += xmm_msg
+            self.mmt_msg += dmm_msg
+        self.mmt_msg += xmm_msg
         return True
 
-    def generate_xyh_msg(self):
-        pass
 
 def get_wednesday_date(start=datetime.date.today(),end=datetime.date.today()): #c获得指定日期中的周三 可以扩展成任何天数
     date_list = pd.date_range(start=start, end=end, freq='W-WED').strftime('%Y-%m-%d').tolist()
@@ -142,52 +142,3 @@ def sendmsg(bot,chatid,msg,debug=True):
         print(f"{chatid}\n{msg}")
     else:
         bot.send_message(chatid,msg)
-
-if __name__ == "__main__":
-    #debug code
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "hc:s:e:", ["config=","starttime=","endtime="])
-    except getopt.GetoptError:
-        print(help())
-        sys.exit(2)
-
-    for opt, arg in opts:
-        if opt == '-h':
-            print(help())
-            sys.exit()
-        elif opt in ("-c", "--config"):
-            config.config_path = arg  
-        elif opt in ("-s", "--starttime"): #setup datetime format "yyyymmdd"
-            try: #尝试对从参数中读取的日期进行日期格式转换，如果没有参数，则使用1/26/2021
-                target_start_time = datetime.datetime.strptime(arg,"%Y%m%d").date()
-            except:
-                print(f"无法读取日期：\n{help()}")
-                sys.exit(2)
-        elif opt in ("-e", "--endtime"):
-            try: #尝试对从参数中读取的日期进行日期格式转换，如果没有参数，则使用1/26/2021
-                target_end_time = datetime.datetime.strptime(arg,"%Y%m%d").date()
-            except:
-                print(f"无法读取日期：\n{help()}")
-                sys.exit(2)
-
-        
-
-    config.config_file = os.path.join(config.config_path, "config.json")
-    try:
-        CONFIG = config.load_config()
-    except FileNotFoundError:
-        print(f"config.json not found.Generate a new configuration file in {config.config_file}")
-        config.set_default()
-        sys.exit(2)
-
-    bot = Bot(token = CONFIG['Token'])
-    symbols = CONFIG['mmtticker']
-    adminchat = CONFIG['xyhlog']
-    debug = CONFIG['DEBUG']
-    ds = CONFIG['xyhsource']   
-    mmtchat = CONFIG['mmtchat'] 
-    admin_message = ""
-    ticker = Ticker("qqq")
-    ticker.load_local_data()
-    print(ticker.symbol_above_moving_average())
-

@@ -64,7 +64,7 @@ if __name__ == '__main__':
                 ticker.cal_profit()
                 ticker.generate_mmt_msg(ticker.profit[0],ticker.profit[1])
                 admin_message += ticker.admin_msg
-                notify_message += ticker.notify_msg
+                notify_message += ticker.mmt_msg
             break
         if admin_message:
             sendmsg(bot,mmtchat,admin_message,debug=debug)

@@ -91,11 +91,11 @@ if __name__ == '__main__':
                 ticker.load_web_data()
                 ticker.cal_symbols_avg(symbol[1:])
                 admin_message += ticker.admin_msg
-                notify_message += ticker.notify_msg
+                notify_message += ticker.xyh_msg
             break
         if admin_message:
             sendmsg(bot,adminchat,admin_message,debug=debug)
-        if ticker.notify_msg:
+        if ticker.xyh_msg:
             notify_message = f"🌈🌈🌈{target_date}天相🌈🌈🌈: \n\n{notify_message}\n贡献者:毛票教的大朋友们"
             sendmsg(bot,notifychat,notify_message,debug=debug)
     except Exception as err:
