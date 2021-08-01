@@ -37,10 +37,10 @@ class Ticker:
         df = self.data
         
         if df.count()[0] < ma :
-            raise TickerError(f"Ticker里的历史数据没有{ma}这么多")
+            raise TickerError(f"{self.symbol}里的历史数据没有{ma}这么多")
 
         if self.end_date != df.index.date[-1]:
-            raise TickerError(f"最后一个交易日不是{self.end_date}")
+            raise TickerError(f"{self.symbol}最后一个交易日不是{self.end_date}")
 
         sma = df.tail(ma)['Adj Close'].mean()
         self.smas[ma] = sma
@@ -56,8 +56,6 @@ class Ticker:
     def clena_sma(self):
         self.smas = {}
         self.smas_state = {}
-    
-
 
 
 class INDEX:
@@ -67,13 +65,23 @@ class INDEX:
     pass
 
 if __name__ == "__main__":
-    try:
-        a = Ticker("iwm",datetime.date(2021,7,30))
-        a.load_data_by_web()
-        a.append_sma(10)
-        a.append_sma(50)
-        a.append_sma(100)
-        a.append_sma(200)
-        print(a.cal_sams_change_rate())
-    except TickerError as e:
-        print(e)
+    tickers = ["spy","qqq","didi"]
+    admin_msg = ""
+    notify_msg = ""
+
+    for ticker in tickers:
+        try:
+            a = Ticker(ticker,datetime.date(2021,7,30))
+            a.load_data_by_web()
+            a.append_sma(10)
+            a.append_sma(50)
+            a.append_sma(100)
+            a.append_sma(200)
+            a.cal_sams_change_rate()
+            notify_msg += f"{a.smas} {a.smas_state}"
+        except TickerError as e:
+            admin_msg += str(e)
+    print("=================================")
+    print(admin_msg)
+    print("=================================")
+    print(notify_msg)
