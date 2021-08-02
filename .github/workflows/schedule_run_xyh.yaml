@@ -1,0 +1,19 @@
+name: Schedule Run Sendxyh
+
+on:
+  schedule:
+    # 美东时间UTC/GMT -4: - cron: '30 21 * * 1-5'
+    - cron: '30 1 * * 2-6'
+
+jobs:
+  build_run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+
+      - name: setup python
+            uses: actions/setup-python@v2
+            with:
+              python-version: 3.9 #install the python needed
