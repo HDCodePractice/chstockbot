@@ -113,7 +113,7 @@ if __name__ == '__main__':
     except FileNotFoundError:
         print(f"config.json not found.Generate a new configuration file in {config.config_file}")
         config.set_default()
-        sys.exit(2)
+        # sys.exit(2)
 
     ENV = config.ENV
 
