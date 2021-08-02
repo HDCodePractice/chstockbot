@@ -2,6 +2,7 @@
 
 import json
 import os
+from dotenv import load_dotenv
 
 loads = json.loads
 load = json.load
@@ -41,3 +42,24 @@ def get_admin_uids():
     if not CONFIG:
         load_config()
     return CONFIG.get("Admin", [])
+
+if os.path.exists("local.env"):
+    load_dotenv("local.env")
+
+class ENV:
+    WORKDIR=os.getcwd()
+    # BotToken
+    BOT_TOKEN = os.environ.get("BOT_TOKEN", "") 
+    # 是否为DEBUG模式（不发送消息，直接将消息打印到终端）
+    DEBUG = eval(os.environ.get("DEBUG", "False"))
+    # 发送夕阳红的代码和周期
+    XYHTICKER = eval(os.environ.get("XYHTICKER", "[]"))
+    # 发送目标CHATID
+    XYHCHAT=os.environ.get("XYHCHAT", "")
+    # 发送日志的CHATID
+    XYHLOG=os.environ.get("XYHLOG", "")
+    # 夕阳红数据源，可以选择 stooq 和 yahoo
+    XYHSOURCE = os.environ.get("XYHSOURCE", "").split(" ")
+
+if __name__ == "__main__":
+    print(ENV.XYHTICKER)
