@@ -25,6 +25,5 @@ jobs:
       
       - name: Download Stooq Data
         run: |
-        wget https://static.stooq.com/db/h/d_us_txt.zip
-        apt install zip
-        unzip -oq d_us_txt.zip
+          wget https://static.stooq.com/db/h/d_us_txt.zip
+          unzip -oq d_us_txt.zip
