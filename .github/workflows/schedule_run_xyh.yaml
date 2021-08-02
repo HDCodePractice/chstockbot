@@ -32,7 +32,8 @@ jobs:
           unzip -oq d_us_txt.zip
       
       - name: sendxyh
-        run: python3 sendxyh.py -d 20210730
+        # 系统是UTC时间，所以全部变为发昨日的数据
+        run: python3 sendxyh.py -d $(date +'%Y%m%d' -d yesterday)
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           XYHCHAT: ${{ secrets.XYHCHAT }}
