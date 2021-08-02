@@ -1,5 +1,4 @@
 import getopt,sys,config,os
-
 import pandas_datareader.data as web
 import datetime
 import pandas as pd
@@ -37,17 +36,8 @@ def cal_mmt_profit(symbol,ds,principle=100,start=datetime.date.today(),end=datet
                     second_wednesday_count +=1 #如果当天是当月第二个周三，大毛毛个数+1
                     dmm_stock_number += principle/price #获取大毛毛股数
                 xmm_stock_number += principle/price #获取小毛毛股数
-            xmm_profit = {
-                "current_price": df["Close"][-1],  
-                "current_profit":xmm_stock_number * df["Close"][-1], # 这个key name与vale不符合
-                "total_principle":principle * len(date_list),
-                "profit_percentage": 1 - principle * len(date_list)/(xmm_stock_number * df["Close"][-1])  # 看来这里是错误的,请修改
-            } 
-            dmm_profit = {
-                "current_price": df["Close"][-1], 
-                "current_profit":dmm_stock_number * df["Close"][-1],"total_principle":principle * second_wednesday_count, 
-                "profit_percentage": 1 - principle * second_wednesday_count/(dmm_stock_number * df["Close"][-1])
-            } 
+            xmm_profit = {"current_price": df["Close"][-1], "current_profit":xmm_stock_number * df["Close"][-1],"total_principle":principle * len(date_list),"profit_percentage": (xmm_stock_number * df["Close"][-1])/(principle * len(date_list)) - 1 } 
+            dmm_profit = {"current_price": df["Close"][-1], "current_profit":dmm_stock_number * df["Close"][-1],"total_principle":principle * second_wednesday_count, "profit_percentage": (dmm_stock_number * df["Close"][-1])/(principle * second_wednesday_count) - 1} 
             break #当数据源成功读取并处理数据后，从当前程序break并返回信息； 防止程序运行所有的数据源
         except NotImplementedError:
             err_msg += f"当前数据源{datasource}不可用"
@@ -125,18 +115,19 @@ if __name__ == '__main__':
     ds = CONFIG['xyhsource']   
     mmtchat = CONFIG['mmtchat'] 
     admin_message = ""
+    notify_message = ""
 
     try:
         for symbol in symbols:
             xmm_profit,dmm_profit, err_msg = cal_mmt_profit(symbol,ds,start=target_start_time,end=target_end_time)
             if xmm_profit and dmm_profit:
                 mmt_message = generate_mmt_msg(xmm_profit,dmm_profit, symbol,start=target_start_time,end=target_end_time)                      
-
+                notify_message += mmt_message
             if err_msg:
                 admin_message += err_msg
             
-        if mmt_message:
-            sendmsg(bot,mmtchat,mmt_message,debug)
+        if notify_message:
+            sendmsg(bot,mmtchat,notify_message,debug)
         if admin_message:
             sendmsg(bot,adminchat,admin_message,debug)
     except Exception as err:
