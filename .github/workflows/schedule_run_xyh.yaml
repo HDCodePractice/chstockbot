@@ -32,7 +32,7 @@ jobs:
           unzip -oq d_us_txt.zip
       
       - name: sendxyh
-        run: python3 sendxyh.py
+        run: python3 sendxyh.py -d 20210730
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           XYHCHAT: ${{ secrets.XYHCHAT }}
