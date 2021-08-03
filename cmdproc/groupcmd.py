@@ -1,6 +1,11 @@
 from telegram import Update,  BotCommand
 from telegram.ext import CommandHandler,  CallbackContext
 
+def delete_reply_msg(context : CallbackContext):
+    msgs=context.job.context
+    for msg in msgs:
+        context.bot.delete_message(msg.chat.id,msg.message_id)
+
 def group_command(update: Update, context: CallbackContext) -> None:
     delete_time = 30
     if update.effective_chat.id == -1001346239262: 
@@ -30,7 +35,7 @@ https://t.me/fnnew
        """,disable_web_page_preview=True)
        context.job_queue.run_once(delete_reply_msg,delete_time,context=[msg,update.effective_message],name=f"delete_msg_{msg.message_id}")
     else: # 私聊时发送标准的内容回去
-       update.message.reply_text(
+       msg = update.message.reply_text(
 """欢迎你来到寻找毛票教的仙踪
 
 精华收集频道-毛票教友汇
@@ -53,6 +58,7 @@ https://t.me/joinchat/H3E3Y_WL4MABeF9s
 
 Switch游戏玩不停
 https://t.me/joinchat/6OHFklcv-8JlZmM1""",disable_web_page_preview=True)
+    context.job_queue.run_once(delete_reply_msg,delete_time,context=[msg,update.effective_message],name=f"delete_msg_{msg.message_id}")
 
 
 def delete_reply_msg(context : CallbackContext):
