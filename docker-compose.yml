@@ -1,0 +1,8 @@
+version: "3.9"
+services:
+    chstockbot:
+        image: hdcola/chstockbot:latest
+        volumes:
+            - ".:/data"
+        env_file: 
+            - local.env
