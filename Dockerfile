@@ -1,5 +1,6 @@
 FROM python:latest
 
+RUN apt-get update && apt upgrade -y
 RUN cd /
 COPY . /chstockbot/
 RUN cd chstockbot

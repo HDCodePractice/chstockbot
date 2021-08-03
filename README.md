@@ -30,6 +30,11 @@
 
 请确认你的Linux或MacOS上已经安装好Docker和Docker Compose。如果你还没有安装，请参考[安装Docker](https://docs.docker.com/engine/installation/)和[安装Docker Compose](https://docs.docker.com/compose/install/)。我们会使用Docker Compose来运行sendxyh，使用Cron来设置定时任务。
 
+#### 准备配置文件
+
+将[docker-compose.yml](https://github.com/HDCodePractice/chstockbot/blob/main/docker-compose.yml)放到你的运行目录下。并在相同的目录里参考[example.env](https://github.com/HDCodePractice/chstockbot/blob/main/example.env)来放入相应的配置信息。
+
+
 #### 更新Docker的镜像
 
 ```
