@@ -48,6 +48,18 @@ docker-compose pull
 docker-compose up -d
 ```
 
+#### 停止
+
+```
+docker-compose down
+```
+
+#### 查看运行log
+
+```
+docker-compose logs -f
+```
+
 ### 定时任务（sendxyh、sendmmt）
 
 #### Github Action Cron
