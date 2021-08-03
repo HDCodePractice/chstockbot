@@ -34,11 +34,18 @@
 
 将[docker-compose.yml](https://github.com/HDCodePractice/chstockbot/blob/main/docker-compose.yml)放到你的运行目录下。并在相同的目录里参考[example.env](https://github.com/HDCodePractice/chstockbot/blob/main/example.env)来放入相应的配置信息。
 
+然后将当前目录变换到 ```docker-compose.yml``` 文件所在的目录。
 
 #### 更新Docker的镜像
 
 ```
 docker-compose pull
+```
+
+#### 启动
+
+```
+docker-compose up -d
 ```
 
 ### 定时任务（sendxyh、sendmmt）

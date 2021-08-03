@@ -6,4 +6,4 @@ COPY . /chstockbot/
 RUN cd chstockbot
 WORKDIR /chstockbot
 RUN pip install -r requirements-dev.txt
-CMD [ "python", "./sendxyh.py" ,"-c /data"]
+CMD [ "python", "bot.py" ,"-c /data"]
