@@ -116,6 +116,7 @@ if __name__ == '__main__':
         # sys.exit(2)
 
     ENV = config.ENV
+    print(f"sendxyh {target_date} ....")
 
     if ENV.BOT_TOKEN == "":
         sys.exit()
