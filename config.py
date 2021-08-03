@@ -32,7 +32,6 @@ def get_json():
     return dumps(CONFIG,indent=4,ensure_ascii=False)
 
 def set_default():
-    CONFIG.setdefault("Token","")       #BotToken
     CONFIG.setdefault("Admin",[])       #管理员id
     CONFIG.setdefault("Admin_path","")  #Admin Shell Path
     save_config()
