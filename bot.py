@@ -47,12 +47,6 @@ if __name__ == '__main__':
     from cmdproc import reportcmd
     commands += reportcmd.add_dispatcher(dispatcher)
 
-    from cmdproc import rewardcmd
-    commands += rewardcmd.add_dispatcher(dispatcher)
-
-    # from cmdproc import rcmd
-    # commands += reportcmd.add_dispatcher(dispatcher)
-
     updater.bot.set_my_commands(commands)
 
     updater.start_polling()
