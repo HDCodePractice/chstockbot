@@ -26,7 +26,7 @@ class Ticker:
         if "Adj Close" not in df.columns.values: #当数据没有adj close时，从close 数据copy给adj close
                 df["Adj Close"] = df["Close"]
         self.data = df
-        self.clena_sma()
+        self.clean_sma()
         return self.data
 
     def append_sma(self,ma=10):
@@ -53,7 +53,7 @@ class Ticker:
             self.smas_state[ma] = [percentage, "🟢" if percentage > 0 else "🔴"]
         return self.smas_state
 
-    def clena_sma(self):
+    def clean_sma(self):
         self.smas = {}
         self.smas_state = {}
 
