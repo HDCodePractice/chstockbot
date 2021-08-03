@@ -1,0 +1,49 @@
+name: Schedule Run Sendxyh
+
+on:
+  # push:
+  #   branches:
+  #     - main
+  schedule:
+    # 美东时间UTC/GMT -4: - cron: '30 21 * * 1-5'
+    - cron: '30 1 * * 2-6'
+
+jobs:
+  build_run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      
+      - name: Download Stooq Data
+        run: |
+          wget -q https://static.stooq.com/db/h/d_us_txt.zip
+          unzip -oq d_us_txt.zip
+      
+      - name: sendxyh
+        # 系统是UTC时间，所以全部变为发昨日的数据
+        run: python3 sendxyh.py -d $(date +'%Y%m%d' -d yesterday)
+        env:
+          # Telegram BOT的TOKEN
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          # 夕阳红发送目标ChatID
+          XYHCHAT: ${{ secrets.XYHCHAT }}
+          # 夕阳红发送日志ChatID
+          XYHLOG: ${{ secrets.XYHLOG }}
+          # 夕阳红发送的Ticker及相应的MA
+          XYHTICKER: "[['SPY',10,50,100,200],['QQQ',13,55,100,150,200],['IWM',13,55,100,150,200]]"
+          # 夕阳红获取在线数据的服务
+          XYHSOURCE: stooq
+
+          

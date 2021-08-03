@@ -113,14 +113,21 @@ if __name__ == '__main__':
     except FileNotFoundError:
         print(f"config.json not found.Generate a new configuration file in {config.config_file}")
         config.set_default()
-        sys.exit(2)
+        # sys.exit(2)
 
-    bot = Bot(token = CONFIG['Token'])
-    symbols = CONFIG['xyhticker']
-    notifychat = CONFIG['xyhchat']
-    adminchat = CONFIG['xyhlog']
-    debug = CONFIG['DEBUG']
-    ds = CONFIG['xyhsource']    
+    ENV = config.ENV
+    print(f"sendxyh {target_date} ....")
+
+    if ENV.BOT_TOKEN == "":
+        sys.exit()
+
+    bot = Bot(token = ENV.BOT_TOKEN)
+    symbols = ENV.XYHTICKER
+    notifychat = ENV.XYHCHAT
+    adminchat = ENV.XYHLOG
+    debug = ENV.DEBUG
+    ds = ENV.XYHSOURCE
+   
 
     notify_message = ""
     admin_message = ""
