@@ -24,6 +24,18 @@
 
 ## 运行部署
 
+### chstockbot
+
+#### Linux & MacOS
+
+请确认你的Linux或MacOS上已经安装好Docker和Docker Compose。如果你还没有安装，请参考[安装Docker](https://docs.docker.com/engine/installation/)和[安装Docker Compose](https://docs.docker.com/compose/install/)。我们会使用Docker Compose来运行sendxyh，使用Cron来设置定时任务。
+
+#### 更新Docker的镜像
+
+```
+docker-compose pull
+```
+
 ### 定时任务（sendxyh、sendmmt）
 
 #### Github Action Cron
@@ -41,10 +53,6 @@ BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
 XYHCHAT: ${{ secrets.XYHCHAT }}
 XYHLOG: ${{ secrets.XYHLOG }}
 ```
-
-#### Linux & MacOS
-
-请确认你的Linux或MacOS上已经安装好Docker和Docker Compose。如果你还没有安装，请参考[安装Docker](https://docs.docker.com/engine/installation/)和[安装Docker Compose](https://docs.docker.com/compose/install/)。我们会使用Docker Compose来运行sendxyh，使用Cron来设置定时任务。
 
 
 ##### 设置Docker
