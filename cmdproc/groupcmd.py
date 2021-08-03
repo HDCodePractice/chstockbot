@@ -59,5 +59,5 @@ def delete_reply_msg(context : CallbackContext):
         context.bot.delete_message(msg.chat.id,msg.message_id)
 
 def add_dispatcher(dp):
-    dp.add_handler(CommandHandler("group", group_command))
+    dp.add_handler(CommandHandler(["start","help"], group_command))
     return [BotCommand('help','获得神秘代码')]
