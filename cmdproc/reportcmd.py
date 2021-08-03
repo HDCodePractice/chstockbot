@@ -89,4 +89,5 @@ def add_dispatcher(dp):
     dp.add_handler(CommandHandler("r", report_user))
     dp.add_handler(CommandHandler("kr", kick_member))
     dp.add_handler(CommandHandler("kk", kick_member))
-    return [BotCommand('r','举报一个对话')]
+    # return [BotCommand('r','举报一个对话')]
+    return [] # 内部测试功能，先不返回任何内容
