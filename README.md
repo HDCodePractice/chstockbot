@@ -40,3 +40,49 @@ XYHCHAT: ${{ secrets.XYHCHAT }}
 XYHLOG: ${{ secrets.XYHLOG }}
 ```
 
+#### Linux & MacOS
+
+请确认你的Linux或MacOS上已经安装好Docker和Docker Compose。如果你还没有安装，请参考[安装Docker](https://docs.docker.com/engine/installation/)和[安装Docker Compose](https://docs.docker.com/compose/install/)。我们会使用Docker Compose来运行sendxyh，使用Cron来设置定时任务。
+
+
+##### 设置Docker
+
+从Docker Hub更新chsstockbot镜像：
+
+```
+docker pull hdcola/chstockbot:latest
+```
+
+在目录中准备一个 `local.env` 文件，内容参考如下：
+
+```
+BOT_TOKEN=YOU_BOT_TOKEN
+DEBUG=False
+XYHTICKER=[["SPY",10,50,100,200],["QQQ",13,55,100,150,200],["IWM",13,55,100,150,200]]
+XYHCHAT=
+XYHLOG=
+XYHSOURCE=stooq
+```
+
+测试运行
+
+```
+docker run --rm --env-file local.env -it hdcola/chstockbot:latest python /chstockbot/sendxyh.py -c /data
+```
+
+##### 设置crontab
+
+执行以下命令，将crontab添加到你的用户下：
+
+```
+crontab -e
+```
+
+之后在你的crontab中添加以下内容：
+
+```
+# 每周一到周五的下午5:00发送夕阳红
+0 22 * * 1-5 /usr/local/bin/docker run --rm --env-file local.env hdcola/chstockbot:latest python /chstockbot/sendxyh.py -c /data
+```
+
+注意：这里请将 `local.env` 前面加上你的绝对路径。
