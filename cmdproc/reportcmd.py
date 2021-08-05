@@ -71,7 +71,7 @@ def report_user(update: Update, context:CallbackContext):
         context.bot.send_message(chat_id=admingroup, text=msg_text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN_V2)
     else:
         msg.reply_markdown_v2(msg_text,reply_markup=reply_markup)
-    send_msg = incoming_message.reply_text(f"""亲爱的{reporter.full_name}: 你的举报已成功，感谢你的一份贡献""")   
+    send_msg = incoming_message.reply_text(f"""亲爱的{reporter.full_name}: 你的举报已成功，感谢你的一份贡献\n\n贡献者:毛票教的大朋友们""")   
     delay_del_msg(context,incoming_message,10)
     delay_del_msg(context,send_msg,10)
 
