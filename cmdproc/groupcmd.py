@@ -38,6 +38,8 @@ https://t.me/fnnew
        msg = update.message.reply_text(
 """欢迎你来到寻找毛票教的仙踪
 
+<b>进群后请主动说话，不说话的很快就会被踢出来的</b>
+
 精华收集频道-毛票教友汇
 https://t.me/joinchat/TfWBdbo2jPd-rsRH
 
