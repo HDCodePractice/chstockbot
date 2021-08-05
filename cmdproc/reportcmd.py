@@ -1,4 +1,4 @@
-from telegram import Update, ForceReply,BotCommand
+from telegram import Update, ForceReply,BotCommand,ParseMode
 from telegram.error import BadRequest, TelegramError
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, CallbackQueryHandler
 from telegram.inline.inlinekeyboardbutton import InlineKeyboardButton
@@ -90,14 +90,19 @@ def kick_user(update: Update, context:CallbackContext):
         try:
             cm = context.bot.get_chat_member(group,kick_user)
             if cm.status == cm.MEMBER:
-                context.bot.ban_chat_member(group,kick_user)
+                if not ENV.DEBUG:
+                    context.bot.ban_chat_member(group,kick_user)
                 kick_count += 1
-                if ENV.DEBUG:
-                    # 测试时解除banned
-                    context.bot.unban_chat_member(group,kick_user)
+                # if ENV.DEBUG:
+                #     # 测试时解除banned
+                #     context.bot.unban_chat_member(group,kick_user)
         except BadRequest:
             update.callback_query.answer(text="Bot在一些群里不是管理员，请联系管理员设置",show_alert=True)
-    context.bot.send_message(admingroup,f"{get_user_link(kick_user)}从毛票教的{count}个群里被找到呆在{kick_count}个群里后自然的消失了")
+    kick_user = context.bot.get_chat(kick_user)
+    context.bot.send_message(
+        admingroup,
+        f"把 {get_user_link(kick_user)} 从毛票教{count}个群中的{kick_count}个群轻轻的碾压出去了",
+        parse_mode=ParseMode.MARKDOWN_V2)
 
 def add_dispatcher(dp):
     dp.add_handler(CommandHandler("r", report_user))
