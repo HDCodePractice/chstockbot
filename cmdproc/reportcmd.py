@@ -51,7 +51,11 @@ def report_user(update: Update, context:CallbackContext):
         return
     # 收到举报，处理举报
     # 先把原来的消息转发到管理群
-    msg = report_msg.forward(admingroup, disable_notification=True)   # TODO: 不知道为什么不能转发毛台飘飘的消息
+    try:
+        no_forward = False
+        msg = report_msg.forward(admingroup, disable_notification=True)   # TODO: 不知道为什么不能转发毛台飘飘的消息
+    except BadRequest:
+        no_forward = True
     # 给出踢人的提示
     msg_text = f"被举报人：{reportee if isinstance(reportee,str) else get_user_link(reportee)} 举报人：{get_user_link(reporter)}\n请仔细检查举报信息，决定是否处理举报。"
     reportee_id = "null" if isinstance(reportee,str) else reportee.id
@@ -62,7 +66,11 @@ def report_user(update: Update, context:CallbackContext):
     ]]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
-    msg.reply_markdown(msg_text,reply_markup=reply_markup)
+    if no_forward:
+        # 如果没有转发，就把消息发到管理群
+        context.bot.send_message(chat_id=admingroup, text=msg_text, reply_markup=reply_markup)
+    else:
+        msg.reply_markdown(msg_text,reply_markup=reply_markup)
     send_msg = incoming_message.reply_text(f"""亲爱的{reporter.full_name}: 你的举报已成功，感谢你的一份贡献""")   
     delay_del_msg(context,incoming_message,10)
     delay_del_msg(context,send_msg,10)
