@@ -97,7 +97,7 @@ def kick_user(update: Update, context:CallbackContext):
                 #     # 测试时解除banned
                 #     context.bot.unban_chat_member(group,kick_user)
         except BadRequest:
-            update.callback_query.answer(text="Bot在一些群里不是管理员，请联系管理员设置",show_alert=True)
+            context.bot.send_message(admingroup,f"Bot在{group}里不是管理员")
     kick_user = context.bot.get_chat(kick_user)
     context.bot.send_message(
         admingroup,
