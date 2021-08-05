@@ -70,7 +70,7 @@ def report_user(update: Update, context:CallbackContext):
         # 如果没有转发，就把消息发到管理群
         context.bot.send_message(chat_id=admingroup, text=msg_text, reply_markup=reply_markup)
     else:
-        msg.reply_markdown(msg_text,reply_markup=reply_markup)
+        msg.reply_markdown_v2(msg_text,reply_markup=reply_markup)
     send_msg = incoming_message.reply_text(f"""亲爱的{reporter.full_name}: 你的举报已成功，感谢你的一份贡献""")   
     delay_del_msg(context,incoming_message,10)
     delay_del_msg(context,send_msg,10)
@@ -83,16 +83,21 @@ def kick_user(update: Update, context:CallbackContext):
     if kick_user == "null":
         update.callback_query.answer(text="Bot无法获取这个人的信息，需要你按他的",show_alert=True)
         return
+    count = 0
+    kick_count = 0
     for group in groups:
+        count += 1
         try:
             cm = context.bot.get_chat_member(group,kick_user)
             if cm.status == cm.MEMBER:
                 context.bot.ban_chat_member(group,kick_user)
+                kick_count += 1
                 if ENV.DEBUG:
                     # 测试时解除banned
                     context.bot.unban_chat_member(group,kick_user)
         except BadRequest:
             update.callback_query.answer(text="Bot在一些群里不是管理员，请联系管理员设置",show_alert=True)
+    context.bot.send_message(admingroup,f"{get_user_link(kick_user)}从毛票教的{count}个群里被找到呆在{kick_count}个群里后自然的消失了")
 
 def add_dispatcher(dp):
     dp.add_handler(CommandHandler("r", report_user))
