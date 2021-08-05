@@ -58,6 +58,12 @@ class ENV:
     XYHLOG=os.environ.get("XYHLOG", "")
     # 夕阳红数据源，可以选择 stooq 和 yahoo
     XYHSOURCE = os.environ.get("XYHSOURCE", "").split(" ")
+    # 管理员列表，使用空格分隔
+    ADMINS = os.environ.get("ADMINS", "").split(" ")
+    # 管理群ChatID
+    ADMIN_GROUP = os.environ.get("ADMIN_GROUP", "")
+    # 管理的群和频道列表，使用空格分隔
+    GROUPS = os.environ.get("GROUPS", "").split(" ")
 
 if __name__ == "__main__":
     print(ENV.XYHTICKER)

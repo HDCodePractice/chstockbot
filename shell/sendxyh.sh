@@ -1,7 +1,6 @@
 #!/bin/bash
-cd /home/pi/trade.config/chstockbot
-rm d_us_txt.zip
-rm -rf data
-/usr/bin/wget https://static.stooq.com/db/h/d_us_txt.zip
-/usr/bin/unzip -oq d_us_txt.zip
-/home/pi/py3/bin/python3 /home/pi/chstockbot/sendxyh.py -c /home/pi/trade.config/chstockbot
+rm /data/d_us_txt.zip
+/usr/bin/wget -q https://static.stooq.com/db/h/d_us_txt.zip -O /data/d_us_txt.zip
+rm -rf /data/data
+/usr/bin/unzip -oq /data/d_us_txt.zip -d /data
+python3 /chstockbot/sendxyh.py -c /data
