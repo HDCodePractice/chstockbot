@@ -1,144 +1,244 @@
+from numpy import ndindex
+import pandas_datareader.data as web
 import pandas as pd
 import datetime
-import pandas_datareader.data as web
-from stockutil.stooq import search_file,read_stooq_file,maNotEnoughError,markCloseError
-from pandas_datareader._utils import RemoteDataError
-from telegram import Bot
-import getopt,sys,os
-import config
+import os
+import stooq
+
+class TickerError(Exception):
+    pass
+
+def get_week_num(year, month, day):
+    """
+    获取当前日期是本月的第几周
+    """
+    start = int(datetime.date(year, month, 1).strftime("%W"))
+    end = int(datetime.date(year, month,day).strftime("%W"))
+    week_num = end - start + 1
+    return week_num
 
 class Ticker:
-    df = pd.DataFrame()
-    xyh_msg = ""
-    admin_msg = ""
-    mmt_msg = ""
-    starttime = datetime.date(2020,1,1)
-    endtime = datetime.datetime.today()
-    source = "stooq"
-    principle = 100
-    path =f"{config.config_path}/data"
-    profit = []
-    xyh_price = {}
-    def __init__(self,symbol):
+    symbol = None
+    data = None
+    start_date = None
+    end_date = None
+    # Ticker的SMA及对应的值
+    smas = {}
+    # Ticker的SMA所对应的状态[change_rate,flag]
+    smas_state = {}
+    price_lists = {}
+
+    def __init__(self, symbol, end_date=datetime.date.today()):
         self.symbol = symbol
-        
-    def load_web_data(self):
-        try:
-            self.df = web.DataReader(self.symbol.upper(), self.source,start=self.starttime,end=self.endtime)
-            self.df = self.df.sort_values(by="Date") #将排序这个步骤放在了判断df是否存在之后；最新的数据在最后
-            if "Adj Close" not in self.df.columns.values: #当数据没有adj close时，从close 数据copy给adj close
-                self.df["Adj Close"] = self.df["Close"]
-            return True
-        except NotImplementedError:
-            self.admin_msg += f"当前数据源{self.source}不可用"
-        except RemoteDataError:
-            self.admin_msg += f"在{self.source}找不到{self.symbol}的信息\n"
-        except Exception as e: 
-            self.admin_msg += f"当前{self.symbol}读取报错了，具体错误信息是{e}\n"        
-        return False  
+        self.end_date = end_date
 
-    def load_local_data(self):
-        try:
-            tiker_file = search_file(self.symbol.lower().replace(".","-") + ".us.txt",os.path.expanduser(self.path))
-            self.df = read_stooq_file(path=tiker_file[0])
-            #filter df based on end time
-            if self.endtime in self.df.index.date:
-                self.df = self.df.loc[self.df.index[0]:self.endtime]
-                return True
-            else:
-                self.admin_msg += markCloseError(f"输入的日期没有数据，请确保输入的日期当天有开市\n")
-        except Exception as e:
-            self.admin_msg += f"出问题了，具体情况是{e}"
-        return False
-
-    def cal_profit(self):
-        self.dmm_stock_number = 0 #初始化 大毛毛股数
-        self.xmm_stock_number = 0 #初始化 小毛毛股数
-        self.second_wednesday_count = 0
-        if not self.df.empty:
-            date_list = pd.date_range(start=self.starttime, end=self.endtime, freq='W-WED').strftime('%Y-%m-%d').tolist()
-            for date in date_list:
-                price = self.df.loc[date,"Close"] #获取周三当日的收盘价
-                if is_second_wednesday(datetime.datetime.strptime(date, "%Y-%m-%d")):
-                    self.second_wednesday_count +=1 #如果当天是当月第二个周三，大毛毛个数+1
-                    self.dmm_stock_number += self.principle/price #获取大毛毛股数
-                self.xmm_stock_number += self.principle/price #获取小毛毛股数
-            xmm_profit = {
-                "current_price": self.df["Close"][-1], 
-                "current_profit":self.xmm_stock_number * self.df["Close"][-1],
-                "total_principle":self.principle * len(date_list),
-                "profit_percentage": (self.xmm_stock_number * self.df["Close"][-1])/(self.principle * len(date_list)) - 1 
-                } 
-            dmm_profit = {
-                "current_price": self.df["Close"][-1], 
-                "current_profit":self.dmm_stock_number * self.df["Close"][-1],
-                "total_principle":self.principle * self.second_wednesday_count, 
-                "profit_percentage": (self.dmm_stock_number * self.df["Close"][-1])/(self.principle * self.second_wednesday_count) - 1
-                } 
-            self.profit = [xmm_profit,dmm_profit]
-            return True
+    def load_data(self,source):
+        """
+        从本地或某特定路径或stooq取得ticker的数据。
+        """
+        symbol = self.symbol
+        self.data = None
+        if source == "stooq":
+            df = web.DataReader(symbol.upper(),source,end=self.end_date)
+            df = df.sort_values(by="Date")
+            if "Adj Close" not in df.columns.values: #当数据没有adj close时，从close 数据copy给adj close
+                    df["Adj Close"] = df["Close"]
+            self.data = df
+            self.clean_sma()
         else:
-            self.admin_msg += f"当前没有数据，请检查数据源是否工作\n"
-        return False
+            ticker_file = stooq.search_file(symbol.lower().replace(".","-") + ".us.txt",os.path.expanduser(source))
+            df = stooq.read_stooq_file(path = ticker_file[0])
+            self.data = df
+            self.clean_sma()
+            self.clean_price_lists()
+        self.end_date = df.index.date[-1]
+        self.start_date = df.index.date[0]
+        return self.data
 
-    def symbol_above_moving_average(self,ma=50)->bool:
-        if not self.df.empty:
-            if self.df.count()[0] > ma :
-                if self.df['Adj Close'][-1] < self.df.tail(ma)['Adj Close'].mean():
-                    return False
-                else:
-                    return True
-            else:
-                self.admin_msg += maNotEnoughError(f"{ma} 周期均价因时长不足无法得出\n")
-        else:
-            self.admin_msg += f"当前没有数据，请检查数据源是否工作\n"
-        return False
+    def get_price_lists(self,start=None,end=None,freq='W-WED',week_num =2): 
+        """
+        获得某段时间内的特定日子的价格数据，此处为周三
+        """
+        self.price_lists = {}
+        if self.data is None:
+            self.load_data()
+
+        if end is None:
+            end = self.end_date
+
+        if start is None:
+            start = self.start_date
+
+        df = self.data
+        date_list = pd.date_range(start=start, end=end, freq='W-WED').tolist()
+    #    print (date_list)
+        df_w = []
+        df_m = []
+        for date in date_list:
+            df_w.append(df.loc[date, 'Close'])
+            if get_week_num(date.year, date.month, date.day) == week_num:
+                df_m.append(df.loc[date, 'Close'])
+
+        self.price_lists['weekly'] = df_w
+        self.price_lists['montly'] = df_m
+        return self.price_lists   
+
+    def cal_profit(self, price_list_name):
+        """
+        计算某ticker指定时间段的利润率。
+        Parameters
+        ----------
+        ticker_price : 每个定投日的收盘价格列表。 
+        """
+        if price_list_name not in self.price_lists.keys():
+            raise TickerError(f"{self.symbol} 没有 {price_list_name} 的周期价格列表")
+
+        ticker_price = self.price_lists[price_list_name]
+        times = len(ticker_price)
+
+        #每周投入金额一样(100块)
+        stock_num = 0
+        for i in range (times):    
+            stock_num += 100/ticker_price[i]
+        cost = 100 * times
+        cur_value = stock_num * self.data['Close'][-1]
+        profit = cur_value - cost
+        rate = (profit/cost)*100
+        return {'rate': f"{rate:.2f}%", 'cost':f"{cost:.2f}", 'value':f"{cur_value:.2f}"}
+
+
+    def clean_price_lists(self):
+        self.price_lists = {}
+
+    def append_sma(self,ma=10):
+        # 数据没加载
+        if self.data is None:
+            self.load_data()
         
-    def cal_symbols_avg(self,avgs:list):
-        if not self.df.empty:
+        df = self.data
+        
+        if df.count()[0] < ma :
+            raise TickerError(f"{self.symbol}里的历史数据没有{ma}这么多")
+
+        if self.end_date != df.index.date[-1]:
+            raise TickerError(f"{self.symbol}最后一个交易日不是{self.end_date}")
+
+        sma = df.tail(ma)['Adj Close'].mean()
+        self.smas[ma] = sma
+        return sma
+
+    def cal_sams_change_rate(self):
+        df = self.data
+        for ma,value in self.smas.items():
+            percentage = (df['Adj Close'][-1] - value)/value * 100
+            self.smas_state[ma] = [percentage, "🟢" if percentage > 0 else "🔴"]
+        return self.smas_state
+
+    def clean_sma(self):
+        self.smas = {}
+        self.smas_state = {}
+
+
+class Index:
+    symbol = None
+    tickers = []
+    sources = {
+        "NDX" : ["https://en.wikipedia.org/wiki/Nasdaq-100",3,"Ticker"],
+        "SPX" : ["https://en.wikipedia.org/wiki/List_of_S%26P_500_companies",0,"Symbol"]
+    }
+    
+    def __init__(self,symbol) -> None:
+        symbol = symbol.upper()
+        if symbol not in self.sources.keys():
+            raise TickerError(f"{symbol} 不在我们的支持列表中")
+        self.symbol = symbol
+
+    def get_index_tickers_list(self):
+        """
+        获得指数的成分股列表
+        """
+        self.tickers = []
+        url,table_num,colum_name = self.sources[self.symbol]
+        df = pd.read_html(url)[table_num]
+        self.tickers = df[colum_name].tolist()
+        return self.tickers
+
+    def compare_avg(self, ma=10, source="~/Downloads/data", end_date=datetime.date.today()):
+        up = []
+        down = []
+        for symbol in self.tickers:
             try:
-                if self.endtime == self.df.index.date[-1]: #做了一个checkpoint来查找今天的数据; credit for Stephen
-                    self.xyh_msg += f"{self.symbol.upper()}价格: {self.df['Adj Close'][-1]:0.2f}({self.df['Low'][-1]:0.2f} - {self.df['High'][-1]:0.2f})\n"
-                    for avg in avgs:
-                        if self.df.count()[0] > avg :
-                            #加入红绿灯的判断
-                            if self.df['Adj Close'][-1] < self.df.tail(avg)['Adj Close'].mean():
-                                flag = "🔴"
-                            else:
-                                flag = "🟢"
-                            percentage = (self.df['Adj Close'][-1] - self.df.tail(avg)['Adj Close'].mean())/self.df.tail(avg)['Adj Close'].mean() * 100
-                            self.xyh_msg += f"{flag} {avg} 周期均价：{self.df.tail(avg)['Adj Close'].mean():0.2f} ({percentage:0.2f}%)\n"                          
+                symbol = Ticker(symbol,end_date= end_date)
+                df = symbol.load_data(source)
+                if end_date in df.index.date:                
+                    df = df.loc[df.index[0]:end_date]
+                    if df.count()[0] > ma :
+                        if df['Adj Close'][-1] < df.tail(ma)['Adj Close'].mean():
+                            up.append(symbol.symbol)
                         else:
-                            self.admin_msg += f"{avg} 周期均价因时长不足无法得出\n" 
-                    return True 
-                else: #当天不是交易日时 返回false
-                    self.admin_msg += f"今天不是交易日，不需要发送{self.symbol}信息\n"
-                #当数据源成功读取并处理数据后，从当前程序break并返回信息； 防止程序运行所有的数据源
-            except Exception as e: 
-                self.admin_msg += f"当前{self.symbol}读取报错了，具体错误信息是{e}\n"
-        else:
-            self.admin_msg += f"当前没有数据，请检查数据源是否工作\n"                
-        return False
-
-    def generate_mmt_msg(self,xmm_profit:dict,dmm_profit:dict): #生成定投信息
-        xmm_msg = f"如果你从{self.starttime.strftime('%Y年%m月%d日')}定投 #小毛毛 {self.symbol} {self.principle}元，到{self.endtime.strftime('%Y年%m月%d日')}累计投入 {xmm_profit['total_principle']}元，到昨日市值为 {xmm_profit['current_profit']:0.2f} 元，累计利润为 {xmm_profit['profit_percentage']*100:0.2f}%\n"
-        dmm_msg = f"如果你从{self.starttime.strftime('%Y年%m月%d日')}定投 #大毛毛 {self.symbol} {self.principle}元，到{self.endtime.strftime('%Y年%m月%d日')}累计投入 {dmm_profit['total_principle']}元，到昨日市值为 {dmm_profit['current_profit']:0.2f} 元，累计利润为 {dmm_profit['profit_percentage']*100:0.2f}%\n"
-
-        if is_second_wednesday(d=self.endtime):
-            self.mmt_msg += dmm_msg
-        self.mmt_msg += xmm_msg
-        return True
+                            down.append(symbol.symbol)
+                    else:
+                        raise TickerError(f"{ma} 周期均价因时长不足无法得出\n")     
+                else:
+                    raise TickerError(f"输入的日期没有数据，请确保输入的日期当天有开市\n")
+            except Exception as e:
+                print(f"unreachable stock: {symbol.symbol}\nerror message: {e}\n")
+        
+        return {'up_num':len(up), 'down_num':len(down),'rate':len(up)/(len(up)+len(down))}
 
 
-def get_wednesday_date(start=datetime.date.today(),end=datetime.date.today()): #c获得指定日期中的周三 可以扩展成任何天数
-    date_list = pd.date_range(start=start, end=end, freq='W-WED').strftime('%Y-%m-%d').tolist()
-    return date_list
+if __name__ == "__main__":
+    # Ticker测试代码
+    # aapl = Ticker('AAPL')
+    # aapl.load_data("~/Downloads/data")
+    # aapl.get_price_lists(start=datetime.date(2020,4,28))
+    # print(aapl.cal_profit('montly'))
 
-def is_second_wednesday(d=datetime.date.today()): #计算是否是第二个周三；网上找的，很简单又很有效
-    return d.weekday() == 2 and 8 <= d.day <= 15
 
-def sendmsg(bot,chatid,msg,debug=True):
-    if debug:
-        print(f"{chatid}\n{msg}")
-    else:
-        bot.send_message(chatid,msg)
+    spx = Index('ndx')
+    print(spx.get_index_tickers_list())
+    print(len(spx.tickers))
+    print(spx.compare_avg(
+        10,
+        source="~/Downloads/data",
+        end_date=datetime.date(2021,6,1)
+    ))
+
+
+    # import stooq
+    # tickers = ["spy","qqq","didi"]
+    # admin_msg = ""
+    # notify_msg = ""
+
+    # for ticker in tickers:
+    #     try:
+    #         a = Ticker(ticker,datetime.date(2021,8,6))
+    #         #a.load_data(source = "~/Downloads/data")
+    #         a.load_data(source = "stooq")
+    #         lastest_price = a.load_data(source = "~/Downloads/data")['Close'][-1]
+    #         a.append_sma(10)
+    #         a.append_sma(50)
+    #         a.append_sma(100)
+    #         a.append_sma(200)
+    #         a.cal_sams_change_rate()
+    #         notify_msg += f"{lastest_price} {a.smas} {a.smas_state}\n"
+    #     except TickerError as e:
+    #         admin_msg += str(e)
+    # print("=================================")
+    # print(a.load_data(source = "stooq"))
+    # print(a.load_data(source = "stooq")['Close'][-1])
+    # print("=================================")
+    # print(notify_msg)
+    # print(admin_msg)
+    # try:
+    #     b = Index()
+    #     spx = b.get_sp500_tickers()
+    #     spx_avg = b.compare_avg(ma = 50, index = spx, end_date=datetime.date(2021,7,21))
+    #     spx_msg = f"SPX共有{spx_avg['up_num']+spx_avg['down_num']}支股票，共有{spx_avg['rate']*100:.2f}%高于50周期均线"
+    #     notify_msg = f"{spx_msg}"
+    # except TickerError as e:
+    #     admin_msg+=str(e)
+        
+    # print (spx_avg)
+    # print (notify_msg)
+    # print (admin_msg)
