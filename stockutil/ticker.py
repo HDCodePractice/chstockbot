@@ -3,6 +3,7 @@ import pandas_datareader.data as web
 import pandas as pd
 import datetime
 import os
+import stooq
 
 class TickerError(Exception):
     pass
@@ -19,6 +20,7 @@ def get_week_num(year, month, day):
 class Ticker:
     symbol = None
     data = None
+    start_date = None
     end_date = None
     # Ticker的SMA及对应的值
     smas = {}
@@ -47,40 +49,51 @@ class Ticker:
             ticker_file = stooq.search_file(symbol.lower().replace(".","-") + ".us.txt",os.path.expanduser(source))
             df = stooq.read_stooq_file(path = ticker_file[0])
             self.data = df
-            self.clean_sma
-            self.clean_price_lists
+            self.clean_sma()
+            self.clean_price_lists()
+        self.end_date = df.index.date[-1]
+        self.start_date = df.index.date[0]
         return self.data
 
-    def get_price_lists(self,start,end,freq='W-WED',week_num =2): 
+    def get_price_lists(self,start=None,end=None,freq='W-WED',week_num =2): 
         """
         获得某段时间内的特定日子的价格数据，此处为周三
         """
-        end =self.end_date
-        self.price_lists = None
-        price_lists = {}
+        self.price_lists = {}
         if self.data is None:
             self.load_data()
+
+        if end is None:
+            end = self.end_date
+
+        if start is None:
+            start = self.start_date
+
         df = self.data
-        date_list = pd.date_range(start=start, end=end, freq='W-WED').strftime('%Y-%m-%d').tolist()
+        date_list = pd.date_range(start=start, end=end, freq='W-WED').tolist()
     #    print (date_list)
         df_w = []
         df_m = []
         for date in date_list:
-            date = datetime.datetime.strptime(date, "%Y-%m-%d")
             df_w.append(df.loc[date, 'Close'])
-            price_lists['weekly'] = df_w
             if get_week_num(date.year, date.month, date.day) == week_num:
                 df_m.append(df.loc[date, 'Close'])
-                price_lists['montly'] = df_m
-        return price_lists   
 
-    def cal_profit(self, ticker_price):
+        self.price_lists['weekly'] = df_w
+        self.price_lists['montly'] = df_m
+        return self.price_lists   
+
+    def cal_profit(self, price_list_name):
         """
         计算某ticker指定时间段的利润率。
         Parameters
         ----------
         ticker_price : 每个定投日的收盘价格列表。 
         """
+        if price_list_name not in self.price_lists.keys():
+            raise TickerError(f"{self.symbol} 没有 {price_list_name} 的周期价格列表")
+
+        ticker_price = self.price_lists[price_list_name]
         times = len(ticker_price)
 
         #每周投入金额一样(100块)
@@ -128,35 +141,35 @@ class Ticker:
 
 class Index:
     symbol = None
-    # 得到INDEX的成分股
-    # 成份股高于MA的数量和比例
-    sp500 = []
-    ndx100 = []
+    tickers = []
+    sources = {
+        "NDX" : ["https://en.wikipedia.org/wiki/Nasdaq-100",3,"Ticker"],
+        "SPX" : ["https://en.wikipedia.org/wiki/List_of_S%26P_500_companies",0,"Symbol"]
+    }
     
-    def __init__(self) -> None:
-        pass
+    def __init__(self,symbol) -> None:
+        symbol = symbol.upper()
+        if symbol not in self.sources.keys():
+            raise TickerError(f"{symbol} 不在我们的支持列表中")
+        self.symbol = symbol
 
-    def get_sp500_tickers(self):
-        self.clean_sp500()
-        table=pd.read_html('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
-        df = table[0]
-        self.sp500 = df['Symbol'].tolist()
-        return self.sp500
+    def get_index_tickers_list(self):
+        """
+        获得指数的成分股列表
+        """
+        self.tickers = []
+        url,table_num,colum_name = self.sources[self.symbol]
+        df = pd.read_html(url)[table_num]
+        self.tickers = df[colum_name].tolist()
+        return self.tickers
 
-    def get_ndx100_tickers(self):
-        self.clean_ndx100
-        table = pd.read_html('https://en.wikipedia.org/wiki/Nasdaq-100')
-        df = table[3]
-        self.ndx100 = df['Ticker'].tolist() 
-        return self.ndx100
-
-    def compare_avg(self, ma, index, end_date=datetime.date.today()):
+    def compare_avg(self, ma=10, source="~/Downloads/data", end_date=datetime.date.today()):
         up = []
         down = []
-        for symbol in index:
+        for symbol in self.tickers:
             try:
                 symbol = Ticker(symbol,end_date= end_date)
-                df = symbol.load_data(source="~/Downloads/data")
+                df = symbol.load_data(source)
                 if end_date in df.index.date:                
                     df = df.loc[df.index[0]:end_date]
                     if df.count()[0] > ma :
@@ -173,17 +186,29 @@ class Index:
         
         return {'up_num':len(up), 'down_num':len(down),'rate':len(up)/(len(up)+len(down))}
 
-    def clean_sp500(self):
-        self.sp500 = []
-
-    def clean_ndx100(self):
-        self.ndx100 = []
 
 if __name__ == "__main__":
-    import stooq
-    tickers = ["spy","qqq","didi"]
-    admin_msg = ""
-    notify_msg = ""
+    # Ticker测试代码
+    # aapl = Ticker('AAPL')
+    # aapl.load_data("~/Downloads/data")
+    # aapl.get_price_lists(start=datetime.date(2020,4,28))
+    # print(aapl.cal_profit('montly'))
+
+
+    spx = Index('ndx')
+    print(spx.get_index_tickers_list())
+    print(len(spx.tickers))
+    print(spx.compare_avg(
+        10,
+        source="~/Downloads/data",
+        end_date=datetime.date(2021,6,1)
+    ))
+
+
+    # import stooq
+    # tickers = ["spy","qqq","didi"]
+    # admin_msg = ""
+    # notify_msg = ""
 
     # for ticker in tickers:
     #     try:
@@ -205,15 +230,15 @@ if __name__ == "__main__":
     # print("=================================")
     # print(notify_msg)
     # print(admin_msg)
-    try:
-        b = Index()
-        spx = b.get_sp500_tickers()
-        spx_avg = b.compare_avg(ma = 50, index = spx, end_date=datetime.date(2021,7,21))
-        spx_msg = f"SPX共有{spx_avg['up_num']+spx_avg['down_num']}支股票，共有{spx_avg['rate']*100:.2f}%高于50周期均线"
-        notify_msg = f"{spx_msg}"
-    except TickerError as e:
-        admin_msg+=str(e)
+    # try:
+    #     b = Index()
+    #     spx = b.get_sp500_tickers()
+    #     spx_avg = b.compare_avg(ma = 50, index = spx, end_date=datetime.date(2021,7,21))
+    #     spx_msg = f"SPX共有{spx_avg['up_num']+spx_avg['down_num']}支股票，共有{spx_avg['rate']*100:.2f}%高于50周期均线"
+    #     notify_msg = f"{spx_msg}"
+    # except TickerError as e:
+    #     admin_msg+=str(e)
         
-    print (spx_avg)
-    print (notify_msg)
-    print (admin_msg)
+    # print (spx_avg)
+    # print (notify_msg)
+    # print (admin_msg)
