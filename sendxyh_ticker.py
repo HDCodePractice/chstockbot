@@ -21,10 +21,8 @@ def get_spx_ndx_avg_msg(ma=50,end=end):
     err_msg =""
     try:
         i = ticker.Index()
-        print (i)
-
         spx = i.get_sp500_tickers()
-        print (spx)
+        #print (spx)
         spx_avg = i.compare_avg(ma = ma, index = spx, end_date=end)
         spx_msg = f"SPX共有{spx_avg['up_num']+spx_avg['down_num']}支股票，共有{spx_avg['rate']*100:.2f}%高于50周期均线."
 
