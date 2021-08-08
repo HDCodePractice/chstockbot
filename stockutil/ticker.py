@@ -150,26 +150,28 @@ class Index:
         self.ndx100 = df['Ticker'].tolist() 
         return self.ndx100
 
-    def compare_avg(self, ma=50, index = ndx100, end_date=datetime.date.today()):
+    def compare_avg(self, ma, index, end_date=datetime.date.today()):
         up = []
         down = []
-        avg_com_info = {}
         for symbol in index:
-            symbol = Ticker(symbol,end_date= end_date)
-            df = symbol.load_data()
-            if df['Adj Close'][-1] < df.tail(ma)['Adj Close'].mean():
-                up.append(symbol)
-            else:
-                down.append(symbol)     
-        avg_com_info['up_num'] = len(up)
-        avg_com_info['up_rate'] = len(up)/(len(up)+len(down))
-        avg_com_info['down_num'] = len(down)
-        avg_com_info['down_rate'] = len(down)/(len(up)+len(down))
-        avg_com_info['total_num'] = len(up)+len(down)
-        if len(up)+len(down) + 20 < len(index):
-            raise TickerError(f"{index}: {end_date.strftime('%Y-%m-%d')} 有超过20支股票没有数据，请确保输入的日期当天有开市\n")
-
-        return avg_com_info
+            try:
+                symbol = Ticker(symbol,end_date= end_date)
+                df = symbol.load_data(source="~/Downloads/data")
+                if end_date in df.index.date:                
+                    df = df.loc[df.index[0]:end_date]
+                    if df.count()[0] > ma :
+                        if df['Adj Close'][-1] < df.tail(ma)['Adj Close'].mean():
+                            up.append(symbol.symbol)
+                        else:
+                            down.append(symbol.symbol)
+                    else:
+                        raise TickerError(f"{ma} 周期均价因时长不足无法得出\n")     
+                else:
+                    raise TickerError(f"输入的日期没有数据，请确保输入的日期当天有开市\n")
+            except Exception as e:
+                print(f"unreachable stock: {symbol.symbol}\nerror message: {e}\n")
+        
+        return {'up_num':len(up), 'down_num':len(down),'rate':len(up)/(len(up)+len(down))}
 
     def clean_sp500(self):
         self.sp500 = []
@@ -183,23 +185,35 @@ if __name__ == "__main__":
     admin_msg = ""
     notify_msg = ""
 
-    for ticker in tickers:
-        try:
-            a = Ticker(ticker,datetime.date(2021,8,6))
-            #a.load_data(source = "~/Downloads/data")
-            a.load_data(source = "stooq")
-            lastest_price = a.load_data(source = "~/Downloads/data")['Close'][-1]
-            a.append_sma(10)
-            a.append_sma(50)
-            a.append_sma(100)
-            a.append_sma(200)
-            a.cal_sams_change_rate()
-            notify_msg += f"{lastest_price} {a.smas} {a.smas_state}\n"
-        except TickerError as e:
-            admin_msg += str(e)
-    print("=================================")
-    print(a.load_data(source = "stooq"))
-    print(a.load_data(source = "stooq")['Close'][-1])
-    print("=================================")
-    print(notify_msg)
-    print(admin_msg)
+    # for ticker in tickers:
+    #     try:
+    #         a = Ticker(ticker,datetime.date(2021,8,6))
+    #         #a.load_data(source = "~/Downloads/data")
+    #         a.load_data(source = "stooq")
+    #         lastest_price = a.load_data(source = "~/Downloads/data")['Close'][-1]
+    #         a.append_sma(10)
+    #         a.append_sma(50)
+    #         a.append_sma(100)
+    #         a.append_sma(200)
+    #         a.cal_sams_change_rate()
+    #         notify_msg += f"{lastest_price} {a.smas} {a.smas_state}\n"
+    #     except TickerError as e:
+    #         admin_msg += str(e)
+    # print("=================================")
+    # print(a.load_data(source = "stooq"))
+    # print(a.load_data(source = "stooq")['Close'][-1])
+    # print("=================================")
+    # print(notify_msg)
+    # print(admin_msg)
+    try:
+        b = Index()
+        spx = b.get_sp500_tickers()
+        spx_avg = b.compare_avg(ma = 50, index = spx, end_date=datetime.date(2021,7,21))
+        spx_msg = f"SPX共有{spx_avg['up_num']+spx_avg['down_num']}支股票，共有{spx_avg['rate']*100:.2f}%高于50周期均线"
+        notify_msg = f"{spx_msg}"
+    except TickerError as e:
+        admin_msg+=str(e)
+        
+    print (spx_avg)
+    print (notify_msg)
+    print (admin_msg)
