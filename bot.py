@@ -9,6 +9,11 @@ import config
 def help():
     return "'bot.py -c <configpath>'"
 
+def sendmsg(bot,chatid,msg,debug=True):
+    if debug:
+        print(f"{chatid}\n{msg}")
+    else:
+        bot.send_message(chatid,msg)
 
 if __name__ == '__main__':
     try:

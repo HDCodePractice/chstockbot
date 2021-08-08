@@ -131,6 +131,7 @@ dmypy.json
 .DS_Store
 config.json
 test.py
+test2.py
 # pyrogram的session文件
 *.session
 raw_files/
