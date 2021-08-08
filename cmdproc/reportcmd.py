@@ -101,7 +101,7 @@ def kick_user(update: Update, context:CallbackContext):
     kick_user = context.bot.get_chat(kick_user)
     context.bot.send_message(
         admingroup,
-        f"把 {get_user_link(kick_user)} 从毛票教{count}个群中的{kick_count}个群轻轻的碾压出去了",
+        f" {get_user_link(update.effective_user)} 把 {get_user_link(kick_user)} 从毛票教{count}个群中的{kick_count}个群轻轻的碾压出去了",
         parse_mode=ParseMode.MARKDOWN_V2)
 
 def add_dispatcher(dp):
