@@ -2,7 +2,8 @@ import getopt,sys,config,os
 import datetime
 from telegram import Bot
 from stockutil import stooq, wikipedia
-from stockutil.ticker import Ticker,sendmsg
+from stockutil.ticker import Ticker
+from util.utils import sendmsg
 
 target_date = datetime.date.today()
 
@@ -80,25 +81,27 @@ if __name__ == '__main__':
     notify_message = ""
     admin_message = ""
     msg,err  = get_spx_ndx_avg_msg(end=target_date)
-    notify_message += msg
     admin_message += err
+    xyh_msg = ""
     try:
         for datasource in ds:
             for symbol in symbols:
-                ticker = Ticker(symbol[0])
-                ticker.source = datasource
-                ticker.endtime = target_date
-                ticker.load_web_data()
-                ticker.cal_symbols_avg(symbol[1:])
-                admin_message += ticker.admin_msg
-                notify_message += ticker.xyh_msg
+                ticker = Ticker(symbol[0],"web",datasource,endtime=target_date)
+                ticker.load_data()
+                for ma in symbol[1:]:
+                    ticker.cal_symbols_avg(ma)
+                    ticker.cal_sams_change_rate()
+                xyh_msg += f"{ticker.gen_xyh_msg()}\n"
+
             break
-        if admin_message:
-            sendmsg(bot,adminchat,admin_message,debug=debug)
-        if ticker.xyh_msg:
-            notify_message = f"🌈🌈🌈{target_date}天相🌈🌈🌈: \n\n{notify_message}\n贡献者:毛票教的大朋友们"
-            sendmsg(bot,notifychat,notify_message,debug=debug)
     except Exception as err:
         sendmsg(bot,adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}",debug)
     
+    if xyh_msg:
+        notify_message += f"🌈🌈🌈{target_date}天相🌈🌈🌈: \n\n{xyh_msg}\n贡献者:毛票教的大朋友们\n{msg}"
+        sendmsg(bot,notifychat,notify_message,debug=debug)
+    if admin_message:
+        sendmsg(bot,adminchat,admin_message,debug=debug)
+    
+
     

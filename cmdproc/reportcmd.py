@@ -76,6 +76,7 @@ def report_user(update: Update, context:CallbackContext):
     delay_del_msg(context,send_msg,10)
 
 def kick_user(update: Update, context:CallbackContext):
+    execute_user = update.callback_query.from_user.full_name
     kick_user = update.callback_query.data.split('kick:')[1]
     if str(update.effective_user.id) not in admins:
         update.callback_query.answer(text="哥们，你还不是管理员，请升级为管理员后再按～",show_alert=True)
@@ -101,7 +102,7 @@ def kick_user(update: Update, context:CallbackContext):
     kick_user = context.bot.get_chat(kick_user)
     context.bot.send_message(
         admingroup,
-        f"把 {get_user_link(kick_user)} 从毛票教{count}个群中的{kick_count}个群轻轻的碾压出去了",
+        f"{execute_user}把 {get_user_link(kick_user)} 从毛票教{count}个群中的{kick_count}个群轻轻的碾压出去了",
         parse_mode=ParseMode.MARKDOWN_V2)
 
 def add_dispatcher(dp):
