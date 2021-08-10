@@ -1,13 +1,37 @@
 import getopt,sys,config,os
-from stockutil.ticker import Ticker,sendmsg,is_second_wednesday
+from stockutil.ticker import Ticker, TickerError, get_week_num
+from bot import sendmsg
 import datetime
 from telegram import Bot
 
-target_end_time = datetime.date.today()
-target_start_time = datetime.date(2021,1,1)
+start_date = datetime.date(2021,1,1)
+end_date = datetime.date.today()
 
 def help():
     return "'sendxyh.py -c configpath -s yyyymmdd -e yyyymmdd'"
+
+
+def ge_mmt_msg(symbol, start, end, freq='W-WED', week_num =2):
+    s = Ticker(symbol, end)
+    error_msg = ""
+    try:
+        s.load_data(source = "stooq")
+        s.get_date_list(start=start, end=end, freq='W-WED')
+        s.get_price_lists(week_num =2)
+        price_list = s.get_price_lists()
+        #print (price_list)
+        weekly_profit_info = s.cal_profit('weekly')
+        monthly_profit_info = s.cal_profit('montly')
+
+        weekly_msg = f"如果从{start}开始，每周三定投{symbol.upper()} 100元，截止到{end}，累计投入{weekly_profit_info['cost']}，市值为{weekly_profit_info['value']}，利润率为 {weekly_profit_info['rate']}"
+
+        monthly_msg = f"如果从{start}开始，每月第二周的周三定投{symbol.upper()} 100元，截止到{end}，累计投入{monthly_profit_info['cost']}，市值为{monthly_profit_info['value']}，利润率为 {monthly_profit_info['rate']}"
+    except TickerError as e:
+        error_msg += str(e) 
+
+    return {'weekly':weekly_msg, 'monthly':monthly_msg, 'admin':error_msg}
+
+
 
 if __name__ == '__main__':
     try:
@@ -24,13 +48,13 @@ if __name__ == '__main__':
             config.config_path = arg  
         elif opt in ("-s", "--starttime"): #setup datetime format "yyyymmdd"
             try: #尝试对从参数中读取的日期进行日期格式转换，如果没有参数，则使用1/26/2021
-                target_start_time = datetime.datetime.strptime(arg,"%Y%m%d").date()
+                start_date = datetime.datetime.strptime(arg,"%Y%m%d").date()
             except:
                 print(f"无法读取日期：\n{help()}")
                 sys.exit(2)
         elif opt in ("-e", "--endtime"):
             try: #尝试对从参数中读取的日期进行日期格式转换，如果没有参数，则使用1/26/2021
-                target_end_time = datetime.datetime.strptime(arg,"%Y%m%d").date()
+                end_date = datetime.datetime.strptime(arg,"%Y%m%d").date()
             except:
                 print(f"无法读取日期：\n{help()}")
                 sys.exit(2)
@@ -51,29 +75,29 @@ if __name__ == '__main__':
     debug = CONFIG['DEBUG']
     ds = CONFIG['xyhsource']   
     mmtchat = CONFIG['mmtchat'] 
-    admin_message = ""
-    notify_message = ""
-    try:
-        for datasource in ds:
-            for symbol in symbols:
-                ticker = Ticker(symbol)
-                ticker.source = datasource
-                ticker.starttime = target_start_time
-                ticker.endtime = target_end_time
-                ticker.load_web_data()
-                ticker.cal_profit()
-                ticker.generate_mmt_msg(ticker.profit[0],ticker.profit[1])
-                admin_message += ticker.admin_msg
-                notify_message += ticker.mmt_msg
-            break
-        if admin_message:
-            sendmsg(bot,mmtchat,admin_message,debug=debug)
-        if notify_message:
-            notify_message = f"如果你每周定投，哪么今天是投 #小毛毛 的日子啦，今天是周三 请向小🐷🐷中塞入你虔诚的🪙吧～\n{notify_message}"
-            if is_second_wednesday(d=target_end_time):
-                notify_message = f"如果你每月定投，哪么今天是投 #大毛毛 的日子啦，今天是本月第二周的周三 请向小🐷🐷中塞入你虔诚的💰吧～\n{notify_message}\n"
-            sendmsg(bot,mmtchat,notify_message,debug=debug)
-    except Exception as err:
-        sendmsg(bot,adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}",debug)
+    admin_msg = ""
+    notify_msg = ""
     
     
+    mmt_week = "如果你每周定投，那么今天是投 #小毛毛 的日子啦，今天是周三 请向小🐷🐷中塞入你虔诚的🪙吧～"
+    mmt_month = f"如果你每月定投，那么今天是投 #大毛毛 的日子啦，今天是本月第二周的周三 请向小🐷🐷中塞入你虔诚的💰吧～\n{mmt_week}"
+
+    weekly_msg = ""
+    monthly_msg = ""
+
+    # try:
+    for symbol in symbols:
+        msg = ge_mmt_msg(symbol, start_date, end_date, freq='W-WED', week_num =2)
+        weekly_msg += f"{msg['weekly']}\n"
+        monthly_msg += f"{msg['monthly']}\n"
+        notify_msg = f"{weekly_msg}\n{monthly_msg}"
+        admin_msg += msg['admin']
+
+    if get_week_num(end_date.year,end_date.month,end_date.day) == 2:
+        sendmsg(bot,mmtchat,f"{mmt_month}\n{notify_msg}",debug)
+    else:
+        sendmsg(bot,mmtchat,f"{mmt_week}\n{notify_msg}",debug)
+    if admin_msg:
+        sendmsg(bot, adminchat,admin_msg, debug)
+    # except Exception as err:
+    #     sendmsg(bot,adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}",debug)
