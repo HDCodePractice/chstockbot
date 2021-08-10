@@ -1,7 +1,9 @@
+from typing import Tuple
 from numpy import ndindex
 import pandas_datareader.data as web
 import pandas as pd
 import datetime
+from datetime import timedelta
 import os
 import stooq
 
@@ -27,6 +29,7 @@ class Ticker:
     # Ticker的SMA所对应的状态[change_rate,flag]
     smas_state = {}
     price_lists = {}
+    date_list = {}
 
     def __init__(self, symbol, end_date=datetime.date.today()):
         self.symbol = symbol
@@ -55,30 +58,39 @@ class Ticker:
         self.start_date = df.index.date[0]
         return self.data
 
-    def get_price_lists(self,start=None,end=None,freq='W-WED',week_num =2): 
+    def get_date_list(self,start=None,end=None,freq='W-WED'):
+        if end is None:
+            end = self.end_date
+        if start is None:
+            start = self.start_date
+        date_list = pd.date_range(start=start, end=end, freq=freq).tolist()
+        df = self.data
+        for date in date_list:
+            if date not in df.index:
+                date_list.remove(date)
+                date_list.append(date + datetime.timedelta(days=1))
+            self.date_list = date_list
+#            self.date_list = pd.to_datetime(date_list).sort_values()
+        return self.date_list
+
+    def get_price_lists(self,week_num =2): 
         """
         获得某段时间内的特定日子的价格数据，此处为周三
         """
         self.price_lists = {}
         if self.data is None:
             self.load_data()
-
-        if end is None:
-            end = self.end_date
-
-        if start is None:
-            start = self.start_date
+        if self.date_list is None:
+            self.get.date_list()
 
         df = self.data
-        date_list = pd.date_range(start=start, end=end, freq='W-WED').tolist()
-    #    print (date_list)
         df_w = []
         df_m = []
-        for date in date_list:
+        for date in self.date_list:
             df_w.append(df.loc[date, 'Close'])
             if get_week_num(date.year, date.month, date.day) == week_num:
                 df_m.append(df.loc[date, 'Close'])
-
+        
         self.price_lists['weekly'] = df_w
         self.price_lists['montly'] = df_m
         return self.price_lists   
@@ -189,20 +201,20 @@ class Index:
 
 if __name__ == "__main__":
     # Ticker测试代码
-    # aapl = Ticker('AAPL')
-    # aapl.load_data("~/Downloads/data")
-    # aapl.get_price_lists(start=datetime.date(2020,4,28))
-    # print(aapl.cal_profit('montly'))
+    aapl = Ticker('AAPL')
+    aapl.load_data("~/Downloads/data")
+    print(aapl.get_date_list())
+#    print(aapl.get_price_lists('monthly'))
 
 
-    spx = Index('ndx')
-    print(spx.get_index_tickers_list())
-    print(len(spx.tickers))
-    print(spx.compare_avg(
-        10,
-        source="~/Downloads/data",
-        end_date=datetime.date(2021,6,1)
-    ))
+    # spx = Index('ndx')
+    # print(spx.get_index_tickers_list())
+    # print(len(spx.tickers))
+    # print(spx.compare_avg(
+    #     10,
+    #     source="~/Downloads/data",
+    #     end_date=datetime.date(2021,6,1)
+    # ))
 
 
     # import stooq
