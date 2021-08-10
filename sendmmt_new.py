@@ -85,19 +85,19 @@ if __name__ == '__main__':
     weekly_msg = ""
     monthly_msg = ""
 
-    # try:
-    for symbol in symbols:
-        msg = ge_mmt_msg(symbol, start_date, end_date, freq='W-WED', week_num =2)
-        weekly_msg += f"{msg['weekly']}\n"
-        monthly_msg += f"{msg['monthly']}\n"
-        notify_msg = f"{weekly_msg}\n{monthly_msg}"
-        admin_msg += msg['admin']
+    try:
+        for symbol in symbols:
+            msg = ge_mmt_msg(symbol, start_date, end_date, freq='W-WED', week_num =2)
+            weekly_msg += f"{msg['weekly']}\n"
+            monthly_msg += f"{msg['monthly']}\n"
+            notify_msg = f"{weekly_msg}\n{monthly_msg}"
+            admin_msg += msg['admin']
 
-    if get_week_num(end_date.year,end_date.month,end_date.day) == 2:
-        sendmsg(bot,mmtchat,f"{mmt_month}\n{notify_msg}",debug)
-    else:
-        sendmsg(bot,mmtchat,f"{mmt_week}\n{notify_msg}",debug)
-    if admin_msg:
-        sendmsg(bot, adminchat,admin_msg, debug)
-    # except Exception as err:
-    #     sendmsg(bot,adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}",debug)
+        if get_week_num(end_date.year,end_date.month,end_date.day) == 2:
+            sendmsg(bot,mmtchat,f"{mmt_month}\n{notify_msg}",debug)
+        else:
+            sendmsg(bot,mmtchat,f"{mmt_week}\n{notify_msg}",debug)
+        if admin_msg:
+            sendmsg(bot, adminchat,admin_msg, debug)
+    except Exception as err:
+       sendmsg(bot,adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}",debug)
