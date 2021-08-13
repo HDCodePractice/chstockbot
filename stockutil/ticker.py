@@ -1,5 +1,5 @@
+from logging import error
 from typing import Tuple
-from numpy import ndindex
 import pandas_datareader.data as web
 import pandas as pd
 import datetime
@@ -31,6 +31,7 @@ class Ticker:
     price_lists = {}
     date_list = {}
     profit_msg = {}
+    xyh_msg = {}
 
     def __init__(self, symbol, end_date=datetime.date.today()):
         self.symbol = symbol
@@ -146,8 +147,8 @@ class Ticker:
         
         df = self.data
         
-        if df.count()[0] < ma :
-            raise TickerError(f"{self.symbol}里的历史数据没有{ma}这么多")
+        # if df.count()[0] < ma :
+        #     raise TickerError(f"{self.symbol}里的历史数据没有{ma}这么多")
 
         if self.end_date != df.index.date[-1]:
             raise TickerError(f"{self.symbol}最后一个交易日不是{self.end_date}")
@@ -163,6 +164,24 @@ class Ticker:
             self.smas_state[ma] = [percentage, "🟢" if percentage > 0 else "🔴"]
         return self.smas_state
 
+    def ge_xyh_msg(self, mas):
+        self.xyh_msg = {}
+        status_msg = ""
+        if self.data is None:
+            self.load_data()
+        latest_price = self.data['Close'][-1]
+        lowest_price = self.data['Low'][-1]
+        highest_price = self.data['High'][-1]
+        for ma in mas:
+            if ma < self.data.count()[0]:
+                self.append_sma(ma=ma)
+                self.cal_sams_change_rate()
+                status_msg += f"{self.smas_state[ma][1]} {ma} 周期均价：{self.smas[ma]:0.2f} ({self.smas_state[ma][0]:0.2f}%)\n"            
+            else:
+                status_msg += f"{self.symbol}里的历史数据没有{ma}这么多\n"
+        self.xyh_msg = f"{self.symbol.upper()} 收盘价：{latest_price} ({lowest_price} - {highest_price})\n{status_msg}\n"
+        return self.xyh_msg
+
     def clean_sma(self):
         self.smas = {}
         self.smas_state = {}
@@ -175,6 +194,7 @@ class Index:
         "NDX" : ["https://en.wikipedia.org/wiki/Nasdaq-100",3,"Ticker"],
         "SPX" : ["https://en.wikipedia.org/wiki/List_of_S%26P_500_companies",0,"Symbol"]
     }
+    index_msg = {}
     
     def __init__(self,symbol) -> None:
         symbol = symbol.upper()
@@ -192,28 +212,38 @@ class Index:
         self.tickers = df[colum_name].tolist()
         return self.tickers
 
-    def compare_avg(self, ma=10, source="~/Downloads/data", end_date=datetime.date.today()):
+    def compare_avg(self, ma=50, source="~/Downloads/data", end_date=datetime.date.today()):
+        if self.tickers is None:
+            self.get_index_tickers_list()
+        self.index_msg = {}
         up = []
         down = []
+        err_msg = ""
         for symbol in self.tickers:
             try:
                 symbol = Ticker(symbol,end_date= end_date)
                 df = symbol.load_data(source)
-                if end_date in df.index.date:                
-                    df = df.loc[df.index[0]:end_date]
-                    if df.count()[0] > ma :
-                        if df['Adj Close'][-1] < df.tail(ma)['Adj Close'].mean():
-                            up.append(symbol.symbol)
-                        else:
-                            down.append(symbol.symbol)
+                lastest_price = df['Adj Close'][-1]
+                symbol.append_sma(50)
+                if df.count()[0] > ma :
+                    if lastest_price < symbol.smas[ma]:
+                        up.append(symbol.symbol)
                     else:
-                        raise TickerError(f"{ma} 周期均价因时长不足无法得出\n")     
+                        down.append(symbol.symbol)
                 else:
-                    raise TickerError(f"输入的日期没有数据，请确保输入的日期当天有开市\n")
+                    err_msg +=f"{symbol.symbol.upper()} 的{ma}周期均价因时长不足无法比较\n" 
             except Exception as e:
-                print(f"unreachable stock: {symbol.symbol}\nerror message: {e}\n")
-        
-        return {'up_num':len(up), 'down_num':len(down),'rate':len(up)/(len(up)+len(down))}
+                    err_msg += f"unreachable stock: {symbol.symbol.upper()}\nerror message: {e}\n"
+                    #raise TickerError (err_msg)
+        if down:           
+            self.index_msg['suc'] = f"{self.symbol.upper()}共有{len(up)+len(down)}支股票，共有{len(up)/(len(up)+len(down))*100:.2f}%高于50周期均线"
+        else:
+            err_msg += f"数据好像出问题了，请检查一下。"
+        if len(up)+len(down) + 20 < len(self.tickers):
+            err_msg += f"{self.symbol.upper()}: {end_date.strftime('%Y-%m-%d')} 有超过20支股票没有数据，请确保输入的日期当天有开市\n"
+        self.index_msg['err'] = err_msg
+
+        return self.index_msg
 
 
 if __name__ == "__main__":
@@ -236,41 +266,44 @@ if __name__ == "__main__":
 
 
     import stooq
-    tickers = ["spy"]
+    tickers = ["ndx","spx"]
+    #tickers = ["aapl","RBLX"]
     admin_msg = ""
     notify_msg = ""
+    mas = [10, 50, 120]
+    # for ticker in tickers:
+    #     try:
+    #         a = Ticker(ticker,datetime.date(2021,8,10))
+    #         #a.load_data(source = "~/Downloads/data")
+    #         a.load_data(source = "stooq")
+    #         lastest_price = a.load_data('stooq')['Close'][-1]
+    #         a.append_sma(10)
+    #         a.append_sma(50)
+    #         a.append_sma(100)
+    #         a.append_sma(200)
+    #         a.cal_sams_change_rate()
+    #         a.ge_xyh_msg(mas)
+    #         notify_msg += f"{lastest_price} \n{a.smas} \n{a.smas_state}\n{a.xyh_msg}"
+    #     except TickerError as e:
+    #         admin_msg += str(e)
+    # print("=================================")
+    # #print(a.load_data(source = "stooq"))
+    # #print(a.load_data(source = "stooq")['Close'][-1])
+    # print("=================================")
+    # print(notify_msg)
+    # print(admin_msg)
 
     for ticker in tickers:
         try:
-            a = Ticker(ticker,datetime.date(2021,8,10))
-            #a.load_data(source = "~/Downloads/data")
-            a.load_data(source = "stooq")
-            lastest_price = a.load_data('stooq')['Close'][-1]
-            a.append_sma(10)
-            # a.append_sma(50)
-            # a.append_sma(100)
-            # a.append_sma(200)
-            a.cal_sams_change_rate()
-            notify_msg += f"{lastest_price} \n{a.smas} \n{a.smas_state}\n"
+            b = Index(ticker)
+            b.get_index_tickers_list()
+            b.compare_avg(ma = 50, source="~/Downloads/data",end_date=datetime.date(2021,7,21))
+            notify_msg += f"{b.index_msg['suc']}\n"
+            admin_msg += f"{b.index_msg['err']}\n"
         except TickerError as e:
             admin_msg += str(e)
-    print("=================================")
-    #print(a.load_data(source = "stooq"))
-    #print(a.load_data(source = "stooq")['Close'][-1])
-    print("=================================")
-    print(notify_msg)
-    print(admin_msg)
-
-
-    # try:
-    #     b = Index()
-    #     spx = b.get_sp500_tickers()
-    #     spx_avg = b.compare_avg(ma = 50, index = spx, end_date=datetime.date(2021,7,21))
-    #     spx_msg = f"SPX共有{spx_avg['up_num']+spx_avg['down_num']}支股票，共有{spx_avg['rate']*100:.2f}%高于50周期均线"
-    #     notify_msg = f"{spx_msg}"
-    # except TickerError as e:
-    #     admin_msg+=str(e)
+            
         
-    # print (spx_avg)
-    # print (notify_msg)
-    # print (admin_msg)
+    print (notify_msg)
+    print ("(=================)")
+    print (admin_msg)
