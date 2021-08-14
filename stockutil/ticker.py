@@ -1,11 +1,12 @@
 from logging import error
 from typing import Tuple
+from numpy import append, dtype
 import pandas_datareader.data as web
 import pandas as pd
 import datetime
 from datetime import timedelta
 import os
-#import stooq
+import stooq
 
 class TickerError(Exception):
     pass
@@ -70,7 +71,15 @@ class Ticker:
 
         for index, date in enumerate(date_list):
             if date not in df.index:
-                date_list[index]=date + datetime.timedelta(days=1)
+                date_t = date + datetime.timedelta(days=1) #周三换成周四
+                if date_t not in df.index:
+                    date_f = date_t + datetime.timedelta(days=1) #周四换成周五
+                    if date_f not in df.index:
+                        del date_list[index]
+                    else:
+                        date_list[index] = date_f
+                else:
+                    date_list[index] = date_t
         self.date_list = pd.to_datetime(date_list).sort_values()
         return self.date_list
 
@@ -265,11 +274,15 @@ class Index:
 
 if __name__ == "__main__":
 #     # Ticker测试代码
-#     aapl = Ticker('AAPL')
-#     aapl.load_data("~/Downloads/data")
-#     aapl.get_date_list()
-# #    print(aapl.get_date_list())
-#     print(aapl.get_price_lists('monthly'))
+    aapl = Ticker('AAPL')
+    aapl.load_data("~/Downloads/data")
+    aapl.get_date_list()
+    aapl.get_price_lists()
+    aapl.cal_profit('weekly')
+    aapl.cal_profit('monthly')
+    print(aapl.get_date_list())
+    print(aapl.ge_profit_msg())
+
 
 
     # spx = Index('ndx')
@@ -281,19 +294,17 @@ if __name__ == "__main__":
     #     end_date=datetime.date(2021,6,1)
     # ))
 
-
-    import stooq
-    tickers = ["ndx","spx"]
-    #tickers = ["aapl","RBLX"]
-    admin_msg = ""
-    notify_msg = ""
-    mas = [10, 50, 120]
+    #tickers = ["ndx","spx"]
+    # tickers = ["aapl","RBLX"]
+    # admin_msg = ""
+    # notify_msg = ""
+    # mas = [10, 50, 120]
     # for ticker in tickers:
     #     try:
-    #         a = Ticker(ticker,datetime.date(2021,8,10))
+    #         a = Ticker(ticker,datetime.date(2021,8,13))
     #         #a.load_data(source = "~/Downloads/data")
     #         a.load_data(source = "stooq")
-    #         lastest_price = a.load_data('stooq')['Close'][-1]
+    #         lastest_price = a.data['Close'][-1]
     #         a.append_sma(10)
     #         a.append_sma(50)
     #         a.append_sma(100)
@@ -310,18 +321,18 @@ if __name__ == "__main__":
     # print(notify_msg)
     # print(admin_msg)
 
-    for ticker in tickers:
-        try:
-            b = Index(ticker)
-            b.get_index_tickers_list()
-            b.compare_avg(ma = 50, source="~/Downloads/data",end_date=datetime.date(2021,7,21))
-            b.ge_index_compare_msg(ticker, end_date=datetime.date(2021,7,21))
-            notify_msg += f"{b.index_msg}\n"
-            admin_msg += f"{b.compare_msg['err']}\n"
-        except TickerError as e:
-            admin_msg += str(e)
+    # for ticker in tickers:
+    #     try:
+    #         b = Index(ticker)
+    #         b.get_index_tickers_list()
+    #         b.compare_avg(ma = 50, source="~/Downloads/data",end_date=datetime.date(2021,7,21))
+    #         b.ge_index_compare_msg(ticker, end_date=datetime.date(2021,7,21))
+    #         notify_msg += f"{b.index_msg}\n"
+    #         admin_msg += f"{b.compare_msg['err']}\n"
+    #     except TickerError as e:
+    #         admin_msg += str(e)
             
         
-    print (notify_msg)
-    print ("(=================)")
-    print (admin_msg)
+    # print (notify_msg)
+    # print ("(=================)")
+    # print (admin_msg)
