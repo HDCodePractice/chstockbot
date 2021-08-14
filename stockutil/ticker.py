@@ -194,7 +194,9 @@ class Index:
         "NDX" : ["https://en.wikipedia.org/wiki/Nasdaq-100",3,"Ticker"],
         "SPX" : ["https://en.wikipedia.org/wiki/List_of_S%26P_500_companies",0,"Symbol"]
     }
+    compare_msg = {}
     index_msg = {}
+    
     
     def __init__(self,symbol) -> None:
         symbol = symbol.upper()
@@ -215,7 +217,7 @@ class Index:
     def compare_avg(self, ma=50, source="~/Downloads/data", end_date=datetime.date.today()):
         if self.tickers is None:
             self.get_index_tickers_list()
-        self.index_msg = {}
+        self.compare_msg = {}
         up = []
         down = []
         err_msg = ""
@@ -234,15 +236,30 @@ class Index:
                     err_msg +=f"{symbol.symbol.upper()} 的{ma}周期均价因时长不足无法比较\n" 
             except Exception as e:
                     err_msg += f"unreachable stock: {symbol.symbol.upper()}\nerror message: {e}\n"
-                    #raise TickerError (err_msg)
-        if down:           
-            self.index_msg['suc'] = f"{self.symbol.upper()}共有{len(up)+len(down)}支股票，共有{len(up)/(len(up)+len(down))*100:.2f}%高于50周期均线"
-        else:
-            err_msg += f"数据好像出问题了，请检查一下。"
-        if len(up)+len(down) + 20 < len(self.tickers):
-            err_msg += f"{self.symbol.upper()}: {end_date.strftime('%Y-%m-%d')} 有超过20支股票没有数据，请确保输入的日期当天有开市\n"
-        self.index_msg['err'] = err_msg
+                    #raise TickerError(err_msg)
+                    
+        
+        self.compare_msg['up'] = up
+        self.compare_msg['down'] = down
+        self.compare_msg['err'] = err_msg
+        
+        return self.compare_msg
 
+    def ge_index_compare_msg(self,index, end_date):
+        if self.tickers is None:
+            self.get_index_tickers_list()
+        if self.compare_msg is None:
+            self.compare_avg()
+        self.index_msg = {}
+        up_num = len(self.compare_msg['up'])
+        down_num = len(self.compare_msg['down'])
+        if self.compare_msg['down']:           
+            self.index_msg = f"{self.symbol.upper()}共有{up_num+down_num}支股票，共有{up_num/(up_num+down_num)*100:.2f}%高于50周期均线"
+        else:
+            raise TickerError (f"数据好像出问题了，请检查一下。")
+        if up_num+down_num + 20 < len(self.tickers):
+            raise TickerError (f"{index.upper()}: {end_date.strftime('%Y-%m-%d')} 有超过20支股票没有数据，请确保输入的日期当天有开市\n")
+        
         return self.index_msg
 
 
@@ -298,8 +315,9 @@ if __name__ == "__main__":
             b = Index(ticker)
             b.get_index_tickers_list()
             b.compare_avg(ma = 50, source="~/Downloads/data",end_date=datetime.date(2021,7,21))
-            notify_msg += f"{b.index_msg['suc']}\n"
-            admin_msg += f"{b.index_msg['err']}\n"
+            b.ge_index_compare_msg(ticker, end_date=datetime.date(2021,7,21))
+            notify_msg += f"{b.index_msg}\n"
+            admin_msg += f"{b.compare_msg['err']}\n"
         except TickerError as e:
             admin_msg += str(e)
             
