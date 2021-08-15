@@ -2,4 +2,4 @@ systemd-python
 python-telegram-bot
 pandas 
 pandas-datareader
-python-dotenv
+environs
