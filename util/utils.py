@@ -6,7 +6,7 @@ def get_target_date(start=datetime.date.today(),end=datetime.date.today(),freq="
     '''
     freq="W-DAY" i.e, W-MON/W-TUE/W-WED/W-THU/W-FRI/W-SAT/W-SUN
     '''
-    date_list = pd.date_range(start=start, end=end, freq=freq).strftime('%Y-%m-%d').tolist()
+    date_list = pd.date_range(start=start, end=end, freq=freq).tolist()
     return date_list
 
 def is_second_wednesday(d=datetime.date.today()): #计算是否是第二个周三；网上找的，很简单又很有效

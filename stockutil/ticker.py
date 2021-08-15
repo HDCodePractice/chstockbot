@@ -65,7 +65,7 @@ class Ticker:
             raise TickerError("指定日期中没有日期数据")
         for date in self.date_list:
             price = self.df.loc[date,"Close"] #获取周三当日的收盘价
-            if is_second_wednesday(d = datetime.datetime.strptime(date, "%Y-%m-%d")):
+            if is_second_wednesday(date):
                 second_wednesday_count +=1 #如果当天是当月第二个周三，大毛毛个数+1
                 dmm_stock_number += self.principle/price #获取大毛毛股数
             xmm_stock_number += self.principle/price #获取小毛毛股数
