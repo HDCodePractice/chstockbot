@@ -4,42 +4,11 @@ from telegram import Bot
 from stockutil import stooq, wikipedia
 from stockutil.ticker import Ticker
 from util.utils import sendmsg
-
+from stockutil.index import Index
 target_date = datetime.date.today()
 
 def help():
     return "sendxyh.py -c configpath -d yyyymmdd"
-
-def get_spx_ndx_avg_msg(ma=50,end=datetime.date.today()):
-    """
-    获取spx和ndx在50MA之上的股票数量的百分比信息，返回发给用户的信息。
-    """
-    msg = ""
-    err_msg =""
-    sp500 = wikipedia.get_sp500_tickers()
-    ndx100 = wikipedia.get_ndx100_tickers()
-    indexes = {"SPX": sp500, "NDX": ndx100}
-    # indexes = {"ndx100": ndx100}
-    for key in indexes:
-        up = []
-        down = []       
-        for symbol in indexes[key]:
-            try:
-                if stooq.symbol_above_moving_average(symbol,ma=ma,path=f"{config.config_path}/data",end=end): 
-                    up.append(symbol)
-                else:
-                    down.append(symbol)
-            except stooq.markCloseError:
-                err_msg += f"{key}: {symbol} {end.strftime('%Y-%m-%d')}没有数据\n"
-                #break 移除break 防止出现只有部分ticker没有数据但是大部分有数据的情况
-            except Exception as e:
-                err_msg += f"unreachable stock: {symbol}\nerror message: {e}\n"
-        if down:
-            msg += f"{key}共有{len(up)+len(down)}支股票，共有{len(up)/(len(up)+len(down))*100:.2f}%高于{ma}周期均线\n"
-        if len(up)+len(down) + 20 < len(indexes[key]):
-            err_msg = f"{key}: {end.strftime('%Y-%m-%d')} 有超过20支股票没有数据，请确保输入的日期当天有开市\n"
-    return msg, err_msg
-
 
 if __name__ == '__main__':
     try:
@@ -80,14 +49,24 @@ if __name__ == '__main__':
 
     notify_message = ""
     admin_message = ""
-    msg,err  = get_spx_ndx_avg_msg(end=target_date)
-    admin_message += err
+    #msg,err  = get_spx_ndx_avg_msg(end=target_date)
+    #admin_message += err
     xyh_msg = ""
+    msg  = ""
     try:
+        for symbol,value in Index.sources.items():
+            index = Index(symbol)
+            symbol= index.get_index_tickers_list()
+            data = index.compare_avg(ma=50,end_date=target_date)
+            if data['up_num']+data['down_num'] + 20 < len(index.tickers):
+                admin_message += f"{index.symbol}: {target_date.strftime('%Y-%m-%d')} 有超过20支股票没有数据，请确保输入的日期当天有开市\n"
+            else:
+                msg += f"{index.symbol}共有{data['up_num']+data['down_num']}支股票，共有{data['rate']*100:.2f}%高于{index.ma}周期均线\n"
         for datasource in ds:
             for symbol in symbols:
                 ticker = Ticker(symbol[0],"web",datasource,endtime=target_date)
                 ticker.load_data()
+                xyh_msg += f"{ticker.symbol}价格: {ticker.df['Close'][-1]}({ticker.df['Low'][-1]} - {ticker.df['High'][-1]}):\n"
                 for ma in symbol[1:]:
                     ticker.cal_symbols_avg(ma)
                     ticker.cal_sams_change_rate()
@@ -98,7 +77,7 @@ if __name__ == '__main__':
         sendmsg(bot,adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}",debug)
     
     if xyh_msg:
-        notify_message += f"🌈🌈🌈{target_date}天相🌈🌈🌈: \n\n{xyh_msg}\n贡献者:毛票教的大朋友们\n{msg}"
+        notify_message += f"🌈🌈🌈{target_date}天相🌈🌈🌈: \n\n{xyh_msg}\n{msg}\n贡献者:毛票教的大朋友们\n"
         sendmsg(bot,notifychat,notify_message,debug=debug)
     if admin_message:
         sendmsg(bot,adminchat,admin_message,debug=debug)

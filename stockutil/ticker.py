@@ -21,7 +21,10 @@ class Ticker:
     dmm_profit = {}
     smas = {}
     smas_state ={}
-    date_list= None
+    date_list= {}
+    xmm_price_list = {}
+    dmm_price_list = {}
+
     def __init__(self,symbol,from_s,ds,starttime=datetime.date(2021,1,1),endtime=datetime.datetime.today(),principle=100):
         self.symbol = symbol
         self.starttime=starttime
@@ -32,7 +35,7 @@ class Ticker:
         if starttime >= endtime:
             raise TickerError("起始时间比结束时间大，请重新设置")
         self.date_list = get_target_date(starttime,endtime)
-        self.reset_data()
+        
         
     def load_data(self):
         '''
@@ -49,36 +52,59 @@ class Ticker:
                 tiker_file = search_file(self.symbol.lower().replace(".","-") + ".us.txt",os.path.expanduser(self.ds))
                 df = read_stooq_file(path=tiker_file[0])
                 #filter df based on end time
-                if self.endtime in self.df.index.date:
+                if self.endtime in df.index.date:
                     df = df.loc[df.index[0]:self.endtime]
             self.df = df
+            self.reset_data()
             return self.df
         raise TickerError("无法使用当前指定的方法")    
 
+
+    def get_target_price(self,date_list):
+        if self.df is None:
+            self.load_data()
+        if date_list == None:
+            raise TickerError("指定日期中没有日期数据")
+        i = 0
+        price_list={}
+        #start from first day of the data
+        for j in range(len(date_list) - 1):
+            if date_list[j] > self.df.index[0]:
+                max_try = (date_list[j+1] - date_list[j]).days #设置最大尝试值，根据下一次定投大毛毛的日期
+                while i <  max_try:
+                    try:
+                        date_list[j] = date_list[j] + datetime.timedelta(days=i)
+                        price_list[date_list[j]] = self.df.loc[date_list[j],"Close"]
+                        break
+                    except Exception as e:
+                        i += 1
+                        continue
+        return price_list
+        
     def cal_profit(self):
         dmm_stock_number = 0 #初始化 大毛毛股数
         xmm_stock_number = 0 #初始化 小毛毛股数
-        second_wednesday_count = 0
         if self.df is None:
             self.load_data()
         if self.date_list == None:
             raise TickerError("指定日期中没有日期数据")
-        for date in self.date_list:
-            price = self.df.loc[date,"Close"] #获取周三当日的收盘价
-            if is_second_wednesday(date):
-                second_wednesday_count +=1 #如果当天是当月第二个周三，大毛毛个数+1
-                dmm_stock_number += self.principle/price #获取大毛毛股数
+
+        self.dmm_price_list = self.get_target_price(self.date_list['dmm'])
+        self.xmm_price_list = self.get_target_price(self.date_list['xmm'])
+        for date,price in self.xmm_price_list.items():
             xmm_stock_number += self.principle/price #获取小毛毛股数
+        for date,price in self.dmm_price_list.items():
+            dmm_stock_number += self.principle/price #获取大毛毛股数
         self.xmm_profit = {
             "current_profit":xmm_stock_number * self.df["Close"][-1],
-            "total_principle":self.principle * len(self.date_list),
-            "profit_percentage": (xmm_stock_number * self.df["Close"][-1])/(self.principle * len(self.date_list)) - 1 
+            "total_principle":self.principle * len(self.xmm_price_list),
+            "profit_percentage": (xmm_stock_number * self.df["Close"][-1])/(self.principle * len(self.xmm_price_list)) - 1 
             } 
-        if second_wednesday_count > 0:    
+        if len(self.dmm_price_list) > 0:    
             self.dmm_profit = {
                 "current_profit":dmm_stock_number * self.df["Close"][-1],
-                "total_principle":self.principle * second_wednesday_count, 
-                "profit_percentage": (dmm_stock_number * self.df["Close"][-1])/(self.principle * second_wednesday_count) - 1
+                "total_principle":self.principle * len(self.dmm_price_list), 
+                "profit_percentage": (dmm_stock_number * self.df["Close"][-1])/(self.principle * len(self.dmm_price_list)) - 1
                 }
         return [self.xmm_profit,self.dmm_profit]
 
@@ -128,7 +154,66 @@ class Ticker:
         return chat_msg
 
     def gen_xyh_msg(self):
-        chat_msg = f"{self.symbol}价格: {self.df['Close'][-1]}({self.df['Low'][-1]} - {self.df['High'][-1]}):\n"
+        chat_msg = ""
         for key,value in self.smas.items():
             chat_msg += f"{self.smas_state[key][1]} {key} 周期均价：{value:0.2f} ({self.smas_state[key][0]:0.2f}%)\n"
         return chat_msg
+
+
+
+if __name__ == "__main__":
+    # Ticker测试代码
+    # aapl = Ticker('AAPL')
+    # aapl.load_data("~/Downloads/data")
+    # aapl.get_price_lists(start=datetime.date(2020,4,28))
+    # print(aapl.cal_profit('montly'))
+
+
+    # spx = Index('ndx')
+    # print(spx.get_index_tickers_list())
+    # print(len(spx.tickers))
+    # print(spx.compare_avg(
+    #     10,
+    #     source="~/Downloads/data",
+    #     end_date=datetime.date(2021,6,1)
+    # ))
+    ticker = Ticker("spy","web","stooq")
+    print(ticker.date_list["dmm"])
+    print(ticker.date_list["xmm"])
+    # import stooq
+    # tickers = ["spy","qqq","didi"]
+    # admin_msg = ""
+    # notify_msg = ""
+
+    # for ticker in tickers:
+    #     try:
+    #         a = Ticker(ticker,datetime.date(2021,8,6))
+    #         #a.load_data(source = "~/Downloads/data")
+    #         a.load_data(source = "stooq")
+    #         lastest_price = a.load_data(source = "~/Downloads/data")['Close'][-1]
+    #         a.append_sma(10)
+    #         a.append_sma(50)
+    #         a.append_sma(100)
+    #         a.append_sma(200)
+    #         a.cal_sams_change_rate()
+    #         notify_msg += f"{lastest_price} {a.smas} {a.smas_state}\n"
+    #     except TickerError as e:
+    #         admin_msg += str(e)
+    # print("=================================")
+    # print(a.load_data(source = "stooq"))
+    # print(a.load_data(source = "stooq")['Close'][-1])
+    # print("=================================")
+    # print(notify_msg)
+    # print(admin_msg)
+    # try:
+    #     b = Index()
+    #     spx = b.get_sp500_tickers()
+    #     spx_avg = b.compare_avg(ma = 50, index = spx, end_date=datetime.date(2021,7,21))
+    #     spx_msg = f"SPX共有{spx_avg['up_num']+spx_avg['down_num']}支股票，共有{spx_avg['rate']*100:.2f}%高于50周期均线"
+    #     notify_msg = f"{spx_msg}"
+    # except TickerError as e:
+    #     admin_msg+=str(e)
+        
+    # print (spx_avg)
+    # print (notify_msg)
+    # print (admin_msg)
