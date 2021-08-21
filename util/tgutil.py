@@ -1,8 +1,9 @@
 from telegram import User,Message
 from telegram.ext import CallbackContext
+from telegram.utils.helpers import escape_markdown
 
 def get_user_link(from_user:User) -> str:
-    return f"[{from_user.first_name}](tg://user?id={from_user.id})"
+    return f"[{escape_markdown(from_user.first_name,2)}](tg://user?id={from_user.id})"
 
 def delete_reply_msg(context : CallbackContext):
     msg=context.job.context
