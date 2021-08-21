@@ -1,0 +1,54 @@
+import datetime
+from stockutil.ticker import Ticker
+import pandas as pd
+class IndexError(Exception):
+    pass
+
+class Index:
+    symbol = None
+    ma=None
+    tickers = []
+    sources = {
+        "NDX" : ["https://en.wikipedia.org/wiki/Nasdaq-100",3,"Ticker"],
+        "SPX" : ["https://en.wikipedia.org/wiki/List_of_S%26P_500_companies",0,"Symbol"]
+    }
+    
+    def __init__(self,symbol) -> None:
+        symbol = symbol.upper()
+        if symbol not in self.sources.keys():
+            raise IndexError(f"{symbol} 不在我们的支持列表中")
+        self.symbol = symbol
+
+    def get_index_tickers_list(self):
+        """
+        获得指数的成分股列表
+        """
+        self.tickers = []
+        url,table_num,colum_name = self.sources[self.symbol]
+        df = pd.read_html(url)[table_num]
+        self.tickers = df[colum_name].tolist()
+        return self.tickers
+
+    def compare_avg(self, ma=10, source="~/Downloads/data", end_date=datetime.date.today()):
+        up = []
+        down = []
+        self.ma =ma
+        for symbol in self.tickers:
+            try:
+                symbol = Ticker(symbol,"local",ds=source,endtime=end_date)
+                df = symbol.load_data()
+                if end_date in df.index.date:                
+                    df = df.loc[df.index[0]:end_date]
+                    if df.count()[0] > ma :
+                        if df['Adj Close'][-1] < df.tail(ma)['Adj Close'].mean():
+                            up.append(symbol.symbol)
+                        else:
+                            down.append(symbol.symbol)
+                    else:
+                        raise IndexError(f"{ma} 周期均价因时长不足无法得出\n")     
+                else:
+                    raise IndexError(f"输入的日期没有数据，请确保输入的日期当天有开市\n")
+            except Exception as e:
+                print(f"unreachable stock: {symbol.symbol}\nerror message: {e}\n")
+        
+        return {'up_num':len(up), 'down_num':len(down),'rate':len(up)/(len(up)+len(down))}

@@ -5,7 +5,7 @@ from telegram.inline.inlinekeyboardbutton import InlineKeyboardButton
 from telegram.inline.inlinekeyboardmarkup import InlineKeyboardMarkup
 from telegram.user import User
 from config import ENV
-from util.tgutil import get_user_link,delay_del_msg
+from util.tgutil import get_user_link,delay_del_msg,get_group_info
 from telegram.utils.helpers import escape_markdown
 
 admingroup = ENV.ADMIN_GROUP
@@ -85,14 +85,16 @@ def kick_user(update: Update, context:CallbackContext):
         return
     count = 0
     kick_count = 0
+    kick_group = []
     for group in groups:
         count += 1
         try:
             cm = context.bot.get_chat_member(group,kick_user)
             if cm.status == cm.MEMBER:
                 if not ENV.DEBUG:
-                    context.bot.ban_chat_member(group,kick_user)
+                    context.bot.ban_chat_member(group,kick_user,revoke_messages=True)
                 kick_count += 1
+                kick_group.append(update.effective_chat.title)
                 # if ENV.DEBUG:
                 #     # 测试时解除banned
                 #     context.bot.unban_chat_member(group,kick_user)
