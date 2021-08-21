@@ -6,7 +6,8 @@ def get_target_date(start=datetime.date.today(),end=datetime.date.today(),freq="
     '''
     freq="W-DAY" i.e, W-MON/W-TUE/W-WED/W-THU/W-FRI/W-SAT/W-SUN
     '''
-    date_list = pd.date_range(start=start, end=end, freq=freq)
+    date_list = pd.date_range(start=start, end=end, freq=freq).tolist()
+
     date_dict = {}
     date_dict["xmm"] =date_list
     date_dict["dmm"] = []

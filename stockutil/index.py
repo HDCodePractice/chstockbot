@@ -32,23 +32,27 @@ class Index:
     def compare_avg(self, ma=10, source="~/Downloads/data", end_date=datetime.date.today()):
         up = []
         down = []
+        today_volume = 0
+        yesterday_volume = 0
         self.ma =ma
+        err_msg =""
         for symbol in self.tickers:
             try:
                 symbol = Ticker(symbol,"local",ds=source,endtime=end_date)
                 df = symbol.load_data()
                 if end_date in df.index.date:                
                     df = df.loc[df.index[0]:end_date]
+                    today_volume += df["Volume"][-1] #今日交易量
+                    yesterday_volume += df["Volume"][-2] #昨日交易量
                     if df.count()[0] > ma :
                         if df['Adj Close'][-1] < df.tail(ma)['Adj Close'].mean():
                             up.append(symbol.symbol)
                         else:
                             down.append(symbol.symbol)
                     else:
-                        raise IndexError(f"{ma} 周期均价因时长不足无法得出\n")     
+                        raise IndexError(f"{symbol.symbol} {ma} 周期均价因时长不足无法得出\n")     
                 else:
-                    raise IndexError(f"输入的日期没有数据，请确保输入的日期当天有开市\n")
+                    raise IndexError(f"{symbol.symbol}输入的日期没有数据，请确保输入的日期当天有开市\n")
             except Exception as e:
-                print(f"unreachable stock: {symbol.symbol}\nerror message: {e}\n")
-        
-        return {'up_num':len(up), 'down_num':len(down),'rate':len(up)/(len(up)+len(down))}
+               err_msg += f"unreachable stock: {symbol.symbol}\nerror message: {e}\n" #把所有无法取得的数据放入msg 并返回给主程序
+        return {'up_num':len(up), 'down_num':len(down),'rate':len(up)/(len(up)+len(down)), 'today_volume': today_volume, 'yesterday_volume':yesterday_volume, 'percentage':(today_volume - yesterday_volume)/yesterday_volume,'err_msg': err_msg}

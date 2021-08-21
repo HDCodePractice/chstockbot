@@ -59,26 +59,33 @@ class Ticker:
             return self.df
         raise TickerError("无法使用当前指定的方法")    
 
+    def xmm_max_try(self):
+        if self.date_list["xmm"] == None:
+            raise TickerError("小毛毛指定日期中没有日期数据")
+        return 7
+    
+    def dmm_max_try(self): #没有想好是要分开来算max try 还是直接给定值
+        if self.date_list["dmm"] == None:
+            raise TickerError("小毛毛指定日期中没有日期数据")
+        return 28
 
-    def get_target_price(self,date_list):
+
+    def get_target_price(self,date_list,max_try):
         if self.df is None:
             self.load_data()
         if date_list == None:
             raise TickerError("指定日期中没有日期数据")
-        i = 0
         price_list={}
         #start from first day of the data
         for j in range(len(date_list) - 1):
             if date_list[j] > self.df.index[0]:
-                max_try = (date_list[j+1] - date_list[j]).days #设置最大尝试值，根据下一次定投大毛毛的日期
+                i = 0
                 while i <  max_try:
-                    try:
-                        date_list[j] = date_list[j] + datetime.timedelta(days=i)
-                        price_list[date_list[j]] = self.df.loc[date_list[j],"Close"]
+                    tmp_date = date_list[j] + datetime.timedelta(days=1)
+                    if tmp_date in self.df.index.date:
+                        price_list[tmp_date] = self.df.loc[tmp_date,"Close"]
                         break
-                    except Exception as e:
-                        i += 1
-                        continue
+                    i +=1
         return price_list
         
     def cal_profit(self):
@@ -89,8 +96,8 @@ class Ticker:
         if self.date_list == None:
             raise TickerError("指定日期中没有日期数据")
 
-        self.dmm_price_list = self.get_target_price(self.date_list['dmm'])
-        self.xmm_price_list = self.get_target_price(self.date_list['xmm'])
+        self.dmm_price_list = self.get_target_price(self.date_list['dmm'],self.dmm_max_try())
+        self.xmm_price_list = self.get_target_price(self.date_list['xmm'],self.dmm_max_try())
         for date,price in self.xmm_price_list.items():
             xmm_stock_number += self.principle/price #获取小毛毛股数
         for date,price in self.dmm_price_list.items():

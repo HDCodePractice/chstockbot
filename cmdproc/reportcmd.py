@@ -86,6 +86,7 @@ def kick_user(update: Update, context:CallbackContext):
     count = 0
     kick_count = 0
     kick_group = []
+    kick_group_msg = ""
     for group in groups:
         count += 1
         try:
@@ -94,18 +95,24 @@ def kick_user(update: Update, context:CallbackContext):
                 if not ENV.DEBUG:
                     context.bot.ban_chat_member(group,kick_user,revoke_messages=True)
                 kick_count += 1
-                kick_group.append(update.effective_chat.title)
+                kick_group.append(context.bot.get_chat(group))
                 # if ENV.DEBUG:
                 #     # 测试时解除banned
                 #     context.bot.unban_chat_member(group,kick_user)
         except BadRequest:
             context.bot.send_message(admingroup,f"Bot在{group}里不是管理员")
     kick_user = context.bot.get_chat(kick_user)
+    for group in kick_group:
+        kick_group_msg += f"{get_group_info(group)}\n"
     context.bot.send_message(
         admingroup,
-        f" {get_user_link(update.effective_user)} 把 {get_user_link(kick_user)} 从毛票教{count}个群中的{kick_count}个群轻轻的碾压出去了",
+        f" {get_user_link(update.effective_user)} 把 {get_user_link(kick_user)} 从毛票教{count}个群中的{kick_count}个群:\n{kick_group_msg}轻轻的碾压出去了",
         parse_mode=ParseMode.MARKDOWN_V2)
-
+    if update.effective_user.id != kick_user.id:
+        context.bot.send_message(
+            update.effective_user.id,
+            f"您的举报已经被管理员处理，感谢您的贡献！"
+        )
 def add_dispatcher(dp):
     dp.add_handler(CommandHandler("r", report_user))
     dp.add_handler(CallbackQueryHandler(kick_user,pattern="^kick:[A-Za-z0-9_-]*"))

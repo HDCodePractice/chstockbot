@@ -58,10 +58,13 @@ if __name__ == '__main__':
             index = Index(symbol)
             symbol= index.get_index_tickers_list()
             data = index.compare_avg(ma=50,end_date=target_date)
+            if data['err_msg']:
+                admin_message = data['err_msg']
             if data['up_num']+data['down_num'] + 20 < len(index.tickers):
                 admin_message += f"{index.symbol}: {target_date.strftime('%Y-%m-%d')} 有超过20支股票没有数据，请确保输入的日期当天有开市\n"
             else:
                 msg += f"{index.symbol}共有{data['up_num']+data['down_num']}支股票，共有{data['rate']*100:.2f}%高于{index.ma}周期均线\n"
+                msg += f"今日交易量与昨日交易量百分比：{data['percentage']*100:.2f}%\n"
         for datasource in ds:
             for symbol in symbols:
                 ticker = Ticker(symbol[0],"web",datasource,endtime=target_date)
