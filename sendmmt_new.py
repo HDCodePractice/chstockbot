@@ -1,6 +1,6 @@
 import getopt,sys,config,os
-from stockutil.ticker import Ticker, TickerError, get_week_num
-from bot import sendmsg
+from stockutil.ticker import Ticker, TickerError
+from util.utils import get_dmm_maxtry,get_xmm_maxtry, get_week_num, sendmsg
 import datetime
 from telegram import Bot
 
@@ -66,13 +66,10 @@ if __name__ == '__main__':
     try:
         for symbol in symbols:
             try:
-                ticker = Ticker(symbol, end_date=end_date)
+                ticker = Ticker(symbol, start_date = start_date, end_date=end_date)
                 ticker.load_data('stooq')
-                ticker.get_date_list(start=datetime.date(2021,1,1), end=end_date,freq='W-WED')
-                ticker.get_price_lists(week_num =2)
-                ticker.cal_profit('weekly')
-                ticker.ge_profit_msg()
-                ticker.cal_profit('monthly')                
+                ticker.get_price_list('xmm',get_xmm_maxtry)
+                ticker.get_price_list('dmm',get_dmm_maxtry)
                 ticker.ge_profit_msg()
                 weekly_msg += f"{ticker.profit_msg['weekly']}\n"
                 monthly_msg += f"{ticker.profit_msg['montly']}\n"
