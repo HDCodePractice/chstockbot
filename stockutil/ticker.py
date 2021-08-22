@@ -15,6 +15,7 @@ class TickerError(Exception):
 class Ticker:
     symbol = None
     data = None
+    volume_msg = ""
     start_date = None
     end_date = None
     # Ticker的SMA及对应的值
@@ -45,6 +46,7 @@ class Ticker:
                     df["Adj Close"] = df["Close"]
             self.data = df
             self.clean_sma()
+        
         else:
             ticker_file = search_file(symbol.lower().replace(".","-") + ".us.txt",os.path.expanduser(source))
             df = read_stooq_file(path = ticker_file[0])
@@ -54,8 +56,19 @@ class Ticker:
         self.end_date = df.index.date[-1]
         if self.start_date < df.index.date[0]:
             self.start_date = df.index.date[0]
+        
         return self.data
 
+    def compare_volume_msg(self):
+        self.volume_msg = ""
+        if self.data is None:
+            self.load_data()
+        df = self.data
+        volume_t = df['Volume'][-1]
+        volume_y = df['Volume'][-2]
+        self.volume_msg = f"{self.symbol.upper()} {self.end_date - datetime.timedelta(days=1)}交易量为 {volume_y}, {self.end_date}交易量为 {volume_t}, 增长 {(volume_t/volume_y-1)*100:.2f}%"
+
+        return self.volume_msg
 
     def get_price_list(self, date_list_name, get_maxtry =get_default_maxtry): 
         """
