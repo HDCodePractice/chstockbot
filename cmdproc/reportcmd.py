@@ -109,10 +109,13 @@ def kick_user(update: Update, context:CallbackContext):
         f" {get_user_link(update.effective_user)} 把 {get_user_link(kick_user)} 从毛票教{count}个群中的{kick_count}个群:\n{kick_group_msg}轻轻的碾压出去了",
         parse_mode=ParseMode.MARKDOWN_V2)
     if update.effective_user.id != kick_user.id:
-        context.bot.send_message(
-            update.effective_user.id,
-            f"您的举报已经被管理员处理，感谢您的贡献！"
-        )
+        response = f"您的举报已经被管理员处理，感谢您的贡献！"
+    else:
+        response = f"由于恶意举报，您已被移除出群！"
+    context.bot.send_message(
+        update.effective_user.id,
+        response
+    )
 def add_dispatcher(dp):
     dp.add_handler(CommandHandler("r", report_user))
     dp.add_handler(CallbackQueryHandler(kick_user,pattern="^kick:[A-Za-z0-9_-]*"))
