@@ -1,13 +1,15 @@
 import getopt,sys,config,os
-from stockutil.ticker import Ticker,sendmsg,is_second_wednesday
+from stockutil.ticker import Ticker, TickerError
+from util.utils import get_dmm_maxtry,get_xmm_maxtry, get_week_num, sendmsg
 import datetime
 from telegram import Bot
 
-target_end_time = datetime.date.today()
-target_start_time = datetime.date(2021,1,1)
+start_date = datetime.date(2021,1,1)
+end_date = datetime.date.today()
 
 def help():
     return "'sendxyh.py -c configpath -s yyyymmdd -e yyyymmdd'"
+
 
 if __name__ == '__main__':
     try:
@@ -24,13 +26,13 @@ if __name__ == '__main__':
             config.config_path = arg  
         elif opt in ("-s", "--starttime"): #setup datetime format "yyyymmdd"
             try: #尝试对从参数中读取的日期进行日期格式转换，如果没有参数，则使用1/26/2021
-                target_start_time = datetime.datetime.strptime(arg,"%Y%m%d").date()
+                start_date = datetime.datetime.strptime(arg,"%Y%m%d").date()
             except:
                 print(f"无法读取日期：\n{help()}")
                 sys.exit(2)
         elif opt in ("-e", "--endtime"):
             try: #尝试对从参数中读取的日期进行日期格式转换，如果没有参数，则使用1/26/2021
-                target_end_time = datetime.datetime.strptime(arg,"%Y%m%d").date()
+                end_date = datetime.datetime.strptime(arg,"%Y%m%d").date()
             except:
                 print(f"无法读取日期：\n{help()}")
                 sys.exit(2)
@@ -51,29 +53,35 @@ if __name__ == '__main__':
     debug = CONFIG['DEBUG']
     ds = CONFIG['xyhsource']   
     mmtchat = CONFIG['mmtchat'] 
-    admin_message = ""
-    notify_message = ""
+    admin_msg = ""
+    notify_msg = ""
+    
+    
+    mmt_week = "如果你每周定投，那么今天是投 #小毛毛 的日子啦，今天是周三 请向小🐷🐷中塞入你虔诚的🪙吧～"
+    mmt_month = f"如果你每月定投，那么今天是投 #大毛毛 的日子啦，今天是本月第二周的周三 请向小🐷🐷中塞入你虔诚的💰吧～\n{mmt_week}"
+
+    weekly_msg = ""
+    monthly_msg = ""
+
     try:
-        for datasource in ds:
-            for symbol in symbols:
-                ticker = Ticker(symbol)
-                ticker.source = datasource
-                ticker.starttime = target_start_time
-                ticker.endtime = target_end_time
-                ticker.load_web_data()
-                ticker.cal_profit()
-                ticker.generate_mmt_msg(ticker.profit[0],ticker.profit[1])
-                admin_message += ticker.admin_msg
-                notify_message += ticker.mmt_msg
-            break
-        if admin_message:
-            sendmsg(bot,mmtchat,admin_message,debug=debug)
-        if notify_message:
-            notify_message = f"如果你每周定投，哪么今天是投 #小毛毛 的日子啦，今天是周三 请向小🐷🐷中塞入你虔诚的🪙吧～\n{notify_message}"
-            if is_second_wednesday(d=target_end_time):
-                notify_message = f"如果你每月定投，哪么今天是投 #大毛毛 的日子啦，今天是本月第二周的周三 请向小🐷🐷中塞入你虔诚的💰吧～\n{notify_message}\n"
-            sendmsg(bot,mmtchat,notify_message,debug=debug)
+        for symbol in symbols:
+            try:
+                ticker = Ticker(symbol, start_date = start_date, end_date=end_date)
+                ticker.load_data('stooq')
+                ticker.get_price_list('xmm',get_xmm_maxtry)
+                ticker.get_price_list('dmm',get_dmm_maxtry)
+                ticker.ge_profit_msg()
+                weekly_msg += f"{ticker.profit_msg['weekly']}\n"
+                monthly_msg += f"{ticker.profit_msg['montly']}\n"
+                notify_msg = f"{weekly_msg}\n{monthly_msg}"
+            except TickerError as e:
+                admin_msg += str(e)
+
+        if get_week_num(end_date.year,end_date.month,end_date.day) == 2:
+            sendmsg(bot,mmtchat,f"{mmt_month}\n\n{notify_msg}",debug)
+        else:
+            sendmsg(bot,mmtchat,f"{mmt_week}\n\n{notify_msg}",debug)
+        if admin_msg:
+            sendmsg(bot, adminchat,admin_msg, debug)
     except Exception as err:
-        sendmsg(bot,adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}",debug)
-    
-    
+       sendmsg(bot,adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}",debug)
