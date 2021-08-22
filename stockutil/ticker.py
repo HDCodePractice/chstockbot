@@ -7,7 +7,7 @@ import pandas as pd
 import datetime
 from datetime import date, timedelta
 from stockutil.stooq import search_file,read_stooq_file
-from util.utils import get_week_num, get_dmm_maxtry,get_default_maxtry,get_xmm_maxtry, get_date_list
+from util.utils import get_default_maxtry, get_date_list
 
 class TickerError(Exception):
     pass
@@ -137,6 +137,31 @@ class Ticker:
         sma = df.tail(ma)['Adj Close'].mean()
         self.smas[ma] = sma
         return sma
+    
+    def cal_sams_change_rate(self):
+        df = self.data
+        for ma,value in self.smas.items():
+            percentage = (df['Adj Close'][-1] - value)/value * 100
+            self.smas_state[ma] = [percentage, "🟢" if percentage > 0 else "🔴"]
+        return self.smas_state
+
+    def ge_xyh_msg(self, mas):
+        self.xyh_msg = {}
+        status_msg = ""
+        if self.data is None:
+            self.load_data()
+        latest_price = self.data['Close'][-1]
+        lowest_price = self.data['Low'][-1]
+        highest_price = self.data['High'][-1]
+        for ma in mas:
+            if ma < self.data.count()[0]:
+                self.append_sma(ma=ma)
+                self.cal_sams_change_rate()
+                status_msg += f"{self.smas_state[ma][1]} {ma} 周期均价：{self.smas[ma]:0.2f} ({self.smas_state[ma][0]:0.2f}%)\n"            
+            else:
+                status_msg += f"{self.symbol}里的历史数据没有{ma}这么多\n"
+        self.xyh_msg = f"{self.symbol.upper()} 收盘价：{latest_price} ({lowest_price} - {highest_price})\n{status_msg}\n"
+        return self.xyh_msg
 
     def cal_sams_change_rate(self):
         df = self.data
