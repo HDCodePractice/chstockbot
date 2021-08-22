@@ -1,18 +1,16 @@
 import getopt,sys,config,os
-
 from pandas.core.indexing import IndexSlice
 import datetime
 from telegram import Bot
-from stockutil import ticker, stooq
-#from stockutil.ticker import Index, Ticker, TickerError
-from bot import sendmsg
+from stockutil.ticker import Ticker, TickerError
+from stockutil.index import Index, IndexError
+from util.utils import sendmsg
 
 target_date = datetime.date.today()
-
+start_date = datetime.date(2021,1,1)
 
 def help():
     return "sendxyh.py -c configpath -d yyyymmdd"
-
 
 if __name__ == '__main__':
     try:
@@ -57,26 +55,22 @@ if __name__ == '__main__':
 
     for index in indexs:
         try:
-            s = ticker.Index(index)
-            s.get_index_tickers_list()
-            for t in s.tickers:
-                t = ticker.Ticker(t,end_date=target_date)
-                t.load_data(source = "~/Downloads/data")
-                t.append_sma(ma = 50)                
-                s.compare_avg(ma = 50,source = "~/Downloads/data", end_date=target_date)
+            s = Index(index)
+            s.get_index_tickers_list()              
+            s.compare_avg(ma = 50,source = "~/Downloads/data", start_date = start_date, end_date=target_date)
             s.ge_index_compare_msg(index, end_date=datetime.date(2021,7,21))            
             index_message += f"{s.index_msg}\n"
             admin_message += f"{s.compare_msg['err']}"
-        except ticker.TickerError as e:
+        except IndexError as e:
             admin_message += str(e)
 
     for symbol in symbols:
         try:               
-            ticker = ticker.Ticker(symbol[0], end_date=target_date)
+            ticker = Ticker(symbol[0], start_date = start_date, end_date=target_date)
             ticker.load_data('stooq')
             ticker.ge_xyh_msg(symbol[1:])
             notify_message += f"{ticker.xyh_msg}"
-        except ticker.TickerError as e:
+        except TickerError as e:
             admin_message += str(e)
     try:
         if admin_message:
