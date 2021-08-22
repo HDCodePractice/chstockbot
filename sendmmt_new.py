@@ -72,7 +72,7 @@ if __name__ == '__main__':
                 ticker.get_price_list('dmm',get_dmm_maxtry)
                 ticker.ge_profit_msg()
                 weekly_msg += f"{ticker.profit_msg['weekly']}\n"
-                monthly_msg += f"{ticker.profit_msg['montly']}\n"
+                monthly_msg += f"{ticker.profit_msg['monthly']}\n"
                 notify_msg = f"{weekly_msg}\n{monthly_msg}"
             except TickerError as e:
                 admin_msg += str(e)

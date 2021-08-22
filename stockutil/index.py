@@ -7,8 +7,6 @@ from stockutil.ticker import Ticker
 class TickerError(Exception):
     pass
 
-
-
 class Index:
     symbol = None
     tickers = []
