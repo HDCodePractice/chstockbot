@@ -30,6 +30,8 @@ class Index:
         return self.tickers
 
     def compare_avg(self, ma=10, source="~/Downloads/data", end_date=datetime.date.today()):
+        if self.tickers is None:
+            self.get_index_tickers_list()
         up = []
         down = []
         today_volume = 0

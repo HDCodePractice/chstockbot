@@ -103,9 +103,9 @@ class Ticker:
         for date,price in self.dmm_price_list.items():
             dmm_stock_number += self.principle/price #获取大毛毛股数
         self.xmm_profit = {
-            "current_profit":xmm_stock_number * self.df["Close"][-1],
-            "total_principle":self.principle * len(self.xmm_price_list),
-            "profit_percentage": (xmm_stock_number * self.df["Close"][-1])/(self.principle * len(self.xmm_price_list)) - 1 
+            "current_profit":xmm_stock_number * self.df["Close"][-1],   #当前市值
+            "total_principle":self.principle * len(self.xmm_price_list),  # 总成本
+            "profit_percentage": (xmm_stock_number * self.df["Close"][-1])/(self.principle * len(self.xmm_price_list)) - 1  #盈利百分比
             } 
         if len(self.dmm_price_list) > 0:    
             self.dmm_profit = {
