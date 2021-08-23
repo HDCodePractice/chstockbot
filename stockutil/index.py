@@ -55,4 +55,5 @@ class Index:
                     raise IndexError(f"{symbol.symbol}输入的日期没有数据，请确保输入的日期当天有开市\n")
             except Exception as e:
                err_msg += f"unreachable stock: {symbol.symbol}\nerror message: {e}\n" #把所有无法取得的数据放入msg 并返回给主程序
-        return {'up_num':len(up), 'down_num':len(down),'rate':len(up)/(len(up)+len(down)), 'today_volume': today_volume, 'yesterday_volume':yesterday_volume, 'percentage':(today_volume - yesterday_volume)/yesterday_volume,'err_msg': err_msg}
+        return {'up_num':len(up), 'down_num':len(down),'rate':len(up)/(len(up)+len(down)), 'today_volume': today_volume, 'yesterday_volume':yesterday_volume, \
+        'percentage':(today_volume - yesterday_volume)/yesterday_volume,'err_msg': err_msg}

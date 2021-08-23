@@ -77,11 +77,11 @@ class Ticker:
             raise TickerError("指定日期中没有日期数据")
         price_list={}
         #start from first day of the data
-        for j in range(len(date_list) - 1):
+        for j in range(len(date_list)):
             if date_list[j] > self.df.index[0]:
                 i = 0
                 while i <  max_try:
-                    tmp_date = date_list[j] + datetime.timedelta(days=1)
+                    tmp_date = date_list[j] + datetime.timedelta(days=i)
                     if tmp_date in self.df.index.date:
                         price_list[tmp_date] = self.df.loc[tmp_date,"Close"]
                         break
@@ -97,7 +97,7 @@ class Ticker:
             raise TickerError("指定日期中没有日期数据")
 
         self.dmm_price_list = self.get_target_price(self.date_list['dmm'],self.dmm_max_try())
-        self.xmm_price_list = self.get_target_price(self.date_list['xmm'],self.dmm_max_try())
+        self.xmm_price_list = self.get_target_price(self.date_list['xmm'],self.xmm_max_try())
         for date,price in self.xmm_price_list.items():
             xmm_stock_number += self.principle/price #获取小毛毛股数
         for date,price in self.dmm_price_list.items():
