@@ -24,14 +24,23 @@ def get_week_num(year, month, day):
     return week_num
 
 def get_default_maxtry(try_date):
+    """
+    获取缺省的最大尝试天数
+    """
     return 3
 
 def get_xmm_maxtry(try_date):
+    """
+    获取xmm的最大尝试天数
+    """
     try_date = try_date.date()
     xmm_try_num = 5 - try_date.weekday() 
     return xmm_try_num
 
 def get_dmm_maxtry(try_date):
+    """
+    获取dmm的最大尝试天数
+    """
     year = try_date.year
     month = try_date.month
     day = try_date.day
