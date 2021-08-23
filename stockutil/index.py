@@ -55,12 +55,12 @@ class Index:
                     err_msg +=f"{symbol.symbol.upper()} 的{ma}周期均价因时长不足无法比较\n" 
             except Exception as e:
                     err_msg += f"unreachable stock: {symbol.symbol.upper()}\nerror message: {e}\n"
-                    #raise TickerError(err_msg)
-                    
+        if err_msg !="":
+            raise IndexError (err_msg)                    
         
         self.compare_msg['up'] = up
         self.compare_msg['down'] = down
-        self.compare_msg['err'] = err_msg
+        # self.compare_msg['err'] = err_msg
         
         return self.compare_msg
 
