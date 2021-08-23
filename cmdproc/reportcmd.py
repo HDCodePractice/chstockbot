@@ -5,7 +5,7 @@ from telegram.inline.inlinekeyboardbutton import InlineKeyboardButton
 from telegram.inline.inlinekeyboardmarkup import InlineKeyboardMarkup
 from telegram.user import User
 from config import ENV
-from util.tgutil import get_user_link,delay_del_msg
+from util.tgutil import get_user_link,delay_del_msg,get_group_info
 from telegram.utils.helpers import escape_markdown
 
 admingroup = ENV.ADMIN_GROUP
@@ -85,25 +85,37 @@ def kick_user(update: Update, context:CallbackContext):
         return
     count = 0
     kick_count = 0
+    kick_group = []
+    kick_group_msg = ""
     for group in groups:
         count += 1
         try:
             cm = context.bot.get_chat_member(group,kick_user)
             if cm.status == cm.MEMBER:
                 if not ENV.DEBUG:
-                    context.bot.ban_chat_member(group,kick_user)
+                    context.bot.ban_chat_member(group,kick_user,revoke_messages=True)
                 kick_count += 1
+                kick_group.append(context.bot.get_chat(group))
                 # if ENV.DEBUG:
                 #     # 测试时解除banned
                 #     context.bot.unban_chat_member(group,kick_user)
         except BadRequest:
             context.bot.send_message(admingroup,f"Bot在{group}里不是管理员")
     kick_user = context.bot.get_chat(kick_user)
+    for group in kick_group:
+        kick_group_msg += f"{get_group_info(group)}\n"
     context.bot.send_message(
         admingroup,
-        f" {get_user_link(update.effective_user)} 把 {get_user_link(kick_user)} 从毛票教{count}个群中的{kick_count}个群轻轻的碾压出去了",
+        f" {get_user_link(update.effective_user)} 把 {get_user_link(kick_user)} 从毛票教{count}个群中的{kick_count}个群:\n{kick_group_msg}轻轻的碾压出去了",
         parse_mode=ParseMode.MARKDOWN_V2)
-
+    if update.effective_user.id != kick_user.id:
+        response = f"您的举报已经被管理员处理，感谢您的贡献！"
+    else:
+        response = f"由于恶意举报，您已被移除出群！"
+    context.bot.send_message(
+        update.effective_user.id,
+        response
+    )
 def add_dispatcher(dp):
     dp.add_handler(CommandHandler("r", report_user))
     dp.add_handler(CallbackQueryHandler(kick_user,pattern="^kick:[A-Za-z0-9_-]*"))

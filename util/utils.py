@@ -3,10 +3,37 @@ import getopt
 import sys
 import datetime, calendar
 
+def get_target_date(start=datetime.date.today(),end=datetime.date.today(),freq="W-WED"): #c获得指定日期中的周三 可以扩展成任何天数
+    '''
+    freq="W-DAY" i.e, W-MON/W-TUE/W-WED/W-THU/W-FRI/W-SAT/W-SUN
+    '''
+    date_list = pd.date_range(start=start, end=end, freq=freq).tolist()
+
+    date_dict = {}
+    date_dict["xmm"] =date_list
+    date_dict["dmm"] = []
+
+    for date in date_list:
+        if is_second_wednesday(date):
+            date_dict["dmm"].append(date)
+    return date_dict
 
 
-def help():
-    return "'utils.py -c <configpath>'"
+def get_date_list(start_date=None,end_date=None,freq='W-WED', week_num = 2):
+    date_list = pd.date_range(start=start_date, end=end_date, freq=freq)
+    date_lists = {}
+    date_lists['xmm'] = date_list
+    date_lists['dmm'] = []
+    for date in date_list:
+        if get_week_num(date.year, date.month, date.day) == week_num:
+            date_lists['dmm'].append(date)
+    return date_lists
+
+
+
+def is_second_wednesday(d=datetime.date.today()): #计算是否是第二个周三；网上找的，很简单又很有效
+    return d.weekday() == 2 and 8 <= d.day <= 15
+
 
 def sendmsg(bot,chatid,msg,debug=True):
     if debug:
@@ -47,35 +74,3 @@ def get_dmm_maxtry(try_date):
     month_days = calendar.monthrange(year,month)
     dmm_try_num = month_days[1] - day
     return dmm_try_num
-
-def get_date_list(start_date=None,end_date=None,freq='W-WED', week_num = 2):
-    date_list = pd.date_range(start=start_date, end=end_date, freq=freq)
-    date_lists = {}
-    date_lists['xmm'] = date_list
-    date_lists['dmm'] = []
-    for date in date_list:
-        if get_week_num(date.year, date.month, date.day) == week_num:
-            date_lists['dmm'].append(date)
-    return date_lists
-
-if __name__ == '__main__':
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "hc:", ["config="])
-    except getopt.GetoptError:
-        print(help())
-        sys.exit(2)
-
-    for opt, arg in opts:
-        if opt == '-h':
-            print(help())
-            sys.exit()
-
-# a = get_date_list(start_date=datetime.date(2021,1,1), end_date=datetime.date.today(), freq='W-WED', week_num = 2)
-
-# date = a['xmm'][0]
-
-# b = get_xmm_maxtry(date)
-
-# print (date)
-# print (date.weekday())
-# print (b)
