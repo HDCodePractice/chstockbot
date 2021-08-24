@@ -32,7 +32,7 @@ class Index:
         return self.tickers
 
     def compare_avg(self, ma=10, end_date=datetime.date.today()):
-        if self.tickers is None:
+        if len(self.tickers) == 0:
             self.get_index_tickers_list()
         up = []
         down = []
