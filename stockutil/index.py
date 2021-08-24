@@ -8,16 +8,18 @@ class Index:
     symbol = None
     ma=None
     tickers = []
+    local_store = ""
     sources = {
         "NDX" : ["https://en.wikipedia.org/wiki/Nasdaq-100",3,"Ticker"],
         "SPX" : ["https://en.wikipedia.org/wiki/List_of_S%26P_500_companies",0,"Symbol"]
     }
     
-    def __init__(self,symbol) -> None:
+    def __init__(self,symbol,local_store="~/Downloads/data") -> None:
         symbol = symbol.upper()
         if symbol not in self.sources.keys():
             raise IndexError(f"{symbol} 不在我们的支持列表中")
         self.symbol = symbol
+        self.local_store = local_store
 
     def get_index_tickers_list(self):
         """
@@ -29,7 +31,7 @@ class Index:
         self.tickers = df[colum_name].tolist()
         return self.tickers
 
-    def compare_avg(self, ma=10, source="~/Downloads/data", end_date=datetime.date.today()):
+    def compare_avg(self, ma=10, end_date=datetime.date.today()):
         if self.tickers is None:
             self.get_index_tickers_list()
         up = []
@@ -40,7 +42,7 @@ class Index:
         err_msg =""
         for symbol in self.tickers:
             try:
-                symbol = Ticker(symbol,"local",ds=source,endtime=end_date)
+                symbol = Ticker(symbol,"local",ds=self.local_store,endtime=end_date)
                 df = symbol.load_data()
                 if end_date in df.index.date:                
                     df = df.loc[df.index[0]:end_date]

@@ -40,22 +40,23 @@ if __name__ == '__main__':
         config.set_default()
         sys.exit(2)
 
-    bot = Bot(token = CONFIG['Token'])
-    symbols = CONFIG['xyhticker']
-    notifychat = CONFIG['xyhchat']
-    adminchat = CONFIG['xyhlog']
-    debug = CONFIG['DEBUG']
-    ds = CONFIG['xyhsource']    
+    ENV = config.ENV
+
+    bot = Bot(token = ENV.BOT_TOKEN)
+    symbols = ENV.XYHTICKER
+    notifychat = ENV.XYHCHAT
+    adminchat = ENV.XYHLOG
+    debug = ENV.DEBUG
+    ds = ENV.XYHSOURCE
+    xyhindexindex = ENV.XYHINDEX
 
     notify_message = ""
     admin_message = ""
-    #msg,err  = get_spx_ndx_avg_msg(end=target_date)
-    #admin_message += err
     xyh_msg = ""
     msg  = ""
     try:
         for symbol,value in Index.sources.items():
-            index = Index(symbol)
+            index = Index(symbol,local_store=config.config_path)
             symbol= index.get_index_tickers_list()
             data = index.compare_avg(ma=50,end_date=target_date)
             if data['err_msg']:
@@ -78,6 +79,7 @@ if __name__ == '__main__':
             break
     except Exception as err:
         sendmsg(bot,adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}",debug)
+        raise
     
     if xyh_msg:
         notify_message += f"🌈🌈🌈{target_date}天相🌈🌈🌈: \n\n{xyh_msg}\n{msg}\n贡献者:毛票教的大朋友们\n"
