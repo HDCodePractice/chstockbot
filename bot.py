@@ -1,5 +1,4 @@
 from telegram.ext import Updater
-import mysystemd
 import os
 import getopt
 import sys
@@ -59,7 +58,6 @@ if __name__ == '__main__':
 
     updater.start_polling()
     print('Started...')
-    mysystemd.ready()
 
     updater.idle()
     print('Stopping...')

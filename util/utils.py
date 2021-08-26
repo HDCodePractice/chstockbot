@@ -41,7 +41,7 @@ def sendmsg(bot,chatid,msg,debug=True):
     else:
         bot.send_message(chatid,msg)
 
-def get_week_num(year, month, day):
+def get_week_num(year:int, month:int, day:int) -> int:
     """
     获取当前日期是本月的第几周
     """
