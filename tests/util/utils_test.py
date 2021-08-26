@@ -19,3 +19,13 @@ def test_get_xmm_maxtry():
     assert get_xmm_maxtry(datetime(2021, 8, 1)) == -1
     # 周五
     assert get_xmm_maxtry(datetime(2021, 8, 6)) == 1
+
+
+def test_get_dmm_maxtry():
+    from util.utils import get_dmm_maxtry
+    # 31日月
+    assert get_dmm_maxtry(datetime(2021, 8, 1)) == 30
+    # 28日月
+    assert get_dmm_maxtry(datetime(2021, 2, 1)) == 27
+    # 29日月
+    assert get_dmm_maxtry(datetime(2024, 2, 1)) == 28
