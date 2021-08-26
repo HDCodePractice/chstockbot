@@ -11,3 +11,6 @@ def delete_reply_msg(context : CallbackContext):
 
 def delay_del_msg(context : CallbackContext , msg : Message, delay : int):
     context.job_queue.run_once(delete_reply_msg,delay,context=msg,name=f"delete_msg_{msg.message_id}")
+
+def get_group_info(group_content):
+    return f"[{escape_markdown(group_content.title,2)}](https://t.me/c/{str(group_content.id)[4:]})"
