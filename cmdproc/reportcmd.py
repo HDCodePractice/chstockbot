@@ -59,9 +59,10 @@ def report_user(update: Update, context:CallbackContext):
     msg_text = f"被举报人：{reportee if isinstance(reportee,str) else get_user_link(reportee)} 举报人：{get_user_link(reporter)}\n请仔细检查举报信息，决定是否处理举报。"
     reportee_id = "null" if isinstance(reportee,str) else reportee.id
     reportee_name = reportee if isinstance(reportee,str) else reportee.first_name
+    # 在callback_data里加入被举报人的id和举报人的名字，举报人干掉的按钮里，后为0
     keyboard = [[
-        InlineKeyboardButton(text=f"干掉{reportee_name}", callback_data=f"kick:{reportee_id}"),
-        InlineKeyboardButton(text=f"干掉{reporter.first_name}", callback_data=f"kick:{reporter.id}")
+        InlineKeyboardButton(text=f"干掉{reportee_name}", callback_data=f"kick:{reportee_id}:{reporter.id}"),
+        InlineKeyboardButton(text=f"干掉{reporter.first_name}", callback_data=f"kick:{reporter.id}:0")
     ]]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -75,7 +76,7 @@ def report_user(update: Update, context:CallbackContext):
     delay_del_msg(context,send_msg,10)
 
 def kick_user(update: Update, context:CallbackContext):
-    kick_user = update.callback_query.data.split('kick:')[1]
+    kick_user,report_user = update.callback_query.data.split('kick:')[1].split(':')
     if str(update.effective_user.id) not in admins:
         update.callback_query.answer(text="哥们，你还不是管理员，请升级为管理员后再按～",show_alert=True)
         return
@@ -104,14 +105,15 @@ def kick_user(update: Update, context:CallbackContext):
         admingroup,
         f" {get_user_link(update.effective_user)} 把 {get_user_link(kick_user)} 从毛票教{count}个群中的{kick_count}个群:\n{kick_group_msg}轻轻的碾压出去了",
         parse_mode=ParseMode.MARKDOWN_V2)
-    if update.effective_user.id != kick_user.id:
-        response = f"您的举报已经被管理员处理，感谢您的贡献！"
-    else:
+    if report_user == "0":
         response = f"由于恶意举报，您已被移除出群！"
+    else:
+        response = f"您的举报已经被管理员处理，感谢您的贡献！"
     context.bot.send_message(
         update.effective_user.id,
         response
     )
+
 def add_dispatcher(dp):
     dp.add_handler(CommandHandler("r", report_user))
     dp.add_handler(CallbackQueryHandler(kick_user,pattern="^kick:[A-Za-z0-9_-]*"))
