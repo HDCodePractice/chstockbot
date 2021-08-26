@@ -1,12 +1,11 @@
-from telegram import Update, ForceReply,BotCommand,ParseMode
-from telegram.error import BadRequest, TelegramError
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, CallbackQueryHandler
+from telegram import Update, BotCommand, ParseMode
+from telegram.error import BadRequest
+from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler
 from telegram.inline.inlinekeyboardbutton import InlineKeyboardButton
 from telegram.inline.inlinekeyboardmarkup import InlineKeyboardMarkup
 from telegram.user import User
 from config import ENV
-from util.tgutil import get_user_link,delay_del_msg,get_group_info
-from telegram.utils.helpers import escape_markdown
+from util.tgutil import get_user_link, delay_del_msg, get_group_info
 
 admingroup = ENV.ADMIN_GROUP
 groups = ENV.GROUPS
@@ -53,7 +52,7 @@ def report_user(update: Update, context:CallbackContext):
     # 先把原来的消息转发到管理群
     try:
         no_forward = False
-        msg = report_msg.forward(admingroup, disable_notification=True)   # TODO: 不知道为什么不能转发毛台飘飘的消息
+        msg = report_msg.forward(admingroup, disable_notification=True) 
     except BadRequest:
         no_forward = True
     # 给出踢人的提示
@@ -96,9 +95,6 @@ def kick_user(update: Update, context:CallbackContext):
                     context.bot.ban_chat_member(group,kick_user,revoke_messages=True)
                 kick_count += 1
                 kick_group.append(context.bot.get_chat(group))
-                # if ENV.DEBUG:
-                #     # 测试时解除banned
-                #     context.bot.unban_chat_member(group,kick_user)
         except BadRequest:
             context.bot.send_message(admingroup,f"Bot在{group}里不是管理员")
     kick_user = context.bot.get_chat(kick_user)
