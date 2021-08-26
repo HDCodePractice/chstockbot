@@ -14,3 +14,12 @@ def delay_del_msg(context : CallbackContext , msg : Message, delay : int):
 
 def get_group_info(group_content):
     return f"[{escape_markdown(group_content.title,2)}](https://t.me/c/{str(group_content.id)[4:]})"
+
+def split_msg(msg):
+    msg_list = []
+    msg_index = len(msg)%4096
+    for i in range(msg_index):
+        if i < msg_index:
+            msg_list.append(msg[4096*i:4096*(i+1)])
+    msg_list.append(msg[4096*msg_index:-1])
+    return msg_list

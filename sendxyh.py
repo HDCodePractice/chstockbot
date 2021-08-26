@@ -1,10 +1,8 @@
 import getopt,sys,config,os
-from requests.sessions import extract_cookies_to_jar
 import pandas_datareader.data as web
 import datetime
 from telegram import Bot
 from pandas_datareader._utils import RemoteDataError
-from requests.exceptions import ConnectionError
 from stockutil import stooq, wikipedia
 
 target_date = datetime.date.today()
