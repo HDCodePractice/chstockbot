@@ -45,9 +45,9 @@ def get_week_num(year:int, month:int, day:int) -> int:
     """
     获取当前日期是本月的第几周
     """
-    start = int(datetime.date(year, month, 1).strftime("%W"))
-    end = int(datetime.date(year, month,day).strftime("%W"))
-    week_num = end - start + 1
+    start = datetime.date(year, month, 1).isocalendar().week #获得当月1号的周数
+    end = datetime.date(year, month, day).isocalendar().week #获得当日的周数
+    week_num = end - start 
     return week_num
 
 def get_default_maxtry(try_date):

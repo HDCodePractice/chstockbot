@@ -15,8 +15,8 @@ def test_split_msg_4099():
         msg += f'{i%10}'
     msgs = split_msg(msg)
     assert len(msgs) == 2
-    assert len(msg[0]) == 4096
-    assert len(msg[1]) == 3
+    assert len(msgs[0]) == 4096
+    assert len(msgs[1]) == 3
 
 
 def test_split_msg_12289():
@@ -26,5 +26,5 @@ def test_split_msg_12289():
         msg += f'{i%10}'
     msgs = split_msg(msg)
     assert len(msgs) == 4
-    assert len(msg[0]) == 4096
-    assert len(msg[3]) == 1
+    assert len(msgs[0]) == 4096
+    assert len(msgs[3]) == 1

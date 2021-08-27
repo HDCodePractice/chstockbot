@@ -29,9 +29,12 @@ def split_msg(msg:str) -> list:
     将一个大于4096的消息分割成多个消息
     """
     msg_list = []
-    msg_index = len(msg)%4096
+    msg_index = int(len(msg)/4096) #计算消息的长度指数
     for i in range(msg_index):
-        if i < msg_index:
-            msg_list.append(msg[4096*i:4096*(i+1)])
-    msg_list.append(msg[4096*msg_index:-1])
+        if i == 0:
+            msg_list.append(msg[0:4096]) #如果i=0，截取0-4096位的字符
+        else:
+            msg_list.append(msg[4096*i+1:4096*(i+1)]) #截取4097位以后的字符
+    if len(msg)%4096 != 0:  
+        msg_list.append(msg[4096*msg_index:]) #加入最后余下的字符串
     return msg_list
