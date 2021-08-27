@@ -24,7 +24,10 @@ def delay_del_msg(context : CallbackContext , msg : Message, delay : int):
     """
     context.job_queue.run_once(delete_reply_msg,delay,context=msg,name=f"delete_msg_{msg.message_id}")
 
-def split_msg(msg):
+def split_msg(msg:str) -> list:
+    """
+    将一个大于4096的消息分割成多个消息
+    """
     msg_list = []
     msg_index = len(msg)%4096
     for i in range(msg_index):
