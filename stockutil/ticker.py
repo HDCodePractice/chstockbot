@@ -1,10 +1,7 @@
 import pandas_datareader.data as web
 import datetime
 from stockutil.stooq import search_file,read_stooq_file,maNotEnoughError,markCloseError
-from pandas_datareader._utils import RemoteDataError
-from telegram import Bot
-import getopt,sys,os
-import config
+import os
 from util.utils import is_second_wednesday,get_target_date
 
 class TickerError(Exception):
@@ -25,7 +22,7 @@ class Ticker:
     xmm_price_list = {}
     dmm_price_list = {}
 
-    def __init__(self,symbol,from_s,ds,starttime=datetime.date.today() - datetime.timedelta(days=365),endtime=datetime.datetime.today(),principle=100):
+    def __init__(self,symbol,from_s,ds,starttime=datetime.date.today() - datetime.timedelta(days=365),endtime=datetime.date.today(),principle=100):
         self.symbol = symbol
         self.starttime=starttime
         self.endtime = endtime
