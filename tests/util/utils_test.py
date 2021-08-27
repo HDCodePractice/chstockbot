@@ -1,5 +1,18 @@
 from datetime import datetime
 
+def test_get_date_list():
+    from util.utils import get_date_list
+    ds = get_date_list(datetime(2021, 8, 1), datetime(2021, 8, 31))
+    assert len(ds) == 2
+    print(ds)
+    assert len(ds['xmm']) == 4
+    assert ds['xmm'][0] == datetime(2021,8,4)
+    assert ds['xmm'][1] == datetime(2021,8,11)
+    assert ds['xmm'][2] == datetime(2021,8,18)
+    assert ds['xmm'][3] == datetime(2021,8,25)
+    assert len(ds['dmm']) == 1
+    assert ds['dmm'][0] == datetime(2021,8,11)
+
 def test_get_week_num():
     from util.utils import get_week_num
     # 1号为周一
