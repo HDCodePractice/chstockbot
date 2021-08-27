@@ -5,5 +5,5 @@ RUN cd /
 COPY . /chstockbot/
 RUN cd chstockbot
 WORKDIR /chstockbot
-RUN pip install -r requirements-dev.txt
+RUN pip install -r requirements.txt
 CMD [ "python", "bot.py" ,"-c","/data"]
