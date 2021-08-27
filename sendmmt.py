@@ -10,7 +10,7 @@ target_end_time = datetime.date.today()
 target_start_time = datetime.date(2021,1,1)
 
 def help():
-    return "sendxyh.py -c configpath -s yyyymmdd -e yyyymmdd"
+    return "sendmmt.py -c configpath -s yyyymmdd -e yyyymmdd"
 
 def cal_percentage(value,cost):
     # value = xmm_stock_number * df["Close"][-1]

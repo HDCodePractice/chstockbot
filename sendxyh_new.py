@@ -2,7 +2,7 @@ import getopt,sys,config,os
 import datetime
 from telegram import Bot
 from stockutil import stooq, wikipedia
-from stockutil.ticker import Ticker
+from stockutil.ticker import Ticker, TickerError
 from util.utils import sendmsg
 from stockutil.index import Index
 target_date = datetime.date.today()
@@ -49,37 +49,38 @@ if __name__ == '__main__':
     debug = ENV.DEBUG
     ds = ENV.XYHSOURCE
     xyhindexindex = ENV.XYHINDEX
-
     notify_message = ""
     admin_message = ""
     xyh_msg = ""
     msg  = ""
     try:
-        for symbol,value in Index.sources.items():
-            index = Index(symbol,local_store=config.config_path)
-            symbol= index.get_index_tickers_list()
-            data = index.compare_avg(ma=50,end_date=target_date)
-            if data['err_msg']:
-                admin_message = data['err_msg']
-            if data['up_num']+data['down_num'] + 20 < len(index.tickers):
-                admin_message += f"{index.symbol}: {target_date.strftime('%Y-%m-%d')} 有超过20支股票没有数据，请确保输入的日期当天有开市\n"
-            else:
-                msg += f"{index.symbol}共有{data['up_num']+data['down_num']}支股票，共有{data['rate']*100:.2f}%高于{index.ma}周期均线\n"
-                msg += f"今日交易量与昨日交易量百分比：{data['percentage']*100:.2f}%\n"
+        for source,value in Index.sources.items(): 
+            index = Index(source,local_store=config.config_path)
+            symbol_list= index.get_index_tickers_list()
+            for symbol in symbol_list:
+                try:
+                    index.compare_avg_ma(symbol,ma=50,end_date=target_date)
+                except IndexError as e:
+                    admin_message += f"{e}\n"
+                    continue
+            msg += index.gen_index_msg(target_date)
+
         for datasource in ds:
             for symbol in symbols:
                 ticker = Ticker(symbol[0],"web",datasource,endtime=target_date)
                 ticker.load_data()
                 xyh_msg += f"{ticker.symbol}价格: {ticker.df['Close'][-1]}({ticker.df['Low'][-1]} - {ticker.df['High'][-1]}):\n"
                 for ma in symbol[1:]:
-                    ticker.cal_symbols_avg(ma)
-                    ticker.cal_sams_change_rate()
+                    try:
+                        ticker.cal_symbols_avg(ma)
+                        ticker.cal_sams_change_rate()
+                    except TickerError as e:
+                        admin_message += f"{e}\n"
+                        continue
                 xyh_msg += f"{ticker.gen_xyh_msg()}\n"
-
             break
     except Exception as err:
         sendmsg(bot,adminchat,f"今天完蛋了，什么都不知道，快去通知管理员，bot已经废物了，出的问题是:\n{type(err)}:\n{err}",debug)
-        raise
     
     if xyh_msg:
         notify_message += f"🌈🌈🌈{target_date}天相🌈🌈🌈: \n\n{xyh_msg}\n{msg}\n贡献者:毛票教的大朋友们\n"
