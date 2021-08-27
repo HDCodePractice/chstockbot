@@ -3,10 +3,11 @@ import getopt
 import sys
 import datetime, calendar
 
-def get_target_date(start=datetime.date.today(),end=datetime.date.today(),freq="W-WED"): #c获得指定日期中的周三 可以扩展成任何天数
-    '''
+# TODO 这两个函数是一样的，需要做一个选择
+def get_target_date(start=datetime.date.today(),end=datetime.date.today(),freq="W-WED"): #获得指定日期中的周三 可以扩展成任何天数
+    """
     freq="W-DAY" i.e, W-MON/W-TUE/W-WED/W-THU/W-FRI/W-SAT/W-SUN
-    '''
+    """
     date_list = pd.date_range(start=start, end=end, freq=freq).tolist()
 
     date_dict = {}
@@ -18,8 +19,11 @@ def get_target_date(start=datetime.date.today(),end=datetime.date.today(),freq="
             date_dict["dmm"].append(date)
     return date_dict
 
-
+# TODO 区别在于week_num，另外dtae_list是否需要改成list :)
 def get_date_list(start_date=None,end_date=None,freq='W-WED', week_num = 2):
+    """
+    freq="W-DAY" i.e, W-MON/W-TUE/W-WED/W-THU/W-FRI/W-SAT/W-SUN
+    """
     date_list = pd.date_range(start=start_date, end=end_date, freq=freq)
     date_lists = {}
     date_lists['xmm'] = date_list
