@@ -2,6 +2,9 @@ from datetime import datetime
 
 def test_get_week_num():
     from util.utils import get_week_num
+    # 1号为周一
+    assert get_week_num(2021, 6, 1) == 0
+    assert get_week_num(2021, 6, 16) == 2
     # 1号为周四
     assert get_week_num(2021, 7, 1) == 0
     assert get_week_num(2021, 7, 14) == 2

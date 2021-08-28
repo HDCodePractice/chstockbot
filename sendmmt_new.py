@@ -56,7 +56,7 @@ if __name__ == '__main__':
     notify_message = ""
     try:
         for symbol in symbols:
-            ticker = Ticker(symbol,"local",f"{config.config_path}/data",target_start_time,target_end_time)
+            ticker = Ticker(symbol,"web","stooq",target_start_time,target_end_time)
             ticker.load_data()
             ticker.cal_profit()
             mmt_msg = ticker.gen_mmt_msg()
