@@ -5,7 +5,7 @@ import datetime
 from telegram import Bot
 
 target_end_time = datetime.date.today()
-target_start_time = datetime.date(2021,1,1)
+target_start_time = datetime.date.today() - datetime.timedelta(days=365)
 
 def help():
     return "'sendxyh.py -c configpath -s yyyymmdd -e yyyymmdd'"
@@ -61,7 +61,6 @@ if __name__ == '__main__':
             ticker.cal_profit()
             mmt_msg = ticker.gen_mmt_msg()
             notify_message += mmt_msg
-
         if ticker.xmm_profit:
             notify_message = f"如果你每周定投，哪么今天是投 #小毛毛 的日子啦，今天是周三 请向小🐷🐷中塞入你虔诚的🪙吧～\n{notify_message}"
         if is_second_wednesday(d=target_end_time):
