@@ -48,11 +48,11 @@ def test_ticker_cal_profit(shared_datadir):
         [datetime(2021,8,18),146.36]
         ]
     dmm = [[datetime(2021,7,14),148.93],[datetime(2021,8,11),145.86]]
-    # xmm 每次买100的所有成本
+    # xmm 每次买100元的股数累计
     xmm_unit = 0
     for i in xmm:
         xmm_unit += 100 / i[1]
-    # dmm 每次买100的所有成本
+    # dmm 每次买100元的股数累计
     dmm_unit = 0
     for i in dmm:
         dmm_unit += 100 / i[1]
