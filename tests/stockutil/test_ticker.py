@@ -70,5 +70,5 @@ def test_ticker_cal_profit(shared_datadir):
     assert dmm_unit * end_price == aapl.dmm_profit["current_profit"]
     assert aapl.xmm_profit["total_principle"] == 700
     assert aapl.dmm_profit["total_principle"] == 200
-    assert aapl.xmm_profit["profit_percentage"] == xmm_profit_rate
-    assert aapl.dmm_profit["profit_percentage"] == dmm_profit_rate
+    assert int(aapl.xmm_profit["profit_percentage"] * 1000000 ) == int(xmm_profit_rate * 1000000)
+    assert int(aapl.dmm_profit["profit_percentage"] * 1000000) == int(dmm_profit_rate * 1000000)
