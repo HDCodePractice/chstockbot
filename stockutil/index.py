@@ -33,7 +33,7 @@ class Index:
     #错误信息
     err_msg = ""
     
-    def __init__(self,from_s,symbol,local_store="data"):
+    def __init__(self,symbol,from_s="sources",local_store="data"):
         #from_s: sources or markets 数据需要计算指数还是市场 : sources/markets
         self.from_s = from_s
         if from_s == "sources":
