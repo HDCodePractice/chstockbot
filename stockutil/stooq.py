@@ -3,6 +3,7 @@ import pandas as pd
 import datetime
 import requests
 import os
+import pathlib
 from zipfile import ZipFile
 
 class markCloseError(Exception):
@@ -98,6 +99,25 @@ def search_file(rule=".txt", path='.')->list:
             if filename.endswith("/" + rule):  # 判断是否是"xxx"结尾
                 all.append(filename)
     return all
+
+def list_file_prefix(include_path,rule="*.txt", path='data/', )->list:
+    """
+    在path目录下搜索结尾名为rule的所有文件。返回：所有结尾名为rule的文件路径列表
+    include_path：将指定目录下的文件去除
+    Parameters
+    ----------
+    rule : 后缀
+    path : 搜索路径。default为当前目录(".")
+    include_path: 指定目录
+    """
+    all = []
+    for fpathe,dirs,fs in os.walk(path):   # os.walk是获取所有的目录
+        if include_path in fpathe:
+            for f in fs:
+                if f.endswith(rule):  # 判断是否是"xxx"结尾
+                    all.append(f.split(".")[0])
+    return all
+
 
 def symbol_above_moving_average(symbol:str,ma=50,path="~/Downloads/data",end=datetime.date.today())->bool:
     """
