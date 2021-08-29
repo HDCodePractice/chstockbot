@@ -66,8 +66,8 @@ def test_ticker_cal_profit(shared_datadir):
     print("xmm",aapl.xmm_profit,"dmm",aapl.dmm_profit)
     # xmm {'current_profit': 710.4488392607637, 'total_principle': 700, 'profit_percentage': 0.014926913229662553} 
     # dmm {'current_profit': 201.10054445786588, 'total_principle': 200, 'profit_percentage': 0.005502722289329354}
-    assert xmm_unit * end_price == aapl.xmm_profit["current_profit"]
-    assert dmm_unit * end_price == aapl.dmm_profit["current_profit"]
+    assert xmm_unit * end_price == aapl.xmm_profit["current_price"]
+    assert dmm_unit * end_price == aapl.dmm_profit["current_price"]
     assert aapl.xmm_profit["total_principle"] == 700
     assert aapl.dmm_profit["total_principle"] == 200
     assert int(aapl.xmm_profit["profit_percentage"] * 1000000 ) == int(xmm_profit_rate * 1000000)
