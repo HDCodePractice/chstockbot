@@ -13,7 +13,9 @@ class Index:
     ma=None
     #指数成分股列表
     tickers = []
-    #数据来源
+    #数据来源 
+    # sources: 从sources中的在线数据源获取数据
+    # markets: 从stooq离线文件里获取数据
     from_s = None
     #本地数据存储路径   
     local_store = ""
@@ -62,8 +64,10 @@ class Index:
         return self.tickers
     
     def compare_avg_ma(self, ma=10, end_date=datetime.date.today()): #分开计算ticker的信息
+        # TODO: 这个函数无法二次调用
         self.ma =ma
         for ticker in self.tickers:
+            # TODO: 这里为什么要把再写一遍呢？Ticker里的功能已经写好了啊？
             symbol = Ticker(ticker,"local",ds=self.local_store,endtime=end_date)
             try:
                 df = symbol.load_data()
@@ -77,6 +81,7 @@ class Index:
                         self.today_vol += df["Volume"][-1] #今日交易量
                         self.yesterday_vol += df["Volume"][-2] #昨日交易量
                     else:
+                        # TODO:这里的raise都会被try的except捕获，意义是什么？
                         raise IndexError(f"{symbol.symbol} {ma} 周期均价因时长不足无法得出\n")
                 else:
                     raise IndexError(f"{symbol.symbol}输入的日期没有数据，请确保输入的日期当天有开市\n")

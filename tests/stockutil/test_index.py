@@ -1,3 +1,4 @@
+from datetime import datetime, date
 import pytest
 from stockutil.index import Index
 
@@ -25,7 +26,6 @@ def test_index_error_symbol():
     exec_msg = e.value.args[0]
     assert exec_msg == "BBLL 不在我们的支持列表中"
 
-
 def test_market_index_error_symbol(shared_datadir):
     from stockutil.index import IndexError
     with pytest.raises(IndexError) as e:
@@ -39,6 +39,7 @@ def test_index_get_market_ticker_list(shared_datadir):
     # print(nasdaq.tickers)
     assert len(nasdaq.tickers) == 2
     assert "AAPL" in nasdaq.tickers
+    assert "GOEV" in nasdaq.tickers
 
     nyse = Index("nyse","markets",local_store=f"{shared_datadir}")
     nyse.get_tickers_list()
@@ -46,3 +47,24 @@ def test_index_get_market_ticker_list(shared_datadir):
     assert len(nyse.tickers) == 1
     assert "OGN" in nyse.tickers
  
+def test_index_compare_avg_ma(shared_datadir):
+    nasdaq = Index("nasdaq","markets",local_store=f"{shared_datadir}")
+    nasdaq.get_tickers_list()
+    nasdaq.compare_avg_ma(10,date(2021,8,20))
+    assert len(nasdaq.down) == 1
+    assert 'GOEV' in nasdaq.down
+    assert len(nasdaq.up) == 1
+    assert 'AAPL' in nasdaq.up
+    nasdaq.compare_avg_ma(100,date(2021,8,20))
+    assert len(nasdaq.down) == 1
+    assert 'GOEV' in nasdaq.down
+    assert len(nasdaq.up) == 1
+    assert 'AAPL' in nasdaq.up
+
+def test_index_compare_avg_ma_error(shared_datadir):
+    nyse = Index("nyse","markets",local_store=f"{shared_datadir}")
+    nyse.get_tickers_list()
+    nyse.compare_avg_ma(100,date(2021,8,20))
+    assert len(nyse.down) == 0
+    assert len(nyse.up) == 0
+    print(nyse.tickers,nyse.down,nyse.up,nyse.err_msg)
