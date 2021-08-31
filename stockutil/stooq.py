@@ -12,51 +12,6 @@ class markCloseError(Exception):
 class maNotEnoughError(Exception):
     pass
 
-def download_file(url="https://static.stooq.com/db/h/d_us_txt.zip",dict="~/Downloads"):
-    msg = ""
-    err = ""
-    filename = url.split("/")[-1]
-    try:
-        request = requests.get(url)
-        if not os.path.exits(os.path.expanduser(dict)):
-            os.makedirs(os.path.expanduser(dict))
-        with open(os.path.expanduser(f"{dict}/{url.split('/')[-1]}"), 'wb') as f:
-            f.write(request.content)
-        f.close
-
-        zf = ZipFile(os.path.expanduser(f"{dict}/{url.split('/')[-1]}"), 'r')
-        zf.extractall(os.path.expanduser(dict))
-        zf.close()
-        msg += f"下载和解压成功"
-    # 网站服务器当机无法下载 用Exception解决
-    # 解压文件受损，无法解压 用Exception解决
-    except Exception as e:
-        err += f"下载和解压出错了；具体错误是：{e}"
-        
-    return msg,err
-
-def check_stock_data(path="~/Downloads/data/daily/us/nasdaq stocks/3/tlry.us.txt"):
-    update_time = datetime.datetime.now().replace(hour=22, minute=00)
-    msg = ""
-    err = ""
-    try:#verify creation time of the data
-        if os.path.exists(os.path.expanduser(path)):
-            stat = os.path.getmtime(os.path.expanduser(path))
-            if datetime.datetime.fromtimestamp(stat) > update_time:
-                msg += "数据是最新的，不需要下载"
-            else:#download file and unzip it
-                dl_msg,dl_err = download_file()
-                msg += dl_msg
-                err += dl_err
-        else:
-            dl_msg,dl_err = download_file()
-            msg += dl_msg
-            err += dl_err
-        msg += "数据比较完成"    
-    except Exception as e:
-        err += f"{e}"
-    return msg, err
-
 def read_stooq_file(path="~/Downloads/data/daily/us/nasdaq stocks/3/tlry.us.txt"):
     """
     适配 Yahoo 格式
