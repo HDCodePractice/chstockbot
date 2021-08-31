@@ -72,3 +72,27 @@ def test_ticker_cal_profit(shared_datadir):
     assert aapl.dmm_profit["total_principle"] == 200
     assert int(aapl.xmm_profit["profit_percentage"] * 1000000 ) == int(xmm_profit_rate * 1000000)
     assert int(aapl.dmm_profit["profit_percentage"] * 1000000) == int(dmm_profit_rate * 1000000)
+
+
+def test_cal_symbols_avg(goev,aapl,ogn):
+    from stockutil.ticker import TickerError
+    ma = aapl.cal_symbols_avg(10)
+    assert aapl.smas[10] == 147.81
+    ma = aapl.cal_symbols_avg(50)
+    assert aapl.smas[50] == 142.10559999999998
+    ma = ogn.cal_symbols_avg(10)
+    assert ogn.smas[10] == 32.52909999999999
+    with pytest.raises(TickerError) as e:
+        ma = ogn.cal_symbols_avg(100)
+    exec_msg = e.value.args[0]
+    assert exec_msg == "OGN里的历史数据没有100这么多"
+
+def test_gen_xyh_msg(aapl,goev):
+    mas = [10,50,100,200]
+    for ma in mas:
+        aapl.cal_symbols_avg(ma)
+    xyh_msg = aapl.gen_xyh_msg()
+    assert xyh_msg == """🟢 10 周期均价：147.81 (0.26%)
+🟢 50 周期均价：142.11 (4.28%)
+🟢 100 周期均价：135.20 (9.60%)
+🟢 200 周期均价：130.47 (13.58%)\n"""
