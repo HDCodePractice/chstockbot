@@ -81,9 +81,17 @@ def test_index_compare_avg_ma(shared_datadir):
     assert 'AAPL' in nasdaq.up
 
 def test_index_compare_avg_ma_error(shared_datadir):
+    # TODO: 这里应该对出错进行记录或处理
     nyse = Index("nyse","markets",local_store=f"{shared_datadir}")
     nyse.get_tickers_list()
     nyse.compare_avg_ma(100,date(2021,8,20))
     assert len(nyse.down) == 0
     assert len(nyse.up) == 0
     print(nyse.tickers,nyse.down,nyse.up,nyse.err_msg)
+
+def test_gen_index_msg(shared_datadir):
+    nasdaq = Index("nasdaq","markets",local_store=f"{shared_datadir}")
+    nasdaq.get_tickers_list()
+    nasdaq.compare_avg_ma(10,date(2021,8,20))
+    msg = nasdaq.gen_index_msg(date(2021,8,20))
+    assert msg == "nasdaq共有2支股票，共有50.00%高于10周期均线\n当日交易量与前一日交易量百分比：-30.74%\n"

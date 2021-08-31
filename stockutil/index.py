@@ -96,6 +96,7 @@ class Index:
         self.yesterday_vol = 0
     
     def gen_index_msg(self,end_time): #生成指数信息
+        # TODO: 这个end_time参数如果和compare_avg_ma的不一样，是不是会出很神奇的结果？
         max_num = 20 if self.from_s == "sources" else 150
         if (len(self.up)+len(self.down) + max_num ) < len(self.tickers):
             raise IndexError(f"{self.symbol}: {end_time.strftime('%Y-%m-%d')} 有超过20支股票没有数据，请确保输入的日期当天有开市\n" )      
