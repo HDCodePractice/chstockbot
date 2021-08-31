@@ -64,7 +64,8 @@ class Index:
         return self.tickers
     
     def compare_avg_ma(self, ma=10, end_date=datetime.date.today()): #分开计算ticker的信息
-        # TODO: 这个函数无法二次调用
+        self.up = []
+        self.down = []
         self.ma =ma
         for ticker in self.tickers:
             # TODO: 这里为什么要把再写一遍呢？Ticker里的功能已经写好了啊？
@@ -104,5 +105,5 @@ class Index:
             raise IndexError(f"{self.symbol}无法读取高于/低于周期均价的股票列表，请确认股票列表\n")
         if self.today_vol == 0 and self.yesterday_vol == 0:
             raise IndexError(f"{self.symbol}无法读取今日和昨日的交易量， 请重新计算\n") 
-        chat_msg = f"{self.symbol}共有{len(self.up)+len(self.down)}支股票，共有{len(self.up)/(len(self.up)+len(self.down))*100:.2f}%高于{self.ma}周期均线\n当日交易量与前一日交易量百分比：{(self.today_vol/self.yesterday_vol - 1)*100:.2f}%\n"
+        chat_msg = f"{self.symbol}共有{len(self.up)+len(self.down)}支股票，共有{len(self.up)/(len(self.up)+len(self.down))*100:.2f}%高于{self.ma}周期均线\n当日交易量变化：{(self.today_vol/self.yesterday_vol - 1)*100:.2f}%\n"
         return chat_msg
