@@ -81,13 +81,14 @@ def test_index_compare_avg_ma(shared_datadir):
     assert 'AAPL' in nasdaq.up
 
 def test_index_compare_avg_ma_error(shared_datadir):
-    # TODO: 这里应该对出错进行记录或处理
     nyse = Index("nyse","markets",local_store=f"{shared_datadir}")
     nyse.get_tickers_list()
     nyse.compare_avg_ma(100,date(2021,8,20))
     assert len(nyse.down) == 0
     assert len(nyse.up) == 0
-    print(nyse.tickers,nyse.down,nyse.up,nyse.err_msg)
+    # print(nyse.tickers,nyse.down,nyse.up,nyse.err_msg)
+    assert nyse.err_msg == "nyse OGN 100 周期均价因时长不足无法得出\n"
+
 
 def test_gen_index_msg(shared_datadir):
     nasdaq = Index("nasdaq","markets",local_store=f"{shared_datadir}")
