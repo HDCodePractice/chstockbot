@@ -76,6 +76,7 @@ def list_file_prefix(include_path,rule="*.txt", path='data/', )->list:
 
 def symbol_above_moving_average(symbol:str,ma=50,path="~/Downloads/data",end=datetime.date.today())->bool:
     """
+    TODO: 这个代码将会挪去Ticker类里
     获取一个股票代码是否高于指定的历史平均价。返回True高于avg，Flase低于avg
 
     Parameters
@@ -109,7 +110,6 @@ def symbol_above_moving_average(symbol:str,ma=50,path="~/Downloads/data",end=dat
 if __name__ == '__main__':
     tiker_file = search_file("atvi.us.txt",os.path.expanduser("~/Downloads/data"))
     print(read_stooq_file(path=tiker_file[0]))
-    print(download_file(url="https://static.stooq.com/db/h/h_hu_txt.zip",dict=("~/Download/tmp")))
     # for ticker in sp500:
     #     msg = 0
     #     try:
