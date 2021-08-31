@@ -125,7 +125,7 @@ class Ticker:
                 return True
         raise maNotEnoughError(f"{ma} 周期均价因时长不足无法得出\n")
         
-    def cal_symbols_avg(self,ma:str):
+    def cal_symbols_avg(self,ma:int):
         if self.df is None:
             self.load_data()
         
