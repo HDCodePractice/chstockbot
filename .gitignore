@@ -132,3 +132,6 @@ config.json
 test.py
 test2.py
 local.env
+
+#data
+data

@@ -115,7 +115,7 @@ def list_file_prefix(include_path,rule="*.txt", path='data/', )->list:
         if include_path in fpathe:
             for f in fs:
                 if f.endswith(rule):  # 判断是否是"xxx"结尾
-                    all.append(f.split(".")[0])
+                    all.append(f.split(".us.txt")[0].upper())
     return all
 
 

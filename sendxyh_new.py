@@ -55,7 +55,7 @@ if __name__ == '__main__':
     msg  = ""
     try: #ndx 和spx成分股的计算
         for source,value in Index.sources.items(): #计算指数的内容
-            index = Index("sources",source,local_store=config.config_path)
+            index = Index(source, "sources",local_store=config.config_path)
             index.get_tickers_list()
             try:
                 index.compare_avg_ma(ma=50,end_date=target_date)
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     
     try: #市场成分股的计算
         for market in Index.markets: #
-            index = Index("markets",market,local_store=config.config_path)
+            index = Index(market,"markets",local_store=config.config_path)
             index.get_tickers_list()
             try:
                 index.compare_avg_ma(ma=50,end_date=target_date)
