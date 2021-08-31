@@ -132,13 +132,14 @@ class Ticker:
         df = self.df
         
         if df.count()[0] < ma :
-            raise TickerError(f"Ticker{self.symbol}里的历史数据没有{ma}这么多")
+            raise TickerError(f"{self.symbol}里的历史数据没有{ma}这么多")
 
         if self.endtime != df.index.date[-1]:
             raise TickerError(f"{self.symbol}最后一个交易日不是{self.endtime}")
 
         sma = df.tail(ma)['Adj Close'].mean()
         self.smas[ma] = sma
+        self.cal_sams_change_rate()
         return sma
 
     def cal_sams_change_rate(self):
@@ -168,6 +169,7 @@ class Ticker:
         return chat_msg
 
     def gen_xyh_msg(self):
+        # 如果smas是空的怎么办？
         chat_msg = ""
         for key,value in self.smas.items():
             chat_msg += f"{self.smas_state[key][1]} {key} 周期均价：{value:0.2f} ({self.smas_state[key][0]:0.2f}%)\n"
