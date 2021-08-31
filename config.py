@@ -89,6 +89,8 @@ class ENV:
     XYHLOG=env.str("XYHLOG", "")
     # 夕阳红数据源，可以选择 stooq 和 yahoo
     XYHSOURCE = env.list("XYHSOURCE", [])
+    # 夕阳红分析的指数列表
+    XYHINDEX = env.list("XYHINDEX", [])
     # 管理员列表，使用逗号分隔
     ADMINS = env.list("ADMINS", [])
     # 管理群ChatID
