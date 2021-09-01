@@ -71,10 +71,11 @@ if __name__ == '__main__':
                 t.cal_symbols_avg(int(ma))
             notify_message += f"{t.get_today_price_msg()}{t.gen_xyh_msg()}\n"
         
+        # 计算NDX和SPX成分股高于50MA的比例和交易量变化
         for index in indexs:
             i = Index(index,local_store=config.config_path)
             i.get_tickers_list()
-            i.compare_avg_ma(ma=100,end_date=target_date)
+            i.compare_avg_ma(ma=50,end_date=target_date)
             notify_message += f"{i.gen_index_msg(target_date)}\n"
             admin_message += i.err_msg
 
