@@ -67,7 +67,7 @@ if __name__ == '__main__':
             mmt_msg = ticker.gen_mmt_msg()
             notify_message += f"{mmt_msg}\n"
         if ticker.xmm_profit:
-            notify_message = f"今天是周三，到了投 #小毛毛 的日子啦，请向小🐷🐷中塞入你虔诚的🪙吧～\n\n{notify_message}\n贡献者:毛票教的大朋友们"
+            notify_message = f"今天是周三，到了投 #小毛毛 的日子啦，请向小🐷🐷中塞入你虔诚的🪙吧～\n\n{notify_message}\n{ENV.CONTRIBUTORS}"
         if is_second_wednesday(d=target_end_time):
             notify_message = f"今天是本月第二周的周三，到了投 #大毛毛 的日子啦， 请向小🐷🐷中塞入你虔诚的💰吧～\n\n{notify_message}\n"
         if notify_message:

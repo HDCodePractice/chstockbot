@@ -76,6 +76,7 @@ if len(doppler_token) > 0 :
         load_dotenv(stream=config)
 
 class ENV:
+    CONTRIBUTORS="贡献者:老房东、lben1216、stephenzhu01、bernieharvard"
     WORKDIR=os.getcwd()
     # BotToken
     BOT_TOKEN = env.str("BOT_TOKEN", default="") 
