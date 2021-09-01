@@ -33,7 +33,7 @@ jobs:
       
       - name: sendxyh
         # 系统是UTC时间，所以全部变为发昨日的数据
-        run: python3 sendxyh.py -d $(date +'%Y%m%d' -d yesterday)
+        run: python3 sendxyh.py -d $(date +'%Y%m%d' -d yesterday) -c data
         env:
           # DOPPLER_TOKEN
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
