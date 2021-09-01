@@ -171,9 +171,9 @@ class Ticker:
     def gen_mmt_msg(self):
         chat_msg = ""
         if self.xmm_profit:
-            chat_msg += f"如果你从{self.starttime.strftime('%Y年%m月%d日')}定投 #小毛毛 {self.symbol} {self.principle}元，到{self.endtime.strftime('%Y年%m月%d日')}累计投入 {self.xmm_profit['total_principle']}元，到昨日市值为 {self.xmm_profit['current_price']:0.2f} 元，累计利润为 {self.xmm_profit['profit_percentage']*100:0.2f}%\n"
+            chat_msg += f"从{self.starttime.strftime('%Y年%m月%d日')}定投 #小毛毛 {self.symbol}，到{self.endtime.strftime('%Y年%m月%d日')}累计投入 {self.xmm_profit['total_principle']}元，到昨日市值为 {self.xmm_profit['current_price']:0.2f} 元，利润为 {self.xmm_profit['profit_percentage']*100:0.2f}%\n"
         if self.dmm_profit:
-            chat_msg += f"如果你从{self.starttime.strftime('%Y年%m月%d日')}定投 #大毛毛 {self.symbol} {self.principle}元，到{self.endtime.strftime('%Y年%m月%d日')}累计投入 {self.dmm_profit['total_principle']}元，到昨日市值为 {self.dmm_profit['current_price']:0.2f} 元，累计利润为 {self.dmm_profit['profit_percentage']*100:0.2f}%\n"
+            chat_msg += f"从{self.starttime.strftime('%Y年%m月%d日')}定投 #大毛毛 {self.symbol}，到{self.endtime.strftime('%Y年%m月%d日')}累计投入 {self.dmm_profit['total_principle']}元，到昨日市值为 {self.dmm_profit['current_price']:0.2f} 元，利润为 {self.dmm_profit['profit_percentage']*100:0.2f}%\n"
         return chat_msg
 
     def gen_xyh_msg(self):
