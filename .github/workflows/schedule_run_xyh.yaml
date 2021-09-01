@@ -1,7 +1,7 @@
 name: Schedule Run Sendxyh
 
 on:
-  workflow_dispatch:
+  # workflow_dispatch:
   
   schedule:
     # 美东时间UTC/GMT -4: - cron: '30 21 * * 1-5'
