@@ -1,8 +1,9 @@
 import pandas_datareader.data as web
+import pandas as pd
 import datetime
 from stockutil.stooq import search_file,read_stooq_file,maNotEnoughError,markCloseError
 import os
-from util.utils import is_second_wednesday,get_target_date
+from util.utils import is_second_wednesday,get_target_date,get_dmm_maxtry,get_xmm_maxtry
 
 class TickerError(Exception):
     pass
@@ -19,6 +20,7 @@ class Ticker:
     smas = {}
     smas_state ={}
     date_list= {}
+    price_list={}
     xmm_price_list = {}
     dmm_price_list = {}
 
@@ -51,66 +53,67 @@ class Ticker:
                 #filter df based on end time
                 if self.endtime in df.index.date:
                     df = df.loc[df.index[0]:self.endtime]
+                #根据df的值更新starttime的日期 防止出现startime没有数据
+                self.starttime = df.index.date[-1]
             self.df = df
             self.reset_data()
+            
             return self.df
         raise TickerError("无法使用当前指定的方法")    
 
-    def xmm_max_try(self):
-        if self.date_list["xmm"] == None:
-            raise TickerError("小毛毛指定日期中没有日期数据")
-        return 7
-    
-    def dmm_max_try(self): #没有想好是要分开来算max try 还是直接给定值
-        if self.date_list["dmm"] == None:
-            raise TickerError("小毛毛指定日期中没有日期数据")
-        return 28
 
-
-    def get_target_price(self,date_list,max_try):
+    def get_target_price(self,mmt,date,max_try):
+        #mmt = dmm or xmm
         if self.df is None:
             self.load_data()
-        if date_list == None:
-            raise TickerError("指定日期中没有日期数据")
-        price_list={}
         #start from first day of the data
-        for j in range(len(date_list)):
-            if date_list[j] > self.df.index[0]:
-                i = 0
-                while i <  max_try:
-                    tmp_date = date_list[j] + datetime.timedelta(days=i)
-                    if tmp_date in self.df.index.date:
-                        price_list[tmp_date] = self.df.loc[tmp_date,"Close"]
-                        break
-                    i +=1
-        return price_list
+        i = 0
+        while i <  max_try:
+            tmp_date = date + datetime.timedelta(days=i)
+            if tmp_date in self.df.index.date:
+                if mmt == "xmm":
+                    self.xmm_price_list[tmp_date] = self.df.loc[tmp_date,"Close"]
+                if mmt == "dmm":
+                    self.dmm_price_list[tmp_date] = self.df.loc[tmp_date,"Close"]
+                break
+            i +=1
+        return True
         
-    def cal_profit(self):
-        dmm_stock_number = 0 #初始化 大毛毛股数
-        xmm_stock_number = 0 #初始化 小毛毛股数
+    def get_price_list(self):
         if self.df is None:
             self.load_data()
         if self.date_list == None:
             raise TickerError("指定日期中没有日期数据")
+        for date in self.date_list['xmm']:
+            self.get_target_price("xmm",date,get_xmm_maxtry(date))
+        for date in self.date_list['dmm']:
+            self.get_target_price("dmm",date,get_dmm_maxtry(date))
+        return True
 
-        self.dmm_price_list = self.get_target_price(self.date_list['dmm'],self.dmm_max_try())
-        self.xmm_price_list = self.get_target_price(self.date_list['xmm'],self.xmm_max_try())
-        for date,price in self.xmm_price_list.items():
-            xmm_stock_number += self.principle/price #获取小毛毛股数
-        for date,price in self.dmm_price_list.items():
-            dmm_stock_number += self.principle/price #获取大毛毛股数
-        self.xmm_profit = {
-            "current_profit":xmm_stock_number * self.df["Close"][-1],   #当前市值
-            "total_principle":self.principle * len(self.xmm_price_list),  # 总成本
-            "profit_percentage": (xmm_stock_number * self.df["Close"][-1])/(self.principle * len(self.xmm_price_list)) - 1  #盈利百分比
-            } 
-        if len(self.dmm_price_list) > 0:    
-            self.dmm_profit = {
-                "current_profit":dmm_stock_number * self.df["Close"][-1],
-                "total_principle":self.principle * len(self.dmm_price_list), 
-                "profit_percentage": (dmm_stock_number * self.df["Close"][-1])/(self.principle * len(self.dmm_price_list)) - 1
-                }
-        return [self.xmm_profit,self.dmm_profit]
+
+    
+    def cal_profit(self):
+        dmm_stock_number = 0 #初始化 大毛毛股数
+        xmm_stock_number = 0 #初始化 小毛毛股数
+        if self.get_price_list():
+            for date,price in self.xmm_price_list.items():
+                xmm_stock_number += self.principle/price #获取小毛毛股数
+            for date,price in self.dmm_price_list.items():
+                dmm_stock_number += self.principle/price #获取大毛毛股数
+            self.xmm_profit = {
+                "current_price":xmm_stock_number * self.df["Close"][-1],   #当前市值
+                "total_principle":self.principle * len(self.xmm_price_list),  # 总成本
+                "profit_percentage": (xmm_stock_number * self.df["Close"][-1] - self.principle * len(self.xmm_price_list))/(self.principle * len(self.xmm_price_list)) #盈利百分比
+                } 
+            if len(self.dmm_price_list) > 0:    
+                self.dmm_profit = {
+                    "current_price":dmm_stock_number * self.df["Close"][-1],#当前市值
+                    "total_principle":self.principle * len(self.dmm_price_list), # 总成本
+                    "profit_percentage": (dmm_stock_number * self.df["Close"][-1] - self.principle * len(self.dmm_price_list))/(self.principle * len(self.dmm_price_list)) #盈利百分比
+                    }
+            return True
+        raise TickerError("无法获得价格列表")
+
 
     def symbol_above_moving_average(self,ma=50):
         if self.df is None:
@@ -122,20 +125,21 @@ class Ticker:
                 return True
         raise maNotEnoughError(f"{ma} 周期均价因时长不足无法得出\n")
         
-    def cal_symbols_avg(self,ma:list):
+    def cal_symbols_avg(self,ma:int):
         if self.df is None:
             self.load_data()
         
         df = self.df
         
         if df.count()[0] < ma :
-            raise TickerError(f"Ticker{self.symbol}里的历史数据没有{ma}这么多")
+            raise TickerError(f"{self.symbol}里的历史数据没有{ma}这么多")
 
         if self.endtime != df.index.date[-1]:
-            raise TickerError(f"最后一个交易日不是{self.endtime}")
+            raise TickerError(f"{self.symbol}最后一个交易日不是{self.endtime}")
 
         sma = df.tail(ma)['Adj Close'].mean()
         self.smas[ma] = sma
+        self.cal_sams_change_rate()
         return sma
 
     def cal_sams_change_rate(self):
@@ -144,6 +148,13 @@ class Ticker:
             percentage = (df['Adj Close'][-1] - value)/value * 100
             self.smas_state[ma] = [percentage,"🟢" if percentage > 0 else "🔴"]
         return self.smas_state
+    
+    def get_today_price_msg(self):
+        if self.df is None:
+            self.load_data()
+        if self.endtime > self.df.index.date[-1]:
+            raise TickerError(f"{self.symbol} {self.endtime} 没有数据")
+        return f"{self.symbol}价格: {self.df['Close'][-1]}({self.df['Low'][-1]} - {self.df['High'][-1]}):\n"
 
     def reset_data(self):
         self.smas = {}
@@ -152,12 +163,13 @@ class Ticker:
     def gen_mmt_msg(self):
         chat_msg = ""
         if self.xmm_profit:
-            chat_msg += f"如果你从{self.starttime.strftime('%Y年%m月%d日')}定投 #小毛毛 {self.symbol} {self.principle}元，到{self.endtime.strftime('%Y年%m月%d日')}累计投入 {self.xmm_profit['total_principle']}元，到昨日市值为 {self.xmm_profit['current_profit']:0.2f} 元，累计利润为 {self.xmm_profit['profit_percentage']*100:0.2f}%\n"
+            chat_msg += f"如果你从{self.starttime.strftime('%Y年%m月%d日')}定投 #小毛毛 {self.symbol} {self.principle}元，到{self.endtime.strftime('%Y年%m月%d日')}累计投入 {self.xmm_profit['total_principle']}元，到昨日市值为 {self.xmm_profit['current_price']:0.2f} 元，累计利润为 {self.xmm_profit['profit_percentage']*100:0.2f}%\n"
         if self.dmm_profit:
-            chat_msg += f"如果你从{self.starttime.strftime('%Y年%m月%d日')}定投 #大毛毛 {self.symbol} {self.principle}元，到{self.endtime.strftime('%Y年%m月%d日')}累计投入 {self.dmm_profit['total_principle']}元，到昨日市值为 {self.dmm_profit['current_profit']:0.2f} 元，累计利润为 {self.dmm_profit['profit_percentage']*100:0.2f}%\n"
+            chat_msg += f"如果你从{self.starttime.strftime('%Y年%m月%d日')}定投 #大毛毛 {self.symbol} {self.principle}元，到{self.endtime.strftime('%Y年%m月%d日')}累计投入 {self.dmm_profit['total_principle']}元，到昨日市值为 {self.dmm_profit['current_price']:0.2f} 元，累计利润为 {self.dmm_profit['profit_percentage']*100:0.2f}%\n"
         return chat_msg
 
     def gen_xyh_msg(self):
+        # 如果smas是空的怎么办？
         chat_msg = ""
         for key,value in self.smas.items():
             chat_msg += f"{self.smas_state[key][1]} {key} 周期均价：{value:0.2f} ({self.smas_state[key][0]:0.2f}%)\n"
