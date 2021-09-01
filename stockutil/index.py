@@ -88,6 +88,8 @@ class Index:
                     raise IndexError(f"{symbol.symbol}输入的日期没有数据，请确保输入的日期当天有开市")
             except Exception as e:
                 self.err_msg += f"{self.symbol} {e}\n"
+                import traceback
+                traceback.print_exc()
                 continue
         return True
         
