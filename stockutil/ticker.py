@@ -70,7 +70,7 @@ class Ticker:
         i = 0
         while i <  max_try:
             tmp_date = date + datetime.timedelta(days=i)
-            if tmp_date in self.df.index.date:
+            if tmp_date.date() in self.df.index.date:
                 if mmt == "xmm":
                     self.xmm_price_list[tmp_date] = self.df.loc[tmp_date,"Close"]
                 if mmt == "dmm":
