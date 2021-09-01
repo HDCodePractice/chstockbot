@@ -4,8 +4,8 @@ on:
   # workflow_dispatch:
   
   schedule:
-    # 美东时间UTC/GMT -4: - cron: '30 21 * * 1-5'
-    # - cron: '30 1 * * 2-6'
+    # 美东时间UTC/GMT -4: - cron: '25 8 * * 3'
+    - cron: '25 12 * * 3'
 
 jobs:
   build_run:
