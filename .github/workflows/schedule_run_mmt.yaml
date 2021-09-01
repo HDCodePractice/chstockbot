@@ -1,4 +1,4 @@
-name: Schedule Run Sendxyh
+name: Schedule Run SendMMT
 
 on:
   workflow_dispatch:
