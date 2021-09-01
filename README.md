@@ -2,7 +2,7 @@
 
 构建一个chstockbot，让它帮助我们把几个群有效的管理起来，同时提供了夕阳红以及毛毛投的相关提醒支持。
 
-[![Build Publish Docker image](https://github.com/HDCodePractice/chstockbot/actions/workflows/build_and_publish_docker.yaml/badge.svg)](https://github.com/HDCodePractice/chstockbot/actions/workflows/build_and_publish_docker.yaml)  [![Schedule Run Sendxyh](https://github.com/HDCodePractice/chstockbot/actions/workflows/schedule_run_xyh.yaml/badge.svg?event=schedule)](https://github.com/HDCodePractice/chstockbot/actions/workflows/schedule_run_xyh.yaml)
+[![Build Publish Docker image](https://github.com/HDCodePractice/chstockbot/actions/workflows/build_and_publish_docker.yaml/badge.svg)](https://github.com/HDCodePractice/chstockbot/actions/workflows/build_and_publish_docker.yaml)  [![Schedule Run Sendxyh](https://github.com/HDCodePractice/chstockbot/actions/workflows/schedule_run_xyh.yaml/badge.svg?event=schedule)](https://github.com/HDCodePractice/chstockbot/actions/workflows/schedule_run_xyh.yaml) [![codecov](https://codecov.io/gh/HDCodePractice/chstockbot/branch/main/graph/badge.svg?token=OO4K7T8UU2)](https://codecov.io/gh/HDCodePractice/chstockbot)
 
 ## 支持功能
 * 支持/help 获取帮助
