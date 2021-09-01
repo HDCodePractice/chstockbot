@@ -1,4 +1,4 @@
-name: Schedule Run Sendxyh
+name: Schedule Run SendMMT
 
 on:
   workflow_dispatch:
@@ -30,7 +30,7 @@ jobs:
           wget -q https://static.stooq.com/db/h/d_us_txt.zip
           unzip -oq d_us_txt.zip
       
-      - name: sendxyh
+      - name: sendmmt
         # 系统是UTC时间，所以全部变为发昨日的数据
         run: python3 sendmmt.py -s 20210101 -e $(date +'%Y%m%d' -d yesterday) -c data/
         env:
