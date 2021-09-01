@@ -97,6 +97,10 @@ class ENV:
     ADMIN_GROUP = env.str("ADMIN_GROUP", "")
     # 管理的群和频道列表，使用逗号分隔
     GROUPS = env.list("GROUPS", [])
+    # 毛毛投的定投标的
+    MMTTICKER = env.list("MMTTICKER", [])
+    # 毛毛投发送频道
+    MMTCHAT = env.str("MMTCHAT", "")
 
 if __name__ == "__main__":
     print(ENV.GROUPS)
