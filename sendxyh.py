@@ -79,6 +79,10 @@ if __name__ == '__main__':
             notify_message += f"{i.gen_index_msg(target_date)}\n"
             admin_message += i.err_msg
 
+        # 计算两市成交量与昨日的变化
+        for index in ['nasdaq','nyse']:
+            pass
+        
         if notify_message:
             notify_message = f"🌈🌈🌈{target_date}天相🌈🌈🌈: \n\n{notify_message}贡献者:毛票教的大朋友们"
             sendmsg(bot,notifychat,notify_message,debug)
