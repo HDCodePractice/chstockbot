@@ -84,7 +84,7 @@ if __name__ == '__main__':
             pass
         
         if notify_message:
-            notify_message = f"🌈🌈🌈{target_date}天相🌈🌈🌈: \n\n{notify_message}贡献者:毛票教的大朋友们"
+            notify_message = f"🌈🌈🌈{target_date}天相🌈🌈🌈: \n\n{notify_message}{ENV.CONTRIBUTORS}"
             sendmsg(bot,notifychat,notify_message,debug)
         if admin_message:
             sendmsg(bot,adminchat,admin_message,debug)
