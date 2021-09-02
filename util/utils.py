@@ -24,7 +24,7 @@ def get_date_list(start_date=None,end_date=None,freq='W-WED', week_num = 2):
     """
     freq="W-DAY" i.e, W-MON/W-TUE/W-WED/W-THU/W-FRI/W-SAT/W-SUN
     """
-    date_list = pd.date_range(start=start_date, end=end_date, freq=freq)
+    date_list = pd.date_range(start=start_date, end=end_date, freq=freq).tolist()
     date_lists = {}
     date_lists['xmm'] = date_list
     date_lists['dmm'] = []
