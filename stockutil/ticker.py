@@ -44,6 +44,8 @@ class Ticker:
         if self.ds !=None:
             if self.from_s.lower() == "web":
                 df = web.DataReader(self.symbol.upper(), self.ds,start=self.starttime,end=self.endtime)
+                if df.empty or df == None:
+                    raise TickerError(f"无法找到当前ticker:{self.symbol}的信息\n")
                 df = df.sort_values(by="Date") #将排序这个步骤放在了判断df是否存在之后；最新的数据在最后
                 if "Adj Close" not in df.columns.values: #当数据没有adj close时，从close 数据copy给adj close
                     df["Adj Close"] = df["Close"]
@@ -157,7 +159,7 @@ class Ticker:
             self.smas_state[ma] = [percentage,"🟢" if percentage > 0 else "🔴"]
         return self.smas_state
     
-    def cal_today_price_rate(self):
+    def cal_today_price_rate(self): #计算今日与昨日的收盘价差异
         df = self.df
         percentage = (df['Adj Close'][-1] - df['Adj Close'][-2])/df['Adj Close'][-2] * 100
         return percentage, "🟢" if percentage > 0 else "🔴"

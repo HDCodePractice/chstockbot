@@ -7,6 +7,10 @@ class IndexError(Exception):
     pass
 
 class Index:
+    #起始时间
+    starttime = None
+    #结束时间
+    endtime = None
     #指数代码
     symbol = None
     #均线周期
@@ -35,8 +39,9 @@ class Index:
     #错误信息
     err_msg = ""
     
-    def __init__(self,symbol,from_s="sources",local_store="data"):
+    def __init__(self,symbol,from_s="sources",local_store="data",starttime=datetime.date.today() - datetime.timedelta(days=364),endtime= datetime.date.today()):
         #from_s: sources or markets 数据需要计算指数还是市场 : sources/markets
+        #starttime/endtime： 起始时间/结束时间 默认值：一年前的今天/今天
         self.from_s = from_s
         if from_s == "sources":
             symbol = symbol.upper()
@@ -47,6 +52,8 @@ class Index:
                 raise IndexError(f"{symbol} 不在我们的支持列表中")
         self.symbol = symbol
         self.local_store = local_store
+        self.starttime = starttime
+        self.endtime = endtime
         self.reset_index_data()
 
     def get_tickers_list(self):
@@ -63,12 +70,14 @@ class Index:
         #self.reset_index_data() 
         return self.tickers
     
-    def compare_avg_ma(self, ma=10, end_date=datetime.date.today()): #合并计算
+    def compare_avg_ma(self, ma=10): #合并计算
         self.up = []
         self.down = []
         self.ma =ma
+        end_date = self.endtime
+        start_date = self.starttime
         for ticker in self.tickers:
-            symbol = Ticker(ticker,"local",ds=self.local_store,endtime=end_date)
+            symbol = Ticker(ticker,"local",ds=self.local_store,starttime=start_date,endtime=end_date)
             try:
                 df = symbol.load_data()
                 if end_date in df.index.date:                
@@ -95,7 +104,8 @@ class Index:
         self.today_vol = 0
         self.yesterday_vol = 0
     
-    def gen_index_msg(self,end_time): #生成指数信息
+    def gen_index_msg(self): #生成指数信息
+        end_time = self.endtime
         # TODO: 这个end_time参数如果和compare_avg_ma的不一样，是不是会出很神奇的结果？
         max_num = 20 if self.from_s == "sources" else 150
         if (len(self.up)+len(self.down) + max_num ) < len(self.tickers):
