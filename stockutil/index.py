@@ -63,28 +63,25 @@ class Index:
         #self.reset_index_data() 
         return self.tickers
     
-    def compare_avg_ma(self, ma=10, end_date=datetime.date.today()): #分开计算ticker的信息
+    def compare_avg_ma(self, ma=10, end_date=datetime.date.today()): #合并计算
         self.up = []
         self.down = []
         self.ma =ma
         for ticker in self.tickers:
-            # TODO: 这里为什么要把再写一遍呢？Ticker里的功能已经写好了啊？
             symbol = Ticker(ticker,"local",ds=self.local_store,endtime=end_date)
             try:
                 df = symbol.load_data()
                 if end_date in df.index.date:                
                     df = df.loc[df.index[0]:end_date]
-                    if df.count()[0] > ma :
-                        if df['Adj Close'][-1] < df.tail(ma)['Adj Close'].mean(): #将股票信息存入列表
-                            self.down.append(symbol.symbol)
-                        else:
+                    symbol.cal_symbols_avg(ma)
+                    symbol.cal_sams_change_rate
+                    for key,value in symbol.smas_state.items(): #从ticke的smas_state读取数据
+                        if value[0] > 0:
                             self.up.append(symbol.symbol)
-                        self.today_vol += df["Volume"][-1] #今日交易量
-                        self.yesterday_vol += df["Volume"][-2] #昨日交易量
-                    else:
-                        raise IndexError(f"{symbol.symbol} {ma} 周期均价因时长不足无法得出")
-                else:
-                    raise IndexError(f"{symbol.symbol}输入的日期没有数据，请确保输入的日期当天有开市\n{symbol.df}")
+                        else:
+                            self.down.append(symbol.symbol)
+                    self.today_vol += df["Volume"][-1] #今日交易量
+                    self.yesterday_vol += df["Volume"][-2] #昨日交易量
             except Exception as e:
                 self.err_msg += f"{self.symbol} {e}\n"
                 import traceback
