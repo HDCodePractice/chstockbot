@@ -40,26 +40,3 @@ def load_list(filename):
     with open(filename, "rb") as f:
         tickers = pickle.load(f)
     return tickers
-
-if __name__ == '__main__':
-    import stooq
-    # 本程序只是用于测试，正常使用请from stockutil import wikipedia
-    sp500 = get_sp500_tickers()
-    ndx100 = get_ndx100_tickers()
-    #save_list(sp500,"sp500.pickle")
-    #save_list(ndx100,"ndx100.pickle")
-    indexes = {"sp500": sp500, "ndx100": ndx100}
-
-    for key in indexes:
-        print(key)
-        up = []
-        down = []       
-        for symbol in indexes[key]:
-            try:
-                if stooq.symbol_above_moving_average(symbol,end=datetime.datetime.strptime("20210716","%Y%m%d").date()):
-                    up.append(symbol)
-                else:
-                    down.append(symbol)
-            except Exception as e:
-                print(f"unreachable stock: {symbol}\nerror message: {e}\n")
-        print(f"{key}共有{len(up)+len(down)}支股票，共有{len(up)/(len(up)+len(down))*100:.2f}%高于50周期均线")

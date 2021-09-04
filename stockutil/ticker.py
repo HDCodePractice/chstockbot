@@ -70,7 +70,7 @@ class Ticker:
         i = 0
         while i <  max_try:
             tmp_date = date + datetime.timedelta(days=i)
-            if tmp_date in self.df.index.date:
+            if tmp_date.date() in self.df.index.date:
                 if mmt == "xmm":
                     self.xmm_price_list[tmp_date] = self.df.loc[tmp_date,"Close"]
                 if mmt == "dmm":
@@ -116,6 +116,14 @@ class Ticker:
 
 
     def symbol_above_moving_average(self,ma=50):
+        """
+        获取一个Ticker在self.endtime是否高于指定的历史平均价。返回True高于avg，Flase低于avg
+
+        Parameters
+        ----------
+        ma : int, default 50
+            计算的历史时长，默认为50MA
+        """
         if self.df is None:
             self.load_data()
         if self.df.count()[0] > ma :
@@ -163,9 +171,9 @@ class Ticker:
     def gen_mmt_msg(self):
         chat_msg = ""
         if self.xmm_profit:
-            chat_msg += f"如果你从{self.starttime.strftime('%Y年%m月%d日')}定投 #小毛毛 {self.symbol} {self.principle}元，到{self.endtime.strftime('%Y年%m月%d日')}累计投入 {self.xmm_profit['total_principle']}元，到昨日市值为 {self.xmm_profit['current_price']:0.2f} 元，累计利润为 {self.xmm_profit['profit_percentage']*100:0.2f}%\n"
+            chat_msg += f"从{self.starttime.strftime('%Y年%m月%d日')}定投 #小毛毛 {self.symbol}，到{self.endtime.strftime('%Y年%m月%d日')}累计投入 {self.xmm_profit['total_principle']}元，到昨日市值为 {self.xmm_profit['current_price']:0.2f} 元，利润为 {self.xmm_profit['profit_percentage']*100:0.2f}%\n"
         if self.dmm_profit:
-            chat_msg += f"如果你从{self.starttime.strftime('%Y年%m月%d日')}定投 #大毛毛 {self.symbol} {self.principle}元，到{self.endtime.strftime('%Y年%m月%d日')}累计投入 {self.dmm_profit['total_principle']}元，到昨日市值为 {self.dmm_profit['current_price']:0.2f} 元，累计利润为 {self.dmm_profit['profit_percentage']*100:0.2f}%\n"
+            chat_msg += f"从{self.starttime.strftime('%Y年%m月%d日')}定投 #大毛毛 {self.symbol}，到{self.endtime.strftime('%Y年%m月%d日')}累计投入 {self.dmm_profit['total_principle']}元，到昨日市值为 {self.dmm_profit['current_price']:0.2f} 元，利润为 {self.dmm_profit['profit_percentage']*100:0.2f}%\n"
         return chat_msg
 
     def gen_xyh_msg(self):
@@ -174,62 +182,3 @@ class Ticker:
         for key,value in self.smas.items():
             chat_msg += f"{self.smas_state[key][1]} {key} 周期均价：{value:0.2f} ({self.smas_state[key][0]:0.2f}%)\n"
         return chat_msg
-
-
-
-if __name__ == "__main__":
-    # Ticker测试代码
-    # aapl = Ticker('AAPL')
-    # aapl.load_data("~/Downloads/data")
-    # aapl.get_price_lists(start=datetime.date(2020,4,28))
-    # print(aapl.cal_profit('montly'))
-
-
-    # spx = Index('ndx')
-    # print(spx.get_index_tickers_list())
-    # print(len(spx.tickers))
-    # print(spx.compare_avg(
-    #     10,
-    #     source="~/Downloads/data",
-    #     end_date=datetime.date(2021,6,1)
-    # ))
-    ticker = Ticker("spy","web","stooq")
-    print(ticker.date_list["dmm"])
-    print(ticker.date_list["xmm"])
-    # import stooq
-    # tickers = ["spy","qqq","didi"]
-    # admin_msg = ""
-    # notify_msg = ""
-
-    # for ticker in tickers:
-    #     try:
-    #         a = Ticker(ticker,datetime.date(2021,8,6))
-    #         #a.load_data(source = "~/Downloads/data")
-    #         a.load_data(source = "stooq")
-    #         lastest_price = a.load_data(source = "~/Downloads/data")['Close'][-1]
-    #         a.append_sma(10)
-    #         a.append_sma(50)
-    #         a.append_sma(100)
-    #         a.append_sma(200)
-    #         a.cal_sams_change_rate()
-    #         notify_msg += f"{lastest_price} {a.smas} {a.smas_state}\n"
-    #     except TickerError as e:
-    #         admin_msg += str(e)
-    # print("=================================")
-    # print(a.load_data(source = "stooq"))
-    # print(a.load_data(source = "stooq")['Close'][-1])
-    # print("=================================")
-    # print(notify_msg)
-    # print(admin_msg)
-    # try:
-    #     b = Index()
-    #     spx = b.get_sp500_tickers()
-    #     spx_avg = b.compare_avg(ma = 50, index = spx, end_date=datetime.date(2021,7,21))
-    #     spx_msg = f"SPX共有{spx_avg['up_num']+spx_avg['down_num']}支股票，共有{spx_avg['rate']*100:.2f}%高于50周期均线"
-    #     notify_msg = f"{spx_msg}"
-    # except TickerError as e:
-    #     admin_msg+=str(e)
-        
-    # print (spx_avg)
-    # print (notify_msg)
-    # print (admin_msg)

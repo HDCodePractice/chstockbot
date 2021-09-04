@@ -82,10 +82,9 @@ class Index:
                         self.today_vol += df["Volume"][-1] #今日交易量
                         self.yesterday_vol += df["Volume"][-2] #昨日交易量
                     else:
-                        # TODO:这里的raise都会被try的except捕获，意义是什么？
                         raise IndexError(f"{symbol.symbol} {ma} 周期均价因时长不足无法得出")
                 else:
-                    raise IndexError(f"{symbol.symbol}输入的日期没有数据，请确保输入的日期当天有开市")
+                    raise IndexError(f"{symbol.symbol}输入的日期没有数据，请确保输入的日期当天有开市\n{symbol.df}")
             except Exception as e:
                 self.err_msg += f"{self.symbol} {e}\n"
                 import traceback
