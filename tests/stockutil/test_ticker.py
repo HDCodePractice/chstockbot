@@ -1,5 +1,5 @@
 import pytest
-from datetime import datetime
+from datetime import datetime,date
 import pandas as pd
 from stockutil.ticker import Ticker
 
@@ -7,7 +7,7 @@ def test_ticker_load_data_web():
     """Test ticker load data."""
     ticker = Ticker("AAPL","web", "stooq")
     df =  ticker.load_data()
-    # print(df)
+    #print(df)
     assert df.index.size > 200
 
 def test_ticker_load_data_local(shared_datadir):
@@ -79,9 +79,10 @@ def test_cal_symbols_avg(goev,aapl,ogn):
     ma = aapl.cal_symbols_avg(10)
     assert aapl.smas[10] == 147.81
     ma = aapl.cal_symbols_avg(50)
-    assert aapl.smas[50] == 142.10559999999998
+    print(aapl.smas)
+    assert aapl.smas[50] == 142.10560000000004
     ma = ogn.cal_symbols_avg(10)
-    assert ogn.smas[10] == 32.52909999999999
+    assert ogn.smas[10] == 32.52910000000001
     with pytest.raises(TickerError) as e:
         ma = ogn.cal_symbols_avg(100)
     exec_msg = e.value.args[0]
@@ -96,3 +97,29 @@ def test_gen_xyh_msg(aapl,goev):
 🟢 50 周期均价：142.11 (4.28%)
 🟢 100 周期均价：135.20 (9.60%)
 🟢 200 周期均价：130.47 (13.58%)\n"""
+
+def test_cal_today_price_rate(aapl,goev):
+    #8/20: 148.19
+    #8/19: 146.7
+    percent,flag = aapl.cal_today_price_rate()
+    aapl_percent = (148.19 - 146.7)/146.7 *100 #1.015678254942059
+    aapl_flag = "🟢"
+    assert percent == aapl_percent
+    assert flag == aapl_flag
+    
+
+def test_get_today_price_msg(aapl,goev):
+    #8/20: 148.19
+    #8/19: 146.7
+    msg = aapl.get_today_price_msg()
+    assert msg == """AAPL价格: 🟢 148.19 1.02% (146.78 - 148.5):\n"""
+
+def test_gen_mmt_msg(aapl,goev):
+    aapl.cal_profit()
+    aapl.starttime = date(2020,9,4)
+    msg = aapl.gen_mmt_msg()
+    assert aapl.xmm_profit != None
+    assert aapl.dmm_profit != None
+    assert msg == """从2020年09月04日定投 #小毛毛 AAPL，到2021年08月20日累计投入 5000元，到昨日市值为 5852.28 元，利润为 17.05%\n从2020年09月04日定投 #大毛毛 AAPL，到2021年08月20日累计投入 1200元，到昨日市值为 1395.82 元，利润为 16.32%\n"""
+
+

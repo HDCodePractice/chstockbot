@@ -44,8 +44,6 @@ class Ticker:
         if self.ds !=None:
             if self.from_s.lower() == "web":
                 df = web.DataReader(self.symbol.upper(), self.ds,start=self.starttime,end=self.endtime)
-                if df.empty or df == None:
-                    raise TickerError(f"无法找到当前ticker:{self.symbol}的信息\n")
                 df = df.sort_values(by="Date") #将排序这个步骤放在了判断df是否存在之后；最新的数据在最后
                 if "Adj Close" not in df.columns.values: #当数据没有adj close时，从close 数据copy给adj close
                     df["Adj Close"] = df["Close"]
@@ -56,7 +54,8 @@ class Ticker:
                 if self.endtime in df.index.date:
                     df = df.loc[df.index[0]:self.endtime]
                 #根据df的值更新starttime的日期 防止出现startime没有数据
-                self.starttime = df.index.date[-1]
+                if self.starttime not in df.index.date:
+                    self.starttime = df.index.date[0]
             self.df = df
             self.reset_data()
             
