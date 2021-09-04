@@ -19,7 +19,7 @@ def get_target_date(start=datetime.date.today(),end=datetime.date.today(),freq="
             date_dict["dmm"].append(date)
     return date_dict
 
-# TODO 区别在于week_num，另外dtae_list是否需要改成list :)
+# TODO 区别在于week_num，另外date_list是否需要改成list :)  （差别在于 改成list之后，xmm和dmm的数据类型就是一致的）
 def get_date_list(start_date=None,end_date=None,freq='W-WED', week_num = 2):
     """
     freq="W-DAY" i.e, W-MON/W-TUE/W-WED/W-THU/W-FRI/W-SAT/W-SUN
@@ -48,10 +48,15 @@ def sendmsg(bot,chatid,msg,debug=True):
 def get_week_num(year:int, month:int, day:int) -> int:
     """
     获取当前日期是本月的第几周
+    若第一周不含有周三，则将周数减一。最终获得的是今日所在的周，是本月第二个含有周三的周。
     """
     start = datetime.date(year, month, 1).isocalendar().week #获得当月1号的周数
     end = datetime.date(year, month, day).isocalendar().week #获得当日的周数
     week_num = end - start 
+    if datetime.date(year, month, 1).isoweekday() < 3:
+        week_num = week_num
+    else:
+        week_num = week_num -1
     return week_num
 
 def get_default_maxtry(try_date):
