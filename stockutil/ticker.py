@@ -162,7 +162,9 @@ class Ticker:
             self.load_data()
         if self.endtime > self.df.index.date[-1]:
             raise TickerError(f"{self.symbol} {self.endtime} 没有数据")
-        return f"{self.symbol}价格: {self.df['Close'][-1]}({self.df['Low'][-1]} - {self.df['High'][-1]}):\n"
+        percentage = (self.df['Adj Close'][-1] - self.df['Adj Close'][-2])/self.df['Adj Close'][-2] * 100
+        flag = "🟢" if percentage > 0 else "🔴"
+        return f"{self.symbol}价格: {flag} {self.df['Close'][-1]} {percentage:0.2f}% ({self.df['Low'][-1]} - {self.df['High'][-1]}):\n"
 
     def reset_data(self):
         self.smas = {}
