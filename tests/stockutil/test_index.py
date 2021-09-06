@@ -67,32 +67,32 @@ def test_index_get_market_ticker_list(shared_datadir):
     assert "OGN" in nyse.tickers
  
 def test_index_compare_avg_ma(shared_datadir):
-    nasdaq = Index("nasdaq","markets",local_store=f"{shared_datadir}")
+    nasdaq = Index("nasdaq","markets",local_store=f"{shared_datadir}",endtime=date(2021,8,20))
     nasdaq.get_tickers_list()
-    nasdaq.compare_avg_ma(10,date(2021,8,20))
+    nasdaq.compare_avg_ma(10)
     assert len(nasdaq.down) == 1
     assert 'GOEV' in nasdaq.down
     assert len(nasdaq.up) == 1
     assert 'AAPL' in nasdaq.up
-    nasdaq.compare_avg_ma(100,date(2021,8,20))
+    nasdaq.compare_avg_ma(100)
     assert len(nasdaq.down) == 1
     assert 'GOEV' in nasdaq.down
     assert len(nasdaq.up) == 1
     assert 'AAPL' in nasdaq.up
 
 def test_index_compare_avg_ma_error(shared_datadir):
-    nyse = Index("nyse","markets",local_store=f"{shared_datadir}")
+    nyse = Index("nyse","markets",local_store=f"{shared_datadir}",endtime=date(2021,8,20))
     nyse.get_tickers_list()
-    nyse.compare_avg_ma(100,date(2021,8,20))
+    nyse.compare_avg_ma(100)
     assert len(nyse.down) == 0
     assert len(nyse.up) == 0
     # print(nyse.tickers,nyse.down,nyse.up,nyse.err_msg)
-    assert nyse.err_msg == "nyse OGN 100 周期均价因时长不足无法得出\n"
+    assert nyse.err_msg == "nyse OGN里的历史数据没有100这么多\n"
 
 
 def test_gen_index_msg(shared_datadir):
-    nasdaq = Index("nasdaq","markets",local_store=f"{shared_datadir}")
+    nasdaq = Index("nasdaq","markets",local_store=f"{shared_datadir}",endtime=date(2021,8,20))
     nasdaq.get_tickers_list()
-    nasdaq.compare_avg_ma(10,date(2021,8,20))
-    msg = nasdaq.gen_index_msg(date(2021,8,20))
+    nasdaq.compare_avg_ma(10)
+    msg = nasdaq.gen_index_msg()
     assert msg == "nasdaq共有2支股票，共有50.00%高于10周期均线\n当日交易量变化：-30.74%\n"
