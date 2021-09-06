@@ -80,17 +80,19 @@ class Index:
             symbol = Ticker(ticker,"local",ds=self.local_store,starttime=start_date,endtime=end_date)
             try:
                 df = symbol.load_data()
-                if end_date in df.index.date:                
-                    df = df.loc[df.index[0]:end_date]
-                    symbol.cal_symbols_avg(ma)
-                    symbol.cal_sams_change_rate
-                    for key,value in symbol.smas_state.items(): #从ticke的smas_state读取数据
-                        if value[0] > 0:
-                            self.up.append(symbol.symbol)
-                        else:
-                            self.down.append(symbol.symbol)
-                    self.today_vol += df["Volume"][-1] #今日交易量
-                    self.yesterday_vol += df["Volume"][-2] #昨日交易量
+                if symbol.symbol_above_moving_average(ma):
+                    self.up.append(symbol.symbol)
+                # if end_date in df.index.date:                
+                #     df = df.loc[df.index[0]:end_date]
+                #     symbol.cal_symbols_avg(ma)
+                #     symbol.cal_sams_change_rate
+                #     for key,value in symbol.smas_state.items(): #从ticke的smas_state读取数据
+                #         if value[0] > 0:
+                #             self.up.append(symbol.symbol)
+                else:
+                    self.down.append(symbol.symbol)
+                self.today_vol += df["Volume"][-1] #今日交易量
+                self.yesterday_vol += df["Volume"][-2] #昨日交易量
             except Exception as e:
                 self.err_msg += f"{self.symbol} {e}\n"
                 import traceback
