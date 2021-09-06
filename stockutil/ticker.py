@@ -54,7 +54,8 @@ class Ticker:
                 if self.endtime in df.index.date:
                     df = df.loc[df.index[0]:self.endtime]
                 #根据df的值更新starttime的日期 防止出现startime没有数据
-                self.starttime = df.index.date[-1]
+                if self.starttime not in df.index.date:
+                    self.starttime = df.index.date[0]
             self.df = df
             self.reset_data()
             
@@ -157,14 +158,18 @@ class Ticker:
             self.smas_state[ma] = [percentage,"🟢" if percentage > 0 else "🔴"]
         return self.smas_state
     
+    def cal_today_price_rate(self): #计算今日与昨日的收盘价差异
+        df = self.df
+        percentage = (df['Adj Close'][-1] - df['Adj Close'][-2])/df['Adj Close'][-2] * 100
+        return percentage, "🟢" if percentage > 0 else "🔴"
+
     def get_today_price_msg(self):
         if self.df is None:
             self.load_data()
         if self.endtime > self.df.index.date[-1]:
             raise TickerError(f"{self.symbol} {self.endtime} 没有数据")
-        percentage = (self.df['Adj Close'][-1] - self.df['Adj Close'][-2])/self.df['Adj Close'][-2] * 100
-        flag = "🟢" if percentage > 0 else "🔴"
-        return f"{self.symbol}价格: {flag} {self.df['Close'][-1]} {percentage:0.2f}% ({self.df['Low'][-1]} - {self.df['High'][-1]}):\n"
+        percent,flag = self.cal_today_price_rate()
+        return f"{self.symbol}价格: {flag} {self.df['Close'][-1]} {percent:.2f}% ({self.df['Low'][-1]} - {self.df['High'][-1]}):\n"
 
     def reset_data(self):
         self.smas = {}

@@ -73,10 +73,10 @@ if __name__ == '__main__':
         
         # 计算NDX和SPX成分股高于50MA的比例和交易量变化
         for index in indexs:
-            i = Index(index,local_store=config.config_path)
+            i = Index(index,local_store=config.config_path,endtime=target_date)
             i.get_tickers_list()
-            i.compare_avg_ma(ma=50,end_date=target_date)
-            notify_message += f"{i.gen_index_msg(target_date)}\n"
+            i.compare_avg_ma(ma=50)
+            notify_message += f"{i.gen_index_msg()}\n"
             admin_message += i.err_msg
 
         # 计算两市成交量与昨日的变化
