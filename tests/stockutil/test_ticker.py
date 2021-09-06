@@ -1,5 +1,5 @@
 import pytest
-from datetime import datetime
+from datetime import datetime,date
 import pandas as pd
 from stockutil.ticker import Ticker
 
@@ -96,3 +96,14 @@ def test_gen_xyh_msg(aapl,goev):
 🟢 50 周期均价：142.11 (4.28%)
 🟢 100 周期均价：135.20 (9.60%)
 🟢 200 周期均价：130.47 (13.58%)\n"""
+
+def test_get_today_price_msg(aapl,goev,ogn,shared_datadir):
+    msg = aapl.get_today_price_msg()
+    assert msg == "AAPL价格: 🟢 148.19 1.02% (146.78 - 148.5):\n"
+    msg = goev.get_today_price_msg()
+    assert msg == "GOEV价格: 🟢 5.91 1.37% (5.79 - 6.18):\n"
+    msg = ogn.get_today_price_msg()
+    assert msg == "OGN价格: 🔴 33.22 -1.77% (33.15 - 34.46):\n"
+    aapl = Ticker("AAPL", "local", f"{shared_datadir}", endtime=date(2021, 8, 18))
+    msg = aapl.get_today_price_msg()
+    assert msg == "AAPL价格: 🔴 146.36 -2.55% (146.15 - 150.72):\n"
