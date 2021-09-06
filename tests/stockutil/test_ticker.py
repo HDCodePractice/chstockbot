@@ -80,9 +80,9 @@ def test_cal_symbols_avg(goev,aapl,ogn):
     assert aapl.smas[10] == 147.81
     ma = aapl.cal_symbols_avg(50)
     print(aapl.smas)
-    assert aapl.smas[50] == 142.10560000000004
+    assert aapl.smas[50] == 142.10559999999998
     ma = ogn.cal_symbols_avg(10)
-    assert ogn.smas[10] == 32.52910000000001
+    assert ogn.smas[10] == 32.52909999999999
     with pytest.raises(TickerError) as e:
         ma = ogn.cal_symbols_avg(100)
     exec_msg = e.value.args[0]
