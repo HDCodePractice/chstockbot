@@ -96,3 +96,28 @@ def test_gen_index_msg(shared_datadir):
     nasdaq.compare_avg_ma(10)
     msg = nasdaq.gen_index_msg()
     assert msg == "nasdaq共有2支股票，共有50.00%高于10周期均线\n当日交易量变化：-30.74%\n"
+
+def test_get_path_list(shared_datadir):
+    nasdaq = Index("nasdaq","markets",local_store=f"{shared_datadir}",endtime=date(2021,8,20))
+    nasdaq.get_path_list()
+    assert  len(nasdaq.path_list) == 1
+
+    nyse = Index("nyse ","markets",local_store=f"{shared_datadir}",endtime=date(2021,8,20))
+    nyse.get_path_list()
+    assert  len(nyse.path_list) == 1
+
+def test_get_path_list_error(shared_datadir):
+
+    msg = ""
+    assert msg == ""
+
+def test_compare_market_volume(shared_datadir):
+    nasdaq = Index("nasdaq","markets",local_store=f"{shared_datadir}",endtime=date(2021,8,20))
+    nasdaq.get_path_list()
+    nasdaq.compare_market_volume()
+    today_g = 2383633
+    today_a = 60549630
+    yes_g = 3907327
+    yes_a = 86960310
+    rate = (today_a+today_g)/(yes_a+yes_g)-1
+    assert f'{"nasdaq".upper()} 市场 {date(2021,8,20)} 交易量的变化为 {(rate)*100:.2f}%\n'
