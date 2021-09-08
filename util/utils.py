@@ -54,9 +54,9 @@ def get_week_num(year:int, month:int, day:int) -> int:
     end = datetime.date(year, month, day).isocalendar().week #获得当日的周数
     week_num = end - start 
     if datetime.date(year, month, 1).isoweekday() < 3:
-        week_num = week_num
+        week_num = week_num + 1
     else:
-        week_num = week_num -1
+        week_num = week_num
     return week_num
 
 def get_default_maxtry(try_date):
