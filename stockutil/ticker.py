@@ -169,7 +169,7 @@ class Ticker:
         if self.endtime > self.df.index.date[-1]:
             raise TickerError(f"{self.symbol} {self.endtime} 没有数据")
         percent,flag = self.cal_today_price_rate()
-        return f"{self.symbol}价格: {flag} {self.df['Close'][-1]} {percent:.2f}% ({self.df['Low'][-1]} - {self.df['High'][-1]}):\n"
+        return f"{self.symbol}价格: {flag} {self.df['Close'][-1]:.2f} {percent:.2f}% ({self.df['Low'][-1]:.2f} - {self.df['High'][-1]:.2f}):\n"
 
     def reset_data(self):
         self.smas = {}
