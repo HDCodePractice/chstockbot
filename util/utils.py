@@ -48,15 +48,16 @@ def sendmsg(bot,chatid,msg,debug=True):
 def get_week_num(year:int, month:int, day:int) -> int:
     """
     获取当前日期是本月的第几周
+    week_num从1开始
     若第一周不含有周三，则将周数减一。最终获得的是今日所在的周，是本月第二个含有周三的周。
     """
     start = datetime.date(year, month, 1).isocalendar().week #获得当月1号的周数
     end = datetime.date(year, month, day).isocalendar().week #获得当日的周数
-    week_num = end - start 
-    if datetime.date(year, month, 1).isoweekday() < 3:
-        week_num = week_num + 1
-    else:
+    week_num = end - start + 1  #1号所在的周，start 和 end 的周数一样，所以需要 +1
+    if datetime.date(year, month, 1).isoweekday() <= 3: #iso计数方法中， 周三的数字是3
         week_num = week_num
+    else:
+        week_num = week_num - 1 # 1号是周四、周五、周六、周日
     return week_num
 
 def get_default_maxtry(try_date):
