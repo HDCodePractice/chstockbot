@@ -100,7 +100,7 @@ def test_gen_xyh_msg(aapl,goev):
 
 def test_get_today_price_msg(aapl,goev,ogn,shared_datadir):
     msg = aapl.get_today_price_msg()
-    assert msg == "AAPL价格: 🟢 148.19 1.02% (146.78 - 148.5):\n"
+    assert msg == "AAPL价格: 🟢 148.19 1.02% (146.78 - 148.50):\n"
     msg = goev.get_today_price_msg()
     assert msg == "GOEV价格: 🟢 5.91 1.37% (5.79 - 6.18):\n"
     msg = ogn.get_today_price_msg()
