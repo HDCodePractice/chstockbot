@@ -37,7 +37,7 @@ class Index:
         "SPX" : ["https://en.wikipedia.org/wiki/List_of_S%26P_500_companies",0,"Symbol"]
     }
     #市场的数据源
-    markets = ["nasdaq","nyse "]
+    markets = ["nasdaq","nyse"]
     #市场的交易量
     market_volume={}
     #错误信息
@@ -130,7 +130,8 @@ class Index:
                 for name in dirs:
                     if self.symbol in os.path.join(root, name):
                         if not text.match(os.path.join(root, name)):
-                            self.path_list.append(os.path.join(root, name))
+                            if "nysemkt" not in os.path.join(root, name):
+                                self.path_list.append(os.path.join(root, name))
             except Exception as e:
                 self.err_msg += f"{type(e)},{e}\n"
         print (self.path_list)

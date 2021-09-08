@@ -80,7 +80,7 @@ if __name__ == '__main__':
             admin_message += i.err_msg
 
         # 计算两市成交量与昨日的变化
-        for index in ['nasdaq','nyse ']:
+        for index in ['nasdaq','nyse']:
             i = Index(index,from_s="markets",local_store=config.config_path,endtime=target_date)
             i.get_path_list()
             i.compare_market_volume()

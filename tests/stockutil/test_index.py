@@ -102,7 +102,7 @@ def test_get_path_list(shared_datadir):
     nasdaq.get_path_list()
     assert  len(nasdaq.path_list) == 1
 
-    nyse = Index("nyse ","markets",local_store=f"{shared_datadir}",endtime=date(2021,8,20))
+    nyse = Index("nyse","markets",local_store=f"{shared_datadir}",endtime=date(2021,8,20))
     nyse.get_path_list()
     assert  len(nyse.path_list) == 1
 
