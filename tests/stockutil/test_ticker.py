@@ -28,7 +28,7 @@ def test_ticker_symbol_above_moving_average(ogn,goev):
     with pytest.raises(maNotEnoughError) as e:
         assert ogn.symbol_above_moving_average(55) == True
     exec_msg = e.value.args[0]
-    assert exec_msg == "55 周期均价因时长不足无法得出\n"
+    assert exec_msg == "OGN 55 周期均价因时长不足无法得出\n"
     # 低于10周线
     assert goev.symbol_above_moving_average(10) == False
     assert goev.symbol_above_moving_average(100) == False
