@@ -124,7 +124,6 @@ def test_gen_mmt_msg(aapl,goev):
     msg = aapl.gen_mmt_msg()
     assert aapl.xmm_profit != None
     assert aapl.dmm_profit != None
-    print(msg)
     assert msg == """从2020年09月04日定投 #小毛毛 AAPL，到2021年08月20日累计投入 4900元，到昨日市值为 5725.16 元，利润为 16.84%\n从2020年09月04日定投 #大毛毛 AAPL，到2021年08月20日累计投入 1100元，到昨日市值为 1268.71 元，利润为 15.34%\n"""
 
 
