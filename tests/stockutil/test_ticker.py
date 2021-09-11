@@ -28,7 +28,7 @@ def test_ticker_symbol_above_moving_average(ogn,goev):
     with pytest.raises(maNotEnoughError) as e:
         assert ogn.symbol_above_moving_average(55) == True
     exec_msg = e.value.args[0]
-    assert exec_msg == "55 周期均价因时长不足无法得出\n"
+    assert exec_msg == "OGN 55 周期均价因时长不足无法得出\n"
     # 低于10周线
     assert goev.symbol_above_moving_average(10) == False
     assert goev.symbol_above_moving_average(100) == False
@@ -125,5 +125,6 @@ def test_gen_mmt_msg(aapl,goev):
     assert aapl.xmm_profit != None
     assert aapl.dmm_profit != None
     assert msg == """从2020年09月04日定投 #小毛毛 AAPL，到2021年08月20日累计投入 4900元，到昨日市值为 5725.16 元，利润为 16.84%\n从2020年09月04日定投 #大毛毛 AAPL，到2021年08月20日累计投入 1100元，到昨日市值为 1268.71 元，利润为 15.34%\n"""
-
+    # TODO: 找一个时间短的数据做一个assert测试
+    
 

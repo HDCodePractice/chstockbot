@@ -87,7 +87,7 @@ def test_index_compare_avg_ma_error(shared_datadir):
     assert len(nyse.down) == 0
     assert len(nyse.up) == 0
     # print(nyse.tickers,nyse.down,nyse.up,nyse.err_msg)
-    assert nyse.err_msg == "nyse OGN里的历史数据没有100这么多\n"
+    assert nyse.err_msg == "nyse OGN 100 周期均价因时长不足无法得出\n\n"
 
 
 def test_gen_index_msg(shared_datadir):
