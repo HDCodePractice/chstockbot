@@ -126,7 +126,7 @@ class Index:
                 t = Path(file_name)
                 ticker_file = read_stooq_file(file_name)  
                 ticker_name = t.stem
-                if ticker_file.index.count() < 2 and self.endtime in ticker_file.index.date:                
+                if len(ticker_file.index) > 2 and self.endtime in ticker_file.index.date:                
                     ticker_file = ticker_file.loc[ticker_file.index[0]:self.endtime]
                     self.today_vol += ticker_file['Volume'][-1]
                     self.yesterday_vol += ticker_file['Volume'][-2]
