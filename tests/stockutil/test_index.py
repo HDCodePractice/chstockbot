@@ -112,3 +112,7 @@ def test_compare_market_volume(shared_datadir):
     yes_o = 2522056
     rate = (today_o)/(yes_o)-1
     assert f'{"nyse".upper()} 市场 {date(2021,8,20)} 交易量的变化为 {(rate)*100:.2f}%\n'
+
+def test_compare_market_volume_axas_error(shared_datadir):
+    # axas 在0820时没有交易数据
+    pass
