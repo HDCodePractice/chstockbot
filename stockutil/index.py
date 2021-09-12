@@ -1,8 +1,10 @@
-import datetime
-
+import datetime, os
 from stockutil.ticker import Ticker
 import pandas as pd
-from stockutil.stooq import list_file_prefix
+from stockutil.stooq import list_file_prefix, read_stooq_file
+from pathlib import Path, PurePath
+import re
+
 class IndexError(Exception):
     pass
 
@@ -36,6 +38,8 @@ class Index:
     }
     #市场的数据源
     markets = ["nasdaq","nyse"]
+    #市场的交易量
+    market_volume={}
     #错误信息
     err_msg = ""
     
@@ -111,3 +115,28 @@ class Index:
             raise IndexError(f"{self.symbol}无法读取今日和昨日的交易量， 请重新计算\n") 
         chat_msg = f"{self.symbol}共有{len(self.up)+len(self.down)}支股票，共有{len(self.up)/(len(self.up)+len(self.down))*100:.2f}%高于{self.ma}周期均线\n当日交易量变化：{(self.today_vol/self.yesterday_vol - 1)*100:.2f}%\n"
         return chat_msg
+
+    def compare_market_volume(self):
+        self.today_vol = 0
+        self.yesterday_vol = 0
+        self.market_volume = {}
+
+        for file_name in Path(self.local_store).glob(f'**/{self.symbol.lower()}*/**/*.txt'):
+            try:
+                t = Path(file_name)
+                ticker_file = read_stooq_file(file_name)  
+                ticker_name = t.stem
+                if self.endtime in ticker_file.index.date:                
+                    ticker_file = ticker_file.loc[ticker_file.index[0]:self.endtime]
+                    self.today_vol += ticker_file['Volume'][-1]
+                    self.yesterday_vol += ticker_file['Volume'][-2]
+                else:
+                    raise IndexError(f"{ticker_name.upper()}最新的数据不是{self.endtime}。请检查数据源。")
+            except Exception as e:
+                self.err_msg += f"{type(e)},{e}\n"
+                continue
+        self.market_volume[self.symbol]=[self.today_vol,self.yesterday_vol]
+        print (self.market_volume)
+        self.market_volume_msg = f"{self.symbol.upper()} 市场 {self.endtime} 交易量的变化为 {(self.today_vol/self.yesterday_vol-1)*100:.2f}%\n"
+        return self.market_volume_msg
+    
