@@ -34,7 +34,7 @@ def test_index_get_tickers_list_markets(shared_datadir):
     
     index = Index("nasdaq",from_s="markets",local_store=f"{shared_datadir}")
     index.get_tickers_list()
-    assert len(index.tickers) == 4
+    assert len(index.tickers) == 5
     assert "AAPL" in index.tickers
     assert "GOEV" in index.tickers
     assert "AXAS" in index.tickers
