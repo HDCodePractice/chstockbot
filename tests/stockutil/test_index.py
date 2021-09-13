@@ -34,7 +34,7 @@ def test_index_get_tickers_list_markets(shared_datadir):
     
     index = Index("nasdaq",from_s="markets",local_store=f"{shared_datadir}")
     index.get_tickers_list()
-    assert len(index.tickers) == 3
+    assert len(index.tickers) == 4
     assert "AAPL" in index.tickers
     assert "GOEV" in index.tickers
     assert "AXAS" in index.tickers
@@ -53,20 +53,7 @@ def test_market_index_error_symbol(shared_datadir):
     exec_msg = e.value.args[0]
     assert exec_msg == "BBLL 不在我们的支持列表中"
 
-def test_index_get_market_ticker_list(shared_datadir):
-    nasdaq = Index("nasdaq","markets",local_store=f"{shared_datadir}")
-    nasdaq.get_tickers_list()
-    # print(nasdaq.tickers)
-    assert len(nasdaq.tickers) == 3
-    assert "AAPL" in nasdaq.tickers
-    assert "GOEV" in nasdaq.tickers
-    assert "AXAS" in nasdaq.tickers
 
-    nyse = Index("nyse","markets",local_store=f"{shared_datadir}")
-    nyse.get_tickers_list()
-    # print(nyse.tickers)
-    assert len(nyse.tickers) == 1
-    assert "OGN" in nyse.tickers
  
 def test_index_compare_avg_ma(shared_datadir):
     nasdaq = Index("nasdaq","markets",local_store=f"{shared_datadir}",endtime=date(2021,8,20))
