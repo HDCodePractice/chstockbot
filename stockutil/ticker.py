@@ -128,6 +128,7 @@ class Ticker:
         if self.df is None:
             self.load_data()
         if self.df.count()[0] > ma :
+            # TDDO: 如果Ticker的最后一个交易日不是self.endtime,则需要raise一个Exception
             if self.df['Adj Close'][-1] < self.df.tail(ma)['Adj Close'].mean():
                 return False
             else:
