@@ -34,9 +34,10 @@ def test_index_get_tickers_list_markets(shared_datadir):
     
     index = Index("nasdaq",from_s="markets",local_store=f"{shared_datadir}")
     index.get_tickers_list()
-    assert len(index.tickers) == 2
+    assert len(index.tickers) == 3
     assert "AAPL" in index.tickers
     assert "GOEV" in index.tickers
+    assert "AXAS" in index.tickers
 
 def test_index_error_market_symbol(shared_datadir):
     from stockutil.index import IndexError
@@ -56,9 +57,10 @@ def test_index_get_market_ticker_list(shared_datadir):
     nasdaq = Index("nasdaq","markets",local_store=f"{shared_datadir}")
     nasdaq.get_tickers_list()
     # print(nasdaq.tickers)
-    assert len(nasdaq.tickers) == 2
+    assert len(nasdaq.tickers) == 3
     assert "AAPL" in nasdaq.tickers
     assert "GOEV" in nasdaq.tickers
+    assert "AXAS" in nasdaq.tickers
 
     nyse = Index("nyse","markets",local_store=f"{shared_datadir}")
     nyse.get_tickers_list()
