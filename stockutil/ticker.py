@@ -4,6 +4,7 @@ import datetime
 from stockutil.stooq import search_file,read_stooq_file,maNotEnoughError,markCloseError
 import os
 from util.utils import is_second_wednesday,get_target_date,get_dmm_maxtry,get_xmm_maxtry
+from pandas.errors import EmptyDataError
 
 class TickerError(Exception):
     pass
@@ -25,7 +26,7 @@ class Ticker:
     dmm_price_list = {}
 
     def __init__(self,symbol,from_s,ds,starttime=datetime.date.today() - datetime.timedelta(days=365),endtime=datetime.date.today(),principle=100):
-        self.symbol = symbol
+        self.symbol = symbol.upper()
         self.starttime=starttime
         self.endtime = endtime
         self.from_s = from_s
@@ -49,10 +50,15 @@ class Ticker:
                     df["Adj Close"] = df["Close"]
             if self.from_s.lower() == "local":
                 tiker_file = search_file(self.symbol.lower().replace(".","-") + ".us.txt",os.path.expanduser(self.ds))
-                df = read_stooq_file(path=tiker_file[0])
+                try:
+                    df = read_stooq_file(path=tiker_file[0])
+                except EmptyDataError:
+                    raise TickerError(f"{self.symbol}:{self.endtime}无数据")
                 #filter df based on end time
                 if self.endtime in df.index.date:
                     df = df.loc[df.index[0]:self.endtime]
+                if df.index[-1].date() != self.endtime:
+                    raise TickerError(f"{self.symbol}:{self.endtime}无数据")
                 #根据df的值更新starttime的日期 防止出现startime没有数据
                 if self.starttime not in df.index.date:
                     self.starttime = df.index.date[0]
@@ -128,7 +134,6 @@ class Ticker:
         if self.df is None:
             self.load_data()
         if self.df.count()[0] > ma :
-            # TDDO: 如果Ticker的最后一个交易日不是self.endtime,则需要raise一个Exception
             if self.df['Adj Close'][-1] < self.df.tail(ma)['Adj Close'].mean():
                 return False
             else:
