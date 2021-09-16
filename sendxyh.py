@@ -3,6 +3,7 @@ import datetime
 from telegram import Bot
 from stockutil.ticker import Ticker
 from stockutil.index import Index
+from util.tgutil import split_msg
 
 target_date = datetime.date.today()
 
@@ -13,7 +14,9 @@ def sendmsg(bot,chatid,msg,debug=True):
     if debug:
         print(f"{chatid}\n{msg}")
     else:
-        bot.send_message(chatid,msg)
+        msgs = split_msg(msg)
+        for m in msgs:
+            bot.sendMessage(chat_id=chatid, text=m)
 
 if __name__ == '__main__':
     try:
