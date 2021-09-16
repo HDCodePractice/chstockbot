@@ -1,5 +1,5 @@
 import datetime, os
-from stockutil.ticker import Ticker
+from stockutil.ticker import Ticker, TickerError
 import pandas as pd
 from stockutil.stooq import list_file_prefix, read_stooq_file
 from pathlib import Path, PurePath
@@ -123,16 +123,17 @@ class Index:
         for file_name in Path(self.local_store).glob(f'**/{self.symbol.lower()}*/**/*.txt'):
             try:
                 t = Path(file_name)
-                ticker_file = read_stooq_file(file_name)  
-                ticker_name = t.stem
+                ticker_name = t.stem.split(".us")[0]
+                ticker = Ticker(ticker_name, "local", ds=self.local_store, starttime=self.starttime, endtime=self.endtime)
+                ticker_file = ticker.load_data()
                 if len(ticker_file.index) > 2 and self.endtime in ticker_file.index.date:                
                     ticker_file = ticker_file.loc[ticker_file.index[0]:self.endtime]
                     self.today_vol += ticker_file['Volume'][-1]
                     self.yesterday_vol += ticker_file['Volume'][-2]
                 else:
                     raise IndexError(f"{ticker_name.upper()}")
-            except IndexError as e:
-                self.err_msg += f"{e} "
+            except (IndexError,TickerError) as e:
+                self.err_msg += f"{ticker_name.upper()} "
                 continue
             except Exception as e:
                 print(f"{file_name}")

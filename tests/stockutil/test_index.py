@@ -102,6 +102,7 @@ def test_compare_market_volume(shared_datadir):
     rate = (today_o)/(yes_o)-1
     assert f'{"nyse".upper()} 市场 {date(2021,8,20)} 交易量的变化为 {(rate)*100:.2f}%\n'
 
-def test_compare_market_volume_axas_error(shared_datadir):
-    # axas 在0820时没有交易数据
-    pass
+def test_compare_market_volume_error(shared_datadir):
+    nasdaq = Index("nasdaq","markets",local_store=f"{shared_datadir}",endtime=date(2021,8,20))
+    nasdaq.compare_market_volume()
+    assert nasdaq.err_msg == "AXAS GAINZ FINW 2021-08-20无数据"
