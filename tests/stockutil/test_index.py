@@ -105,4 +105,9 @@ def test_compare_market_volume(shared_datadir):
 def test_compare_market_volume_error(shared_datadir):
     nasdaq = Index("nasdaq","markets",local_store=f"{shared_datadir}",endtime=date(2021,8,20))
     nasdaq.compare_market_volume()
-    assert nasdaq.err_msg == "AXAS GAINZ FINW 2021-08-20无数据"
+    m =  nasdaq.err_msg.split(" ")
+    assert len(m) == 4
+    assert "AXAS" in m
+    assert "GAINZ" in m
+    assert "FINW" in m
+    assert "2021-08-20无数据" in m
