@@ -120,7 +120,7 @@ class Index:
         self.yesterday_vol = 0
         self.market_volume = {}
 
-        for file_name in Path(self.local_store).glob(f'**/{self.symbol.lower()}*/**/*.txt'):
+        for file_name in Path(self.local_store).glob(f'**/{self.symbol.lower()} stocks/**/*.txt'):
             try:
                 t = Path(file_name)
                 ticker_name = t.stem.split(".us")[0]
