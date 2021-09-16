@@ -88,19 +88,19 @@ def test_gen_index_msg(shared_datadir):
 
 def test_compare_market_volume(shared_datadir):
     nasdaq = Index("nasdaq","markets",local_store=f"{shared_datadir}",endtime=date(2021,8,20))
-    nasdaq.compare_market_volume()
+    msg = nasdaq.compare_market_volume()
     today_g = 2383633
     today_a = 60549630
     yes_g = 3907327
     yes_a = 86960310
     rate = (today_a+today_g)/(yes_a+yes_g)-1
-    assert f'{"nasdaq".upper()} 市场 {date(2021,8,20)} 交易量的变化为 {(rate)*100:.2f}%\n'
+    assert msg == f'{"nasdaq".upper()}市场较前一日交易量的变化为{(rate)*100:.2f}%\n'
     nyse = Index("nyse","markets",local_store=f"{shared_datadir}",endtime=date(2021,8,20))
-    nyse.compare_market_volume()
+    msg = nyse.compare_market_volume()
     today_o = 2354628
     yes_o = 2522056
     rate = (today_o)/(yes_o)-1
-    assert f'{"nyse".upper()} 市场 {date(2021,8,20)} 交易量的变化为 {(rate)*100:.2f}%\n'
+    assert msg == f'{"nyse".upper()}市场较前一日交易量的变化为{(rate)*100:.2f}%\n'
 
 def test_compare_market_volume_error(shared_datadir):
     nasdaq = Index("nasdaq","markets",local_store=f"{shared_datadir}",endtime=date(2021,8,20))

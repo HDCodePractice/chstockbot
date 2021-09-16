@@ -86,11 +86,11 @@ if __name__ == '__main__':
         for index in ['nasdaq','nyse']:
             i = Index(index,from_s="markets",local_store=config.config_path,endtime=target_date)
             i.compare_market_volume()
-            notify_message += f"{i.market_volume_msg}\n"
+            notify_message += f"{i.market_volume_msg}"
             admin_message += i.err_msg
         
         if notify_message:
-            notify_message = f"🌈🌈🌈{target_date}天相🌈🌈🌈: \n\n{notify_message}{ENV.CONTRIBUTORS}"
+            notify_message = f"🌈🌈🌈{target_date}天相🌈🌈🌈: \n\n{notify_message}\n{ENV.CONTRIBUTORS}"
             sendmsg(bot,notifychat,notify_message,debug)
         if admin_message:
             sendmsg(bot,adminchat,admin_message,debug)

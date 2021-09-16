@@ -141,6 +141,6 @@ class Index:
         if self.err_msg != "":
             self.err_msg += f"{self.endtime}无数据"
         self.market_volume[self.symbol]=[self.today_vol,self.yesterday_vol]
-        self.market_volume_msg = f"{self.symbol.upper()} 市场 {self.endtime} 交易量的变化为 {(self.today_vol/self.yesterday_vol-1)*100:.2f}%\n"
+        self.market_volume_msg = f"{self.symbol.upper()}市场较前一日交易量的变化为{(self.today_vol/self.yesterday_vol-1)*100:.2f}%\n"
         return self.market_volume_msg
     
