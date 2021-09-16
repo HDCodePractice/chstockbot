@@ -63,7 +63,7 @@ def test_ticker_symbol_above_moving_average(ogn,goev):
 
 def test_ticker_cal_profit(shared_datadir):
     """测试定投结果"""
-    aapl = Ticker("AAPL", "local", f"{shared_datadir}", starttime=datetime(2021, 7, 1), endtime=datetime(2021, 8, 20))
+    aapl = Ticker("AAPL", "local", f"{shared_datadir}", starttime=date(2021, 7, 1), endtime=date(2021, 8, 20))
     aapl.load_data()
     xmm = [
         [datetime(2021,7,7),144.35],

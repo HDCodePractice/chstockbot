@@ -26,6 +26,10 @@ class Ticker:
     dmm_price_list = {}
 
     def __init__(self,symbol,from_s,ds,starttime=datetime.date.today() - datetime.timedelta(days=365),endtime=datetime.date.today(),principle=100):
+        if isinstance(starttime,datetime.datetime):
+            starttime = starttime.date()
+        if isinstance(endtime,datetime.datetime):
+            endtime = endtime.date()
         self.symbol = symbol.upper()
         self.starttime=starttime
         self.endtime = endtime
