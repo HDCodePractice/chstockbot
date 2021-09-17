@@ -1,8 +1,10 @@
-import datetime
-
-from stockutil.ticker import Ticker
+import datetime, os
+from stockutil.ticker import Ticker, TickerError
 import pandas as pd
-from stockutil.stooq import list_file_prefix
+from stockutil.stooq import list_file_prefix, read_stooq_file
+from pathlib import Path, PurePath
+import re
+
 class IndexError(Exception):
     pass
 
@@ -36,6 +38,8 @@ class Index:
     }
     #市场的数据源
     markets = ["nasdaq","nyse"]
+    #市场的交易量
+    market_volume={}
     #错误信息
     err_msg = ""
     
@@ -101,7 +105,6 @@ class Index:
     
     def gen_index_msg(self): #生成指数信息
         end_time = self.endtime
-        # TODO: 这个end_time参数如果和compare_avg_ma的不一样，是不是会出很神奇的结果？
         max_num = 20 if self.from_s == "sources" else 150
         if (len(self.up)+len(self.down) + max_num ) < len(self.tickers):
             raise IndexError(f"{self.symbol}: {end_time.strftime('%Y-%m-%d')} 有超过20支股票没有数据，请确保输入的日期当天有开市\n" )      
@@ -111,3 +114,33 @@ class Index:
             raise IndexError(f"{self.symbol}无法读取今日和昨日的交易量， 请重新计算\n") 
         chat_msg = f"{self.symbol}共有{len(self.up)+len(self.down)}支股票，共有{len(self.up)/(len(self.up)+len(self.down))*100:.2f}%高于{self.ma}周期均线\n当日交易量变化：{(self.today_vol/self.yesterday_vol - 1)*100:.2f}%\n"
         return chat_msg
+
+    def compare_market_volume(self):
+        self.today_vol = 0
+        self.yesterday_vol = 0
+        self.market_volume = {}
+
+        for file_name in Path(self.local_store).glob(f'**/{self.symbol.lower()} stocks/**/*.txt'):
+            try:
+                t = Path(file_name)
+                ticker_name = t.stem.split(".us")[0]
+                ticker = Ticker(ticker_name, "local", ds=self.local_store, starttime=self.starttime, endtime=self.endtime)
+                ticker_file = ticker.load_data()
+                if len(ticker_file.index) > 2 and self.endtime in ticker_file.index.date:                
+                    ticker_file = ticker_file.loc[ticker_file.index[0]:self.endtime]
+                    self.today_vol += ticker_file['Volume'][-1]
+                    self.yesterday_vol += ticker_file['Volume'][-2]
+                else:
+                    raise IndexError(f"{ticker_name.upper()}")
+            except (IndexError,TickerError) as e:
+                self.err_msg += f"{ticker_name.upper()} "
+                continue
+            except Exception as e:
+                print(f"{file_name}")
+                raise e
+        if self.err_msg != "":
+            self.err_msg += f"{self.endtime}无数据"
+        self.market_volume[self.symbol]=[self.today_vol,self.yesterday_vol]
+        self.market_volume_msg = f"{self.symbol.upper()}市场较前一日交易量的变化为{(self.today_vol/self.yesterday_vol-1)*100:.2f}%\n"
+        return self.market_volume_msg
+    

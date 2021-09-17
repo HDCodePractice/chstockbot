@@ -12,11 +12,38 @@ def test_ticker_load_data_web():
 
 def test_ticker_load_data_local(shared_datadir):
     """Test ticker load data."""
-    ticker = Ticker("AAPL","local", f"{shared_datadir}")
+    ticker = Ticker("AAPL","local", f"{shared_datadir}",starttime=date(2021,1,1),endtime=date(2021,8,20))
     df =  ticker.load_data()
     assert df.index.size == 9315
     assert df.tail(1).index[0] == pd.Timestamp('2021-08-20 00:00:00')
     assert df.head(1).index[0] == pd.Timestamp('1984-09-07 00:00:00')
+    ticker = Ticker("GOEV","local", f"{shared_datadir}",starttime=date(2021,1,1),endtime=date(2021,8,20))
+    df =  ticker.load_data()
+    assert df.index.size == 526
+    assert df.tail(1).index[0] == pd.Timestamp('2021-08-20 00:00:00')
+    assert df.head(1).index[0] == pd.Timestamp('2019-04-17 00:00:00')
+
+def test_ticker_load_data_local_error(shared_datadir):
+    from stockutil.ticker import TickerError
+    # axas到8月3日，20号没有交易
+    ticker = Ticker("axas","local", f"{shared_datadir}",starttime=date(2021,1,1),endtime=date(2021,8,20))
+    with pytest.raises(TickerError) as e:
+        ticker.load_data()
+    exec_msg = e.value.args[0]
+    assert exec_msg == "AXAS:2021-08-20无数据"
+    # finw没有数据
+    ticker = Ticker("finw","local", f"{shared_datadir}",starttime=date(2021,1,1),endtime=date(2021,8,20))
+    with pytest.raises(TickerError) as e:
+        ticker.load_data()
+    exec_msg = e.value.args[0]
+    assert exec_msg == "FINW:2021-08-20无数据"
+    # gainz只有0820一天数据
+    ticker = Ticker("gainz","local", f"{shared_datadir}",starttime=date(2021,1,1),endtime=date(2021,8,20))
+    ticker.load_data()
+    assert ticker.df.index.size == 1
+    assert ticker.df.index[0] == pd.Timestamp('2021-08-20 00:00:00')
+    assert ticker.starttime == date(2021,8,20)
+
 
 def test_ticker_symbol_above_moving_average(ogn,goev):
     """Test ticker symbol above moving average."""
@@ -36,7 +63,7 @@ def test_ticker_symbol_above_moving_average(ogn,goev):
 
 def test_ticker_cal_profit(shared_datadir):
     """测试定投结果"""
-    aapl = Ticker("AAPL", "local", f"{shared_datadir}", starttime=datetime(2021, 7, 1), endtime=datetime(2021, 8, 20))
+    aapl = Ticker("AAPL", "local", f"{shared_datadir}", starttime=date(2021, 7, 1), endtime=date(2021, 8, 20))
     aapl.load_data()
     xmm = [
         [datetime(2021,7,7),144.35],
