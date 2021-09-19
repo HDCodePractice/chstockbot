@@ -41,7 +41,7 @@ class Ticker:
         self.date_list = get_target_date(starttime,endtime)
         
         
-    def load_data(self):
+    def load_data(self, updateEndtime=False):
         '''
         from_s: web/local;
         ds: "data source name" when from = "web"; "path directory" when from = "local"
@@ -61,12 +61,14 @@ class Ticker:
                 except EmptyDataError:
                     raise TickerError(f"{self.symbol}:{self.endtime}无数据")
                 #filter df based on end time
-
+            #判断是否需要更新endtime
             #无论从本地还是stooq，似乎都需要对start，end的时间做一下处理
             if self.endtime in df.index.date:
                 df = df.loc[df.index[0]:self.endtime]
             else:
-                self.endtime = df.index.date[-1]
+                if updateEndtime == False:
+                    raise TickerError(f"{self.symbol}:{self.endtime}无数据")
+                self.endtime = df.index[-1].date()
             #根据df的值更新starttime的日期 防止出现startime没有数据
             if self.starttime not in df.index.date:
                 self.starttime = df.index.date[0]
