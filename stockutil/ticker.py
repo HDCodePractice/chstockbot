@@ -44,6 +44,8 @@ class Ticker:
         if self.ds !=None:
             if self.from_s.lower() == "web":
                 df = web.DataReader(self.symbol.upper(), self.ds,start=self.starttime,end=self.endtime)
+                if len(df.index) < 1:
+                    raise TickerError("请检查输入的股票名称，{self.symbol.upper()}好像不存在。")    
                 df = df.sort_values(by="Date") #将排序这个步骤放在了判断df是否存在之后；最新的数据在最后
                 if "Adj Close" not in df.columns.values: #当数据没有adj close时，从close 数据copy给adj close
                     df["Adj Close"] = df["Close"]
@@ -51,11 +53,15 @@ class Ticker:
                 tiker_file = search_file(self.symbol.lower().replace(".","-") + ".us.txt",os.path.expanduser(self.ds))
                 df = read_stooq_file(path=tiker_file[0])
                 #filter df based on end time
-                if self.endtime in df.index.date:
-                    df = df.loc[df.index[0]:self.endtime]
-                #根据df的值更新starttime的日期 防止出现startime没有数据
-                if self.starttime not in df.index.date:
-                    self.starttime = df.index.date[0]
+
+            #无论从本地还是stooq，似乎都需要对start，end的时间做一下处理
+            if self.endtime in df.index.date:
+                df = df.loc[df.index[0]:self.endtime]
+            else:
+                self.endtime = df.index.date[-1]
+            #根据df的值更新starttime的日期 防止出现startime没有数据
+            if self.starttime not in df.index.date:
+                self.starttime = df.index.date[0]
             self.df = df
             self.reset_data()
             
