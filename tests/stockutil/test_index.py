@@ -34,9 +34,10 @@ def test_index_get_tickers_list_markets(shared_datadir):
     
     index = Index("nasdaq",from_s="markets",local_store=f"{shared_datadir}")
     index.get_tickers_list()
-    assert len(index.tickers) == 2
+    assert len(index.tickers) == 5
     assert "AAPL" in index.tickers
     assert "GOEV" in index.tickers
+    assert "AXAS" in index.tickers
 
 def test_index_error_market_symbol(shared_datadir):
     from stockutil.index import IndexError
@@ -52,19 +53,7 @@ def test_market_index_error_symbol(shared_datadir):
     exec_msg = e.value.args[0]
     assert exec_msg == "BBLL 不在我们的支持列表中"
 
-def test_index_get_market_ticker_list(shared_datadir):
-    nasdaq = Index("nasdaq","markets",local_store=f"{shared_datadir}")
-    nasdaq.get_tickers_list()
-    # print(nasdaq.tickers)
-    assert len(nasdaq.tickers) == 2
-    assert "AAPL" in nasdaq.tickers
-    assert "GOEV" in nasdaq.tickers
 
-    nyse = Index("nyse","markets",local_store=f"{shared_datadir}")
-    nyse.get_tickers_list()
-    # print(nyse.tickers)
-    assert len(nyse.tickers) == 1
-    assert "OGN" in nyse.tickers
  
 def test_index_compare_avg_ma(shared_datadir):
     nasdaq = Index("nasdaq","markets",local_store=f"{shared_datadir}",endtime=date(2021,8,20))
@@ -96,3 +85,29 @@ def test_gen_index_msg(shared_datadir):
     nasdaq.compare_avg_ma(10)
     msg = nasdaq.gen_index_msg()
     assert msg == "nasdaq共有2支股票，共有50.00%高于10周期均线\n当日交易量变化：-30.74%\n"
+
+def test_compare_market_volume(shared_datadir):
+    nasdaq = Index("nasdaq","markets",local_store=f"{shared_datadir}",endtime=date(2021,8,20))
+    msg = nasdaq.compare_market_volume()
+    today_g = 2383633
+    today_a = 60549630
+    yes_g = 3907327
+    yes_a = 86960310
+    rate = (today_a+today_g)/(yes_a+yes_g)-1
+    assert msg == f'{"nasdaq".upper()}市场较前一日交易量的变化为{(rate)*100:.2f}%\n'
+    nyse = Index("nyse","markets",local_store=f"{shared_datadir}",endtime=date(2021,8,20))
+    msg = nyse.compare_market_volume()
+    today_o = 2354628
+    yes_o = 2522056
+    rate = (today_o)/(yes_o)-1
+    assert msg == f'{"nyse".upper()}市场较前一日交易量的变化为{(rate)*100:.2f}%\n'
+
+def test_compare_market_volume_error(shared_datadir):
+    nasdaq = Index("nasdaq","markets",local_store=f"{shared_datadir}",endtime=date(2021,8,20))
+    nasdaq.compare_market_volume()
+    m =  nasdaq.err_msg.split(" ")
+    assert len(m) == 4
+    assert "AXAS" in m
+    assert "GAINZ" in m
+    assert "FINW" in m
+    assert "2021-08-20无数据" in m
