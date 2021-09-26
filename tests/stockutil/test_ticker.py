@@ -6,9 +6,9 @@ from stockutil.ticker import Ticker
 def test_ticker_load_data_web():
     """Test ticker load data."""
     ticker = Ticker("AAPL","web", "stooq")
-    df =  ticker.load_data()
+    df =  ticker.load_data(updateEndtime=True)
     #print(df)
-    assert df.index.size > 200
+    assert  (date.today() - df.index[-1].date()).days < 7
 
 def test_ticker_load_data_local(shared_datadir):
     """Test ticker load data."""

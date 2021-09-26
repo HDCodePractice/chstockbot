@@ -41,7 +41,7 @@ class Ticker:
         self.date_list = get_target_date(starttime,endtime)
         
         
-    def load_data(self):
+    def load_data(self, updateEndtime=False):
         '''
         from_s: web/local;
         ds: "data source name" when from = "web"; "path directory" when from = "local"
@@ -49,6 +49,8 @@ class Ticker:
         if self.ds !=None:
             if self.from_s.lower() == "web":
                 df = web.DataReader(self.symbol.upper(), self.ds,start=self.starttime,end=self.endtime)
+                if len(df.index) < 1:
+                    raise TickerError("请检查输入的股票名称，{self.symbol.upper()}好像不存在。")    
                 df = df.sort_values(by="Date") #将排序这个步骤放在了判断df是否存在之后；最新的数据在最后
                 if "Adj Close" not in df.columns.values: #当数据没有adj close时，从close 数据copy给adj close
                     df["Adj Close"] = df["Close"]
@@ -59,13 +61,17 @@ class Ticker:
                 except EmptyDataError:
                     raise TickerError(f"{self.symbol}:{self.endtime}无数据")
                 #filter df based on end time
-                if self.endtime in df.index.date:
-                    df = df.loc[df.index[0]:self.endtime]
-                if df.index[-1].date() != self.endtime:
+            #判断是否需要更新endtime
+            #无论从本地还是stooq，似乎都需要对start，end的时间做一下处理
+            if self.endtime in df.index.date:
+                df = df.loc[df.index[0]:self.endtime]
+            else:
+                if updateEndtime == False:
                     raise TickerError(f"{self.symbol}:{self.endtime}无数据")
-                #根据df的值更新starttime的日期 防止出现startime没有数据
-                if self.starttime not in df.index.date:
-                    self.starttime = df.index.date[0]
+                self.endtime = df.index[-1].date()
+            #根据df的值更新starttime的日期 防止出现startime没有数据
+            if self.starttime not in df.index.date:
+                self.starttime = df.index.date[0]
             self.df = df
             self.reset_data()
             
