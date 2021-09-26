@@ -50,7 +50,7 @@ class Ticker:
             if self.from_s.lower() == "web":
                 df = web.DataReader(self.symbol.upper(), self.ds,start=self.starttime,end=self.endtime)
                 if len(df.index) < 1:
-                    raise TickerError("请检查输入的股票名称，{self.symbol.upper()}好像不存在。")    
+                    raise TickerError(f"请检查输入的股票名称，{self.symbol.upper()}好像不存在。")    
                 df = df.sort_values(by="Date") #将排序这个步骤放在了判断df是否存在之后；最新的数据在最后
                 if "Adj Close" not in df.columns.values: #当数据没有adj close时，从close 数据copy给adj close
                     df["Adj Close"] = df["Close"]
