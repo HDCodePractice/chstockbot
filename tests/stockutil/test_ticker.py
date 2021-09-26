@@ -6,7 +6,7 @@ from stockutil.ticker import Ticker
 def test_ticker_load_data_web():
     """Test ticker load data."""
     ticker = Ticker("AAPL","web", "stooq")
-    df =  ticker.load_data()
+    df =  ticker.load_data(updateEndtime = True)
     #print(df)
     assert df.index.size > 200
 
@@ -145,13 +145,14 @@ def test_cal_today_price_rate(aapl,goev):
     assert percent == aapl_percent
     assert flag == aapl_flag
 
-def test_gen_mmt_msg(aapl,goev):
+def test_gen_mmt_msg(aapl,goev,shared_datadir):
+    aapl = Ticker('aapl','local',shared_datadir,starttime=date(2020,9,4))
+    aapl.load_data(updateEndtime=True)
     aapl.cal_profit()
-    aapl.starttime = date(2020,9,4)
     msg = aapl.gen_mmt_msg()
     assert aapl.xmm_profit != None
     assert aapl.dmm_profit != None
-    assert msg == """从2020年09月04日定投 #小毛毛 AAPL，到2021年08月20日累计投入 4900元，到昨日市值为 5725.16 元，利润为 16.84%\n从2020年09月04日定投 #大毛毛 AAPL，到2021年08月20日累计投入 1100元，到昨日市值为 1268.71 元，利润为 15.34%\n"""
+    assert msg == """从2020年09月04日定投 #小毛毛 AAPL，到2021年08月20日累计投入 5000元，到昨日市值为 5852.28 元，利润为 17.05%\n从2020年09月04日定投 #大毛毛 AAPL，到2021年08月20日累计投入 1200元，到昨日市值为 1395.82 元，利润为 16.32%\n"""
     # TODO: 找一个时间短的数据做一个assert测试
     
 
