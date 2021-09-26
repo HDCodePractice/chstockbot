@@ -64,9 +64,9 @@ def announce_mmt(update: Update, context:CallbackContext):
     try:      
         t = Ticker(mmt_data[0], "web","stooq",starttime= mmt_data[1], endtime=mmt_data[2])
         t.load_data(updateEndtime=True)
-        if t.starttime != mmt_data[1]:
+        if str(t.starttime) != str(mmt_data[1]):
             reply_message += f"由于起始日期{mmt_data[1]}的数据不存在，自动转为最近的有数据的日期:{t.starttime}\n"
-        if t.endtime != mmt_data[2]:
+        if str(t.endtime) != str(mmt_data[2]):
             reply_message += f"由于结束日期{mmt_data[2]}的数据不存在，自动转为最近的有数据的日期:{t.endtime}\n"
         t.cal_profit()
         reply_message += t.gen_mmt_msg()
