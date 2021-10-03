@@ -17,8 +17,9 @@ def test_mmt_all_para(aapl):
         InlineKeyboardButton("过去10年",callback_data="mmt_:aapl:20110820:20210820:uid")
     ]]
     r,b = mmtcmd.process_income_message(msg,"uid")
+    assert b == buttons    
     assert r == rmsg
-    assert b == buttons
+
 
 def test_mmt_3para(aapl):
     # 用户会发出三个参数

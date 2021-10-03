@@ -53,10 +53,10 @@ if __name__ == '__main__':
     commands += reportcmd.add_dispatcher(dispatcher)
     from cmdproc import infocmd
     commands += infocmd.add_dispatcher(dispatcher)
-    # from cmdproc import mmtcmd
-    # commands += mmtcmd.add_dispatcher(dispatcher)
-    from cmdproc import mymmt
-    commands += mymmt.add_dispatcher(dispatcher)
+    from cmdproc import mmtcmd
+    commands += mmtcmd.add_dispatcher(dispatcher)
+    #from cmdproc import mymmt
+    #commands += mymmt.add_dispatcher(dispatcher)
 
     updater.bot.set_my_commands(commands)
 
