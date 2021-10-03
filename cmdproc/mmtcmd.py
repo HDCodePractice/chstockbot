@@ -14,11 +14,19 @@ admins = ENV.ADMINS
 
 ten_year_date = datetime.datetime.today().date() - datetime.timedelta(days=3650)
 one_year_date = datetime.datetime.today().date() - datetime.timedelta(days=365)
+
+def process_income_message(incoming_message, user):
+    return ("",[[]])
+
+
 def mmt_command(update: Update, context: CallbackContext) -> None:
-    mmt_starttime = datetime.datetime.today().date() - datetime.timedelta(days=365)
-    mmt_endtime = datetime.datetime.today().date()
     incoming_message = update.effective_message
     user = incoming_message.from_user.username
+
+    reply_message,keyboard = process_income_message(incoming_message, user)
+
+    mmt_starttime = datetime.datetime.today().date() - datetime.timedelta(days=365)
+    mmt_endtime = datetime.datetime.today().date()
     err_msg = "格式错误啦， 请输入/mmt 股票代码 起始日期(可选) 结束时间(可选) (日期格式：yyyymmdd)\n"
     msg_l = incoming_message.text.split(" ")
     if len(msg_l) == 1 or len(msg_l) > 4:
@@ -43,8 +51,9 @@ def mmt_command(update: Update, context: CallbackContext) -> None:
         InlineKeyboardButton(text=f"过去一年", callback_data=f"{msg_l[1].lower()}:{one_year_date}:{mmt_endtime}:{user}"),
         InlineKeyboardButton(text=f"过去10年", callback_data=f"{msg_l[1].lower()}:{ten_year_date}:{mmt_endtime}:{user}")
     ]]
-    reply_markup = InlineKeyboardMarkup(keyboard)
     msg_text = f"股票代码：{msg_l[1].lower()}\n请选择想要进行毛毛投利润率计算的日期：\n"
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
     update.message.reply_markdown_v2(msg_text,reply_markup=reply_markup)
 
 
