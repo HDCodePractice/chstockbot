@@ -3,9 +3,9 @@ from datetime import datetime,date
 import pandas as pd
 from stockutil.ticker import Ticker
 from telegram import InlineKeyboardButton
+from cmdproc import mmtcmd
 
 def test_mmt_all_para(aapl):
-    from cmdproc import mmtcmd
     # 用户会发出所有的参数
     msg = "/mmt aapl 20210801 20210820"
     rmsg = """股票代码：aapl
@@ -38,8 +38,37 @@ def test_mmt_error():
     # 用户会发出错误的参数
     # 多发出一个参数
     msg = "/mmt aapl 20210101 20210820 20210820"
-    # 发出错误的end date
-    msg = "/mmt aapl 20210101 20210920"
+    r,b = mmtcmd.process_income_message(msg,"uid")
+    assert r == "输入格式不对，请使用 /mmt appl 20210101 20210820这样的格式查询，日期格式为yyyymmdd"
+    assert b == None
     # 发出错误的start date
     msg = "/mmt aapl 10101 20210920"
+    r,b = mmtcmd.process_income_message(msg,"uid")
+    assert r == "输入格式不对，请使用 /mmt appl 20210101 20210820这样的格式查询，日期格式为yyyymmdd"
+    assert b == None
+    # 发出错误的start date
+    msg = "/mmt aapl 10101"
+    r,b = mmtcmd.process_income_message(msg,"uid")
+    assert r == "输入格式不对，请使用 /mmt appl 20210101 20210820这样的格式查询，日期格式为yyyymmdd"
+    assert b == None
+    # 发出错误的start date
+    msg = "/mmt aapl 10101 10101"
+    r,b = mmtcmd.process_income_message(msg,"uid")
+    assert r == "输入格式不对，请使用 /mmt appl 20210101 20210820这样的格式查询，日期格式为yyyymmdd"
+    assert b == None
+    # 不存在的股票代码
+    msg = "/mmt aapla"
+    r,b = mmtcmd.process_income_message(msg,"uid")
+    assert r == "aapla股票代码不存在，也许我的数据中不存在这样的股票，请使用我知道的股票代码查询（当然也有可能是系统出错啦，你就晚点再查吧～）"
+    assert b == None
+    # 不存在的股票代码
+    msg = "/mmt 20010101 aapl"
+    r,b = mmtcmd.process_income_message(msg,"uid")
+    assert r == "20010101股票代码不存在，也许我的数据中不存在这样的股票，请使用我知道的股票代码查询（当然也有可能是系统出错啦，你就晚点再查吧～）"
+    assert b == None    
+    # 发出错误的end date
+    # msg = "/mmt aapl 20210101 20210920"
+    # r,b = mmtcmd.process_income_message(msg,"uid")
+    # assert r == "最后一个交易日是20210820，请输入一个有效的截止日期"
+    # assert b == None
 
