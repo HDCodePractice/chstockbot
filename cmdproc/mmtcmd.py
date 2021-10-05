@@ -20,7 +20,7 @@ def process_income_message(incoming_message, user):
 
     mmt_starttime = datetime.datetime.today().date() - datetime.timedelta(days=365)
     mmt_endtime = datetime.datetime.today().date()
-    reply_msg = "格式错误啦， 请输入/mmt 股票代码 起始日期(可选) 结束时间(可选) (日期格式：yyyymmdd)\n"   
+    reply_msg = f"输入格式不对，请使用 /mmt appl 20210101 20210820这样的格式查询，日期格式为yyyymmdd"   
     msg_l = incoming_message.split(" ")
     if len(msg_l) == 1 or len(msg_l) > 4:
         return reply_msg,None
@@ -32,7 +32,7 @@ def process_income_message(incoming_message, user):
     except ValueError:
         return reply_msg,None
     except IndexError:
-        reply_msg = f"由于未检测到或只检测到部分日期参数，毛毛投即将使用的日期参数为:{mmt_starttime}/{mmt_endtime}\n"
+        reply_msg = f"由于未检测到或只检测到部分日期参数，毛毛投即将使用的日期参数为:{mmt_starttime}/{mmt_endtime}"
         return reply_msg,None
     except Exception:
         return reply_msg,None
