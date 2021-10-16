@@ -13,7 +13,6 @@ groups = ENV.GROUPS
 admins = ENV.ADMINS
 
 reply_msg = f"输入格式不对，请使用 /mmt appl 20210101 20210820这样的格式查询，日期格式为yyyymmdd"  
-profit_list = {}
 
 def process_income_message(incoming_message, user):
     #reply_message,keyboard = process_income_message(incoming_message, user)
@@ -36,24 +35,12 @@ def process_income_message(incoming_message, user):
         msg_text += f"由于未检测到或只检测到部分日期参数，毛毛投即将使用的日期参数为:{mmt_starttime}/{mmt_endtime}\n"
     except Exception:
         return reply_msg,None
-    #处理毛毛投利润
-    try:
-        count = 1
-        for i in [mmt_starttime, one_year_date,ten_year_date]:
-            profit_list[f"{count}"] = process_ticker_profit(msg_l[1].lower(),i,mmt_endtime)
-            count +=1
 
-    except TickerError:
-        msg_text = f"{msg_l[1].lower()}股票代码不存在，也许我的数据中不存在这样的股票，请使用我知道的股票代码查询（当然也有可能是系统出错啦，你就晚点再查吧～）"
-        return msg_text, None
-    except Exception as err:
-        msg_text = f"数据正在更新中；请稍后再试; {err}"
-        return msg_text, None
     #准备返回3个按钮； 传入profit_list里的key 和用户名
     keyboard = [[
-        InlineKeyboardButton(text=f"{mmt_starttime}", callback_data=f"1:{user}"),
-        InlineKeyboardButton(text=f"过去一年", callback_data=f"2:{user}"),
-        InlineKeyboardButton(text=f"过去10年", callback_data=f"3:{user}")
+        InlineKeyboardButton(text=f"{mmt_starttime}", callback_data=f"{msg_l[1]}:{mmt_starttime}:{mmt_endtime}:{user}"),
+        InlineKeyboardButton(text=f"过去一年", callback_data=f"{msg_l[1]}:{one_year_date}:{mmt_endtime}:{user}"),
+        InlineKeyboardButton(text=f"过去10年", callback_data=f"{msg_l[1]}:{ten_year_date}:{mmt_endtime}:{user}")
     ]]
     msg_text += f"股票代码：{msg_l[1].lower()}\n请选择想要进行毛毛投利润率计算的日期：\n"
     return msg_text, keyboard
@@ -92,13 +79,22 @@ def announce_mmt(update: Update, context:CallbackContext):
     chat_id = update.effective_chat.id
     #如果不是提问人的id， 回复信息
     alert_msg = f"亲爱的{reply_user_name}, 这个不是你提的问题，请不要随意点击！如果想要查询毛毛投的信息，请自己输入命令！"
-    if reply_user_id != int(mmt_data[1]):
+    if reply_user_id != int(mmt_data[3]):
         context.bot.send_message(chat_id,alert_msg)
         return
     #直接读取profit_list里的value
-    for key,value in profit_list.items():
-        if mmt_data[0] == key:
-           context.bot.send_message(chat_id,value)
+        #处理毛毛投利润
+    try:
+        profit_msg = process_ticker_profit(mmt_data[0].lower(),mmt_data[1],mmt_data[2])
+
+    except TickerError:
+        profit_msg = f"{mmt_data[0].lower()}股票代码不存在，也许我的数据中不存在这样的股票，请使用我知道的股票代码查询（当然也有可能是系统出错啦，你就晚点再查吧～）"
+    except Exception as err:
+        profit_msg = f"数据正在更新中；请稍后再试; {err}"
+
+    context.bot.send_message(chat_id,profit_msg)
+    
+    
 
 def add_dispatcher(dp):
     dp.add_handler(CommandHandler("mmt", mmt_command))
