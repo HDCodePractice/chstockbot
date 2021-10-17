@@ -14,14 +14,14 @@ def test_mmt_all_para(aapl):
 从2021年08月02日定投 #小毛毛 AAPL，到2021年08月20日累计投入 300元，到昨日市值为 303.84 元，利润为 1.28%
 从2021年08月02日定投 #大毛毛 AAPL，到2021年08月20日累计投入 100元，到昨日市值为 101.60 元，利润为 1.60%\n"""
     buttons = [[
-        InlineKeyboardButton(f"20210801",callback_data=f"1:uid"),
-        InlineKeyboardButton(f"过去一年",callback_data=f"2:uid"),
-        InlineKeyboardButton(f"过去10年",callback_data=f"3:uid")
+        InlineKeyboardButton(f"20210801",callback_data=f"aapl:20210801:20210820:uid"),
+        InlineKeyboardButton(f"过去一年",callback_data=f"aapl:20200820:20210820:uid"),
+        InlineKeyboardButton(f"过去10年",callback_data=f"aapl:20111019:20210820:uid")
     ]]
     r,b = mmtcmd.process_income_message(msg,"uid")
     #assert b == buttons
     assert r == button_reply   
-    assert rmsg == mmtcmd.profit_list["1"]
+    #assert rmsg == mmtcmd.profit_list["1"]
 
 
 def test_mmt_3para(aapl):
@@ -32,9 +32,9 @@ def test_mmt_3para(aapl):
 从2021年01月04日定投 #小毛毛 AAPL，到2021年10月08日累计投入 52200元，到昨日市值为 267678.34 元，利润为 412.79%
 从2021年01月04日定投 #大毛毛 AAPL，到2021年10月08日累计投入 13700元，到昨日市值为 70186.60 元，利润为 412.31%\n"""
     buttons = [[
-        InlineKeyboardButton(f"20210101",callback_data=f"1:uid"),
-        InlineKeyboardButton(f"过去一年",callback_data=f"2:uid"),
-        InlineKeyboardButton(f"过去10年",callback_data=f"3:uid")
+        InlineKeyboardButton(f"20210801",callback_data=f"aapl:20210101:20210820:uid"),
+        InlineKeyboardButton(f"过去一年",callback_data=f"aapl:20200820:20210820:uid"),
+        InlineKeyboardButton(f"过去10年",callback_data=f"aapl:20111019:20210820:uid")
     ]]
     r,b = mmtcmd.process_income_message(msg,"uid")
     #assert b == buttons
@@ -50,9 +50,9 @@ def test_mmt_2para(aapl):
 从2021年08月02日定投 #小毛毛 AAPL，到2021年08月20日累计投入 300元，到昨日市值为 303.84 元，利润为 1.28%
 从2021年08月02日定投 #大毛毛 AAPL，到2021年08月20日累计投入 100元，到昨日市值为 101.60 元，利润为 1.60%\n"""
     buttons = [[
-        InlineKeyboardButton(f"20210801",callback_data=f"1:uid"),
-        InlineKeyboardButton(f"过去一年",callback_data=f"2:uid"),
-        InlineKeyboardButton(f"过去10年",callback_data=f"3:uid")
+        InlineKeyboardButton(f"20210801",callback_data=f"aapl:20210801:20210820:uid"),
+        InlineKeyboardButton(f"过去一年",callback_data=f"aapl:20200820:20210820:uid"),
+        InlineKeyboardButton(f"过去10年",callback_data=f"aapl:20111019:20210820:uid")
     ]]
     r,b = mmtcmd.process_income_message(msg,"uid")
     #assert b == buttons
@@ -95,7 +95,7 @@ def test_mmt_error():
     # 不存在的股票代码
     msg = "/mmt 20010101 aapl"
     r,b = mmtcmd.process_income_message(msg,"uid")
-    assert r == "输入格式不对，请使用 /mmt appl 20210101 20210820这样的格式查询，日期格式为yyyymmdd"
+    assert r == "20010101股票代码不存在，也许我的数据中不存在这样的股票，请使用我知道的股票代码查询（当然也有可能是系统出错啦，你就晚点再查吧～）"
     assert b == None    
     # 发出错误的end date
     # msg = "/mmt aapl 20210101 20210920"

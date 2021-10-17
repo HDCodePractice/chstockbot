@@ -4,8 +4,9 @@ from json import dumps
 from stockutil.ticker import Ticker, TickerError
 from telegram.inline.inlinekeyboardbutton import InlineKeyboardButton
 from telegram.inline.inlinekeyboardmarkup import InlineKeyboardMarkup
-import datetime
+import datetime,os,config
 from config import ENV
+from stockutil.stooq import search_file
 from util.tgutil import delay_del_msg
 
 admingroup = ENV.ADMIN_GROUP
@@ -25,6 +26,11 @@ def process_income_message(incoming_message, user):
     msg_l = incoming_message.split(" ")
     if len(msg_l) <= 1 or len(msg_l) > 4:
         return reply_msg,None
+    #从本地查找股票代码是否存在
+    file = search_file(msg_l[1].lower().replace(".","-") + ".us.txt",os.path.expanduser(config.config_path))
+    if not file:
+        msg_text = f"{msg_l[1].lower()}股票代码不存在，也许我的数据中不存在这样的股票，请使用我知道的股票代码查询（当然也有可能是系统出错啦，你就晚点再查吧～）"
+        return msg_text,None
     #处理日期，如果只有部分有效日期，自动更新成一年前的今天的日期到今天的日期 
     try:       
         mmt_starttime =  datetime.datetime.strptime(msg_l[2],"%Y%m%d").date()
@@ -35,6 +41,7 @@ def process_income_message(incoming_message, user):
         msg_text += f"由于未检测到或只检测到部分日期参数，毛毛投即将使用的日期参数为:{mmt_starttime}/{mmt_endtime}\n"
     except Exception:
         return reply_msg,None
+
 
     #准备返回3个按钮； 传入profit_list里的key 和用户名
     keyboard = [[
