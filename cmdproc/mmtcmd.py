@@ -52,9 +52,9 @@ def process_ticker_profit(ticker,starttime,endtime): #计算利润率的函数
     t.dmm_price_list = {}
     t.price_list = {}
     t.load_data(updateEndtime=True)
-    if t.starttime != starttime:
+    if str(t.starttime) != starttime:
         reply_txt += f"由于起始日期{starttime}的数据不存在，自动转为最近的有数据的日期:{t.starttime}\n"
-    if t.endtime != endtime:
+    if str(t.endtime) != endtime:
         reply_txt += f"由于结束日期{endtime}的数据不存在，自动转为最近的有数据的日期:{t.endtime}\n"
     t.cal_profit()
     reply_txt += t.gen_mmt_msg()
@@ -68,7 +68,6 @@ def mmt_command(update: Update, context: CallbackContext) -> None:
         incoming_message.reply_text(reply_message)
         return
     reply_markup = InlineKeyboardMarkup(keyboard)
-    #incoming_message.reply_markdown_v2(text=reply_message.replace("-", "\-"),reply_markup=reply_markup)
     context.bot.send_message(chat_id=incoming_message.chat_id, text=reply_message.replace("-", "\-"), reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN_V2)
 
 def announce_mmt(update: Update, context:CallbackContext):
