@@ -17,8 +17,7 @@ reply_msg = f"输入格式不对，请使用 /mmt appl 20210101 20210820这样�
 
 def process_income_message(incoming_message, user):
     #reply_message,keyboard = process_income_message(incoming_message, user)
-    ten_year_date = datetime.datetime.today().date() - datetime.timedelta(days=3650)
-    one_year_date = datetime.datetime.today().date() - datetime.timedelta(days=365)
+
     mmt_starttime = datetime.datetime.today().date() - datetime.timedelta(days=365)
     mmt_endtime = datetime.datetime.today().date()
     #profit_list = {} #重置dict
@@ -42,7 +41,8 @@ def process_income_message(incoming_message, user):
     except Exception:
         return reply_msg,None
 
-
+    one_year_date = datetime.date(mmt_endtime.year-1,mmt_endtime.month,mmt_endtime.day)
+    ten_year_date = datetime.date(mmt_endtime.year-10,mmt_endtime.month,mmt_endtime.day)
     #准备返回3个按钮； 传入profit_list里的key 和用户名
     keyboard = [[
         InlineKeyboardButton(text=f"{mmt_starttime}", callback_data=f"{msg_l[1]}:{mmt_starttime}:{mmt_endtime}:{user}"),
@@ -77,15 +77,20 @@ def mmt_command(update: Update, context: CallbackContext) -> None:
     reply_markup = InlineKeyboardMarkup(keyboard)
     context.bot.send_message(chat_id=incoming_message.chat_id, text=reply_message.replace("-", "\-"), reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN_V2)
 
-def announce_mmt(update: Update, context:CallbackContext):
-    #获取点击按钮的用户信息和毛毛投信息
-    reply_user_id = update.effective_chat.id
-    reply_user_name = update.effective_chat.full_name
+def check_click_callback_user(uid,mmt_data):
+    if str(uid) == mmt_data[3]:
+        return True
+    else:
+        return False
+
+def announce_mmt(update: Update, context:CallbackContext):    #获取点击按钮的用户信息和毛毛投信息
+    reply_user_id = update.effective_user.id
+    reply_user_name = update.effective_user.full_name
     mmt_data = update.callback_query.data.split(":")
     chat_id = update.effective_chat.id
     #如果不是提问人的id， 回复信息
     alert_msg = f"亲爱的{reply_user_name}, 这个不是你提的问题，请不要随意点击！如果想要查询毛毛投的信息，请自己输入命令！"
-    if reply_user_id != int(mmt_data[3]):
+    if check_click_callback_user(reply_user_id,mmt_data) == False:
         context.bot.send_message(chat_id,alert_msg)
         return
     #直接读取profit_list里的value
