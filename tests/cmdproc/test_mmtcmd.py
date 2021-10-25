@@ -42,9 +42,9 @@ def test_mmt_2para(aapl):
     # 用户会发出两个参数
     msg = "/mmt aapl"
     today = datetime.today().date()
-    button_reply = f"由于未检测到或只检测到部分日期参数，毛毛投即将使用的日期参数为:{datetime.today().date()-timedelta(days=365)}/{datetime.today().date()}\n股票代码：aapl\n请选择想要进行毛毛投利润率计算的日期：\n"
+    button_reply = f"由于未检测到或只检测到部分日期参数，毛毛投即将使用的日期参数为:{date(today.year,1,1)}/{datetime.today().date()}\n股票代码：aapl\n请选择想要进行毛毛投利润率计算的日期：\n"
     buttons = [[
-        InlineKeyboardButton(f"{date(today.year-1,today.month,today.day)}",callback_data=f"aapl:{date(today.year-1,today.month,today.day)}:{today}:uid"),
+        InlineKeyboardButton(f"{date(today.year,1,1)}",callback_data=f"aapl:{date(today.year,1,1)}:{today}:uid"),
         InlineKeyboardButton(f"过去一年",callback_data=f"aapl:{date(today.year-1,today.month,today.day)}:{today}:uid"),
         InlineKeyboardButton(f"过去10年",callback_data=f"aapl:{date(today.year-10,today.month,today.day)}:{today}:uid")
     ]]

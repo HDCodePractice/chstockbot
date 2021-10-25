@@ -17,14 +17,15 @@ reply_msg = f"输入格式不对，请使用 /mmt appl 20210101 20210820这样�
 
 def process_income_message(incoming_message, user):
     #reply_message,keyboard = process_income_message(incoming_message, user)
-
-    mmt_starttime = datetime.datetime.today().date() - datetime.timedelta(days=365)
     mmt_endtime = datetime.datetime.today().date()
+    mmt_starttime = datetime.date(mmt_endtime.year,1,1)
+
     #profit_list = {} #重置dict
     msg_text = ""
     msg_l = incoming_message.split(" ")
     if len(msg_l) <= 1 or len(msg_l) > 4:
         return reply_msg,None
+
     #从本地查找股票代码是否存在
     file = search_file(msg_l[1].lower().replace(".","-") + ".us.txt",os.path.expanduser(config.config_path))
     if not file:
@@ -34,6 +35,10 @@ def process_income_message(incoming_message, user):
     try:       
         mmt_starttime =  datetime.datetime.strptime(msg_l[2],"%Y%m%d").date()
         mmt_endtime = datetime.datetime.strptime(msg_l[3],"%Y%m%d").date()
+        #防止输入时间超过当前日期
+        if mmt_endtime > datetime.datetime.today().date():
+            err_msg = f"{msg_l[1]}的交易数据还远没到{msg_l[3]}这一天"
+            return err_msg,None
     except ValueError:
         return reply_msg,None
     except IndexError:
@@ -91,7 +96,8 @@ def announce_mmt(update: Update, context:CallbackContext):    #获取点击按�
     #如果不是提问人的id， 回复信息
     alert_msg = f"亲爱的{reply_user_name}, 这个不是你提的问题，请不要随意点击！如果想要查询毛毛投的信息，请自己输入命令！"
     if check_click_callback_user(reply_user_id,mmt_data) == False:
-        context.bot.send_message(chat_id,alert_msg)
+        #context.bot.send_message(chat_id,alert_msg)
+        update.callback_query.answer(alert_msg,show_alert=True)
         return
     #直接读取profit_list里的value
         #处理毛毛投利润
@@ -102,8 +108,8 @@ def announce_mmt(update: Update, context:CallbackContext):    #获取点击按�
         profit_msg = f"{mmt_data[0].lower()}股票代码不存在，也许我的数据中不存在这样的股票，请使用我知道的股票代码查询（当然也有可能是系统出错啦，你就晚点再查吧～）"
     except Exception as err:
         profit_msg = f"数据正在更新中；请稍后再试; {err}"
-
-    context.bot.send_message(chat_id,profit_msg)
+    update.callback_query.edit_message_text(text=f"亲爱的{reply_user_name},{profit_msg}",reply_markup=update.callback_query.message.reply_markup)
+    #context.bot.send_message(chat_id,profit_msg)
     
     
 
