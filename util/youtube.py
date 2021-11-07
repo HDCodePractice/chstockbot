@@ -28,6 +28,21 @@ def download_youtube(url,path="~/Downloads/"):
             err_msg = f"音乐下载报错了，具体错误是{e}"
     return False, err_msg
 
+def get_info(url):
+    ydl_opts = {}
+    youtube = YoutubeDL(ydl_opts)
+    try:
+        info = youtube.extract_info(url, download=False)
+    except Exception as e:
+        return None
+    formats = info["formats"]
+    thumbnails = info["thumbnails"]
+    title = info["title"]
+    duration = info["duration"]
+    return info
 
 
-
+if __name__ == "__main__":
+    url = "https://www.youtube.com/watch?v=kYEC7bm7gFs"
+    url = "https://www.youtube.com/watch?v=1PTs1mqrToM"
+    print(get_info(url))
