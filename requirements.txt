@@ -2,3 +2,4 @@ python-telegram-bot
 pandas 
 pandas-datareader
 environs
+requests
