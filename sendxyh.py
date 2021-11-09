@@ -68,14 +68,18 @@ if __name__ == '__main__':
 
     try:
         # 计算指定ETF的均线价格与偏离度
+        print("计算指定ETF的均线价格与偏离度")
         for symbol in symbols:
+            print(f"{symbol}")
             t = Ticker(symbol[0],from_s="web",ds="stooq",endtime=target_date)
             for ma in symbol[1:]:
                 t.cal_symbols_avg(int(ma))
             notify_message += f"{t.get_today_price_msg()}{t.gen_xyh_msg()}\n"
         
         # 计算NDX和SPX成分股高于50MA的比例和交易量变化
+        print("计算NDX和SPX成分股高于50MA的比例和交易量变化")
         for index in indexs:
+            print(f"{index}")
             i = Index(index,local_store=config.config_path,endtime=target_date)
             i.get_tickers_list()
             i.compare_avg_ma(ma=50)
@@ -83,9 +87,11 @@ if __name__ == '__main__':
             admin_message += i.err_msg
 
         # 计算两市成交量与昨日的变化
+        print("计算两市成交量与昨日的变化")
         for index in ['nasdaq','nyse']:
+            print(f"{index}")
             i = Index(index,from_s="markets",local_store=config.config_path,endtime=target_date)
-            i.compare_market_volume()
+            i.compare_market_volume(debug=True)
             notify_message += f"{i.market_volume_msg}"
             admin_message += i.err_msg
         

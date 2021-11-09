@@ -115,7 +115,7 @@ class Index:
         chat_msg = f"{self.symbol}共有{len(self.up)+len(self.down)}支股票，共有{len(self.up)/(len(self.up)+len(self.down))*100:.2f}%高于{self.ma}周期均线\n当日交易量变化：{(self.today_vol/self.yesterday_vol - 1)*100:.2f}%\n"
         return chat_msg
 
-    def compare_market_volume(self):
+    def compare_market_volume(self,debug=False):
         self.today_vol = 0
         self.yesterday_vol = 0
         self.market_volume = {}
@@ -124,6 +124,10 @@ class Index:
             try:
                 t = Path(file_name)
                 ticker_name = t.stem.split(".us")[0]
+                if debug:
+                    print(f"compare_market_volume: {t} {ticker_name}")
+                if "." in ticker_name:
+                    ticker_name = ticker_name.replace(".","")
                 ticker = Ticker(ticker_name, "local", ds=self.local_store, starttime=self.starttime, endtime=self.endtime)
                 ticker_file = ticker.load_data()
                 if len(ticker_file.index) > 2 and self.endtime in ticker_file.index.date:                
