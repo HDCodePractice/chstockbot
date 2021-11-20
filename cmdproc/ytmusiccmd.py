@@ -32,7 +32,6 @@ def ytmusic_command(update: Update, context: CallbackContext):
         if info == None:
             incoming_message.reply_text(f"哥们儿您输入的网址好像不存在啊，请重新输入")
             return
-        #inform_msg=incoming_message.reply_text(f"正在为您下载音乐 大小:{info['filesize']/1024/1024:.2f}MB 预估:{info['waiting_time']:.2f}秒 请耐心等待 点播者：{user.full_name}")
         download_gif=incoming_message.reply_animation(pic,caption=f"正在为您下载音乐 大小:{info['filesize']/1024/1024:.2f}MB 预估:{info['waiting_time']:.2f}秒 请耐心等待 点播者：{user.full_name}")
         status,output = download_youtube(url_link)
         if status == False:
@@ -46,7 +45,6 @@ def ytmusic_command(update: Update, context: CallbackContext):
             download_gif.delete()
     except Exception as err:
         sendmsg(context.bot,admingroup,f"下载音乐文件报错了，具体信息是{err}",debug)
-        #context.bot.send_message(chat_id=admingroup,text=f"下载音乐文件报错了，具体信息是{err}")
 
 def add_dispatcher(dp):
     dp.add_handler(CommandHandler("y", ytmusic_command))
