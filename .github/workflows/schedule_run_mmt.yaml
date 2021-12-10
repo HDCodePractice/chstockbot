@@ -2,10 +2,10 @@ name: Schedule Run SendMMT
 
 on:
   workflow_dispatch:
-  
+
   schedule:
     # 美东时间UTC/GMT -4: - cron: '25 8 * * 3'
-    - cron: '25 12 * * 3'
+    - cron: "25 12 * * 3"
 
 jobs:
   build_run:
@@ -19,21 +19,15 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      
-      - name: Download Stooq Data
-        run: |
-          wget -q https://static.stooq.com/db/h/d_us_txt.zip
-          unzip -oq d_us_txt.zip
-      
+
       - name: sendmmt
         # 系统是UTC时间，所以全部变为发昨日的数据
         run: python3 sendmmt.py -s 20210101 -e $(date +'%Y%m%d' -d yesterday) -c data/
         env:
           # DOPPLER_TOKEN
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
-          
