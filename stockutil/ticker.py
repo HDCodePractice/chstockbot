@@ -46,6 +46,9 @@ class Ticker:
             raise TickerError("起始时间比结束时间大，请重新设置")
         self.date_list = get_target_date(starttime, endtime)
 
+    def reload_target_data(self):
+        self.date_list = get_target_date(self.starttime, self.endtime)
+
     def load_data(self):
         '''
         from_s: web/local;
