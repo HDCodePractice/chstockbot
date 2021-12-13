@@ -80,87 +80,87 @@ class Index:
         # self.reset_index_data()
         return self.tickers
 
-    # def compare_avg_ma(self, ma=10):  # 合并计算
-    #     self.up = []
-    #     self.down = []
-    #     self.ma = ma
-    #     end_date = self.endtime
-    #     start_date = self.starttime
-    #     for ticker in self.tickers:
-    #         symbol = Ticker(ticker, "local", ds=self.local_store,
-    #                         starttime=start_date, endtime=end_date)
-    #         try:
-    #             df = symbol.load_data()
-    #             if symbol.symbol_above_moving_average(ma):
-    #                 self.up.append(symbol.symbol)
-    #             else:
-    #                 self.down.append(symbol.symbol)
-    #             self.today_vol += df["Volume"][-1]  # 今日交易量
-    #             self.yesterday_vol += df["Volume"][-2]  # 昨日交易量
-    #         except Exception as e:
-    #             self.err_msg += f"{self.symbol} {e}\n"
-    #             import traceback
-    #             traceback.print_exc()
-    #             continue
-    #     return True
+    def compare_avg_ma(self, ma=10):  # 合并计算
+        self.up = []
+        self.down = []
+        self.ma = ma
+        end_date = self.endtime
+        start_date = self.starttime
+        for ticker in self.tickers:
+            symbol = Ticker(ticker, "local", ds=self.local_store,
+                            starttime=start_date, endtime=end_date)
+            try:
+                df = symbol.load_data()
+                if symbol.symbol_above_moving_average(ma):
+                    self.up.append(symbol.symbol)
+                else:
+                    self.down.append(symbol.symbol)
+                self.today_vol += df["Volume"][-1]  # 今日交易量
+                self.yesterday_vol += df["Volume"][-2]  # 昨日交易量
+            except Exception as e:
+                self.err_msg += f"{self.symbol} {e}\n"
+                import traceback
+                traceback.print_exc()
+                continue
+        return True
 
-    # def reset_index_data(self):  # 初始化数据
-    #     self.up = []
-    #     self.down = []
-    #     self.today_vol = 0
-    #     self.yesterday_vol = 0
+    def reset_index_data(self):  # 初始化数据
+        self.up = []
+        self.down = []
+        self.today_vol = 0
+        self.yesterday_vol = 0
 
-    # def gen_index_msg(self):  # 生成指数信息
-    #     end_time = self.endtime
-    #     max_num = 20 if self.from_s == "sources" else 150
-    #     if (len(self.up)+len(self.down) + max_num) < len(self.tickers):
-    #         raise IndexError(
-    #             f"{self.symbol}: {end_time.strftime('%Y-%m-%d')} 有超过20支股票没有数据，请确保输入的日期当天有开市\n")
-    #     if self.up == 0 or self.down == 0:
-    #         raise IndexError(f"{self.symbol}无法读取高于/低于周期均价的股票列表，请确认股票列表\n")
-    #     if self.today_vol == 0 and self.yesterday_vol == 0:
-    #         raise IndexError(f"{self.symbol}无法读取今日和昨日的交易量， 请重新计算\n")
-    #     today_yesterday_volume_diff = self.today_vol/self.yesterday_vol - 1
-    #     if today_yesterday_volume_diff > 0:
-    #         chat_msg = f"{self.symbol}共有{len(self.up)+len(self.down)}支股票，共有{len(self.up)/(len(self.up)+len(self.down))*100:.2f}%高于{self.ma}周期均线\n当日交易量变化：+{(self.today_vol/self.yesterday_vol - 1)*100:.2f}%\n"
-    #     else:
-    #         chat_msg = f"{self.symbol}共有{len(self.up)+len(self.down)}支股票，共有{len(self.up)/(len(self.up)+len(self.down))*100:.2f}%高于{self.ma}周期均线\n当日交易量变化：{(self.today_vol/self.yesterday_vol - 1)*100:.2f}%\n"
-    #     return chat_msg
+    def gen_index_msg(self):  # 生成指数信息
+        end_time = self.endtime
+        max_num = 20 if self.from_s == "sources" else 150
+        if (len(self.up)+len(self.down) + max_num) < len(self.tickers):
+            raise IndexError(
+                f"{self.symbol}: {end_time.strftime('%Y-%m-%d')} 有超过20支股票没有数据，请确保输入的日期当天有开市\n")
+        if self.up == 0 or self.down == 0:
+            raise IndexError(f"{self.symbol}无法读取高于/低于周期均价的股票列表，请确认股票列表\n")
+        if self.today_vol == 0 and self.yesterday_vol == 0:
+            raise IndexError(f"{self.symbol}无法读取今日和昨日的交易量， 请重新计算\n")
+        today_yesterday_volume_diff = self.today_vol/self.yesterday_vol - 1
+        if today_yesterday_volume_diff > 0:
+            chat_msg = f"{self.symbol}共有{len(self.up)+len(self.down)}支股票，共有{len(self.up)/(len(self.up)+len(self.down))*100:.2f}%高于{self.ma}周期均线\n当日交易量变化：+{(self.today_vol/self.yesterday_vol - 1)*100:.2f}%\n"
+        else:
+            chat_msg = f"{self.symbol}共有{len(self.up)+len(self.down)}支股票，共有{len(self.up)/(len(self.up)+len(self.down))*100:.2f}%高于{self.ma}周期均线\n当日交易量变化：{(self.today_vol/self.yesterday_vol - 1)*100:.2f}%\n"
+        return chat_msg
 
-    # def compare_market_volume(self, debug=False):
-    #     self.today_vol = 0
-    #     self.yesterday_vol = 0
-    #     self.market_volume = {}
+    def compare_market_volume(self, debug=False):
+        self.today_vol = 0
+        self.yesterday_vol = 0
+        self.market_volume = {}
 
-    #     for file_name in Path(self.local_store).glob(f'**/{self.symbol.lower()} stocks/**/*.txt'):
-    #         try:
-    #             t = Path(file_name)
-    #             ticker_name = t.stem.split(".us")[0]
-    #             if debug:
-    #                 print(f"compare_market_volume: {t} {ticker_name}")
-    #             if "." in ticker_name:
-    #                 ticker_name = ticker_name.replace(".", "")
-    #             ticker = Ticker(ticker_name, "local", ds=self.local_store,
-    #                             starttime=self.starttime, endtime=self.endtime)
-    #             ticker_file = ticker.load_data()
-    #             if len(ticker_file.index) > 2 and self.endtime in ticker_file.index.date:
-    #                 ticker_file = ticker_file.loc[ticker_file.index[0]:self.endtime]
-    #                 self.today_vol += ticker_file['Volume'][-1]
-    #                 self.yesterday_vol += ticker_file['Volume'][-2]
-    #             else:
-    #                 raise IndexError(f"{ticker_name.upper()}")
-    #         except (IndexError, TickerError) as e:
-    #             self.err_msg += f"{ticker_name.upper()} "
-    #             continue
-    #         except Exception as e:
-    #             print(f"{file_name}")
-    #             raise e
-    #     if self.err_msg != "":
-    #         self.err_msg += f"{self.endtime}无数据"
-    #     self.market_volume[self.symbol] = [self.today_vol, self.yesterday_vol]
-    #     today_yesterday_volume_diff = self.today_vol/self.yesterday_vol - 1
-    #     if today_yesterday_volume_diff > 0:
-    #         self.market_volume_msg = f"{self.symbol.upper()}市场较前一日交易量的变化为 +{(self.today_vol/self.yesterday_vol-1)*100:.2f}%\n"
-    #     else:
-    #         self.market_volume_msg = f"{self.symbol.upper()}市场较前一日交易量的变化为 {(self.today_vol/self.yesterday_vol-1)*100:.2f}%\n"
-    #     return self.market_volume_msg
+        for file_name in Path(self.local_store).glob(f'**/{self.symbol.lower()} stocks/**/*.txt'):
+            try:
+                t = Path(file_name)
+                ticker_name = t.stem.split(".us")[0]
+                if debug:
+                    print(f"compare_market_volume: {t} {ticker_name}")
+                if "." in ticker_name:
+                    ticker_name = ticker_name.replace(".", "")
+                ticker = Ticker(ticker_name, "local", ds=self.local_store,
+                                starttime=self.starttime, endtime=self.endtime)
+                ticker_file = ticker.load_data()
+                if len(ticker_file.index) > 2 and self.endtime in ticker_file.index.date:
+                    ticker_file = ticker_file.loc[ticker_file.index[0]:self.endtime]
+                    self.today_vol += ticker_file['Volume'][-1]
+                    self.yesterday_vol += ticker_file['Volume'][-2]
+                else:
+                    raise IndexError(f"{ticker_name.upper()}")
+            except (IndexError, TickerError) as e:
+                self.err_msg += f"{ticker_name.upper()} "
+                continue
+            except Exception as e:
+                print(f"{file_name}")
+                raise e
+        if self.err_msg != "":
+            self.err_msg += f"{self.endtime}无数据"
+        self.market_volume[self.symbol] = [self.today_vol, self.yesterday_vol]
+        today_yesterday_volume_diff = self.today_vol/self.yesterday_vol - 1
+        if today_yesterday_volume_diff > 0:
+            self.market_volume_msg = f"{self.symbol.upper()}市场较前一日交易量的变化为 +{(self.today_vol/self.yesterday_vol-1)*100:.2f}%\n"
+        else:
+            self.market_volume_msg = f"{self.symbol.upper()}市场较前一日交易量的变化为 {(self.today_vol/self.yesterday_vol-1)*100:.2f}%\n"
+        return self.market_volume_msg
