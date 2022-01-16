@@ -7,3 +7,4 @@ pandas
 pandas-datareader
 environs
 yt-dlp
+youtube-search

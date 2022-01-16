@@ -11,7 +11,7 @@ from telegram.ext import CallbackContext, CallbackQueryHandler, CommandHandler
 from telegram.inline.inlinekeyboardbutton import InlineKeyboardButton
 from telegram.inline.inlinekeyboardmarkup import InlineKeyboardMarkup
 from util.tgutil import delay_del_msg, get_group_info, get_user_link
-from util.youtube import YoutubeDLError, download_youtube, get_info, init_yt
+from util.youtube import YoutubeDLError, download_youtube, get_info, search
 
 admingroup = ENV.ADMIN_GROUP
 groups = ENV.GROUPS
@@ -22,13 +22,13 @@ pic = "https://c.tenor.com/XasjKGMk_wAAAAAC/load-loading.gif"  # 需要被转成
 
 
 def ytmusic_command(update: Update, context: CallbackContext):
-    alert_message = "输入格式不对，请使用 /y url这样的格式查询"
+    alert_message = "输入格式不对，请使用 /y 音乐名 这样的格式查询"
     incoming_message = update.effective_message
     user = update.effective_user
     if len(incoming_message.text.split(' ')) <= 1:
         incoming_message.reply_text(alert_message)
         return
-    url_link = incoming_message.text.split(' ')[-1]
+    url_link = search(incoming_message.text.split(' ')[-1])
     info = get_info(url_link)
     if info == None:
         incoming_message.reply_text(f"哥们儿您输入的网址好像不存在啊，请重新输入")
@@ -38,7 +38,7 @@ def ytmusic_command(update: Update, context: CallbackContext):
     status, output = download_youtube(url_link, '/tmp')
     if status == False:
         reply_msg = f"亲爱的{user.full_name}，bot出错啦，请稍后再试" if output == None else f"亲爱的{user.full_name}，{output}"
-        incoming_message.edit_caption(reply_msg)
+        incoming_message.reply_text(reply_msg)
     if status == True:
         download_file = output
         download_gif.edit_caption(

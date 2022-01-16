@@ -1,8 +1,15 @@
+from youtube_search import YoutubeSearch
 from yt_dlp import YoutubeDL
 
 
 class YoutubeDLError(Exception):
     pass
+
+
+def search(keyword):
+    results = YoutubeSearch(keyword, max_results=1).to_dict()
+    url = f"https://youtube.com{results[0]['url_suffix']}"
+    return url
 
 
 def init_yt(ydl_opts=None, download_path="assets"):
@@ -33,7 +40,7 @@ def download_youtube(url, path="~/Downloads/"):
     url_info_list = youtube.extract_info(
         url, download=False)  # get id/ext information
     # print(json.dumps(url_info_list))
-    if url_info_list["filesize"] > 10485760:  # 判断文件大小
+    if url_info_list["filesize"] > 20971520:  # 判断文件大小
         err_msg = "您要下载的文件太大了，请重新选择"
     else:
         try:
