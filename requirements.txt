@@ -3,3 +3,4 @@ pandas
 pandas-datareader
 environs
 requests
+yt-dlp
