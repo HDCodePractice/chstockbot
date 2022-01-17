@@ -50,7 +50,7 @@ def ytmusic_command(update: Update, context: CallbackContext):
         msg = incoming_message.reply_text(alert_message)
         set_delay_delete(context, [msg, incoming_message])
         return
-    url_link = search(incoming_message.text.split(' ')[-1])
+    url_link = search(' '.join(context.args))
     info = get_info(url_link)
     if info == None:
         msg = incoming_message.reply_text(f"哥们儿您输入的网址好像不存在啊，请重新输入")
