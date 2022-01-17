@@ -1,7 +1,10 @@
+from email.message import Message
+from typing import List
+
 import requests
 from config import ENV
 from telegram import (BotCommand, InlineKeyboardButton, InlineKeyboardMarkup,
-                      Update)
+                      Message, Update)
 from telegram.ext import CallbackContext, CallbackQueryHandler, CommandHandler
 from telegram.utils.helpers import escape_markdown
 from util.youtube import download_youtube, get_info, search
@@ -9,6 +12,19 @@ from util.youtube import download_youtube, get_info, search
 pic = "https://c.tenor.com/XasjKGMk_wAAAAAC/load-loading.gif"  # 需要被转成ENV变量
 
 kb = [[InlineKeyboardButton("删除歌曲", callback_data="ytmusic_delete:")]]
+
+
+def delete_reply_msg(context: CallbackContext):
+    msgs = context.job.context
+    for msg in msgs:
+        context.bot.delete_message(msg.chat.id, msg.message_id)
+
+
+def set_delay_delete(context, msgs: List[Message], delay: int = 10):
+    # 设置延迟删除消息
+    delete_time = delay
+    job = context.job_queue.run_once(
+        delete_reply_msg, delete_time, context=msgs, name=f"delete_msg_{msgs[0].message_id}")
 
 
 def delete_music(update: Update, context: CallbackContext):
@@ -31,12 +47,20 @@ def ytmusic_command(update: Update, context: CallbackContext):
     user = update.effective_user
     user_info = f"[{user.full_name}](tg://user?id={user.id})"
     if len(incoming_message.text.split(' ')) <= 1:
-        incoming_message.reply_text(alert_message)
+        msg = incoming_message.reply_text(alert_message)
+        set_delay_delete(context, [msg, incoming_message])
         return
     url_link = search(incoming_message.text.split(' ')[-1])
     info = get_info(url_link)
     if info == None:
-        incoming_message.reply_text(f"哥们儿您输入的网址好像不存在啊，请重新输入")
+        msg = incoming_message.reply_text(f"哥们儿您输入的网址好像不存在啊，请重新输入")
+        set_delay_delete(context, [msg, incoming_message])
+        return
+    if info["filesize"] > 20971520:  # 判断文件大小
+        size = int(info["filesize"]/1024/1024)
+        err_msg = f"您要下载的音乐竟然有{size}MB之大，这是要撑爆Telegram的节奏啊！"
+        msg = incoming_message.reply_text(err_msg)
+        set_delay_delete(context, [msg, incoming_message])
         return
     download_gif = incoming_message.reply_animation(
         pic, caption=f"正在为您下载音乐 大小:{info['filesize']/1024/1024:.2f}MB 请耐心等待 点播者：{user.full_name}")
