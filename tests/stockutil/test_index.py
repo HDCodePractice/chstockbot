@@ -17,7 +17,7 @@ def test_index_get_tickers_list():
     ndx = Index("NDX")
     ndx.get_tickers_list()
     # print(ndx.tickers)
-    assert len(ndx.tickers) == 102
+    assert len(ndx.tickers) == 101
     assert "AAPL" in ndx.tickers
     assert "GOOG" in ndx.tickers
     assert "AMZN" in ndx.tickers
