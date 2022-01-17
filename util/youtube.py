@@ -39,9 +39,9 @@ def download_youtube(url, path="~/Downloads/"):
     youtube = YoutubeDL(ydl_opts)  # init youtube-dl
     url_info_list = youtube.extract_info(
         url, download=False)  # get id/ext information
-    # print(json.dumps(url_info_list))
     if url_info_list["filesize"] > 20971520:  # 判断文件大小
-        err_msg = "您要下载的文件太大了，请重新选择"
+        size = int(url_info_list["filesize"]/1024/1024)
+        err_msg = f"您要下载的音乐竟然有{size}MB之大，这是要撑爆Telegram的节奏啊！"
     else:
         try:
             dl_file = youtube.download([url])  # download music
