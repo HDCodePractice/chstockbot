@@ -116,6 +116,8 @@ class ENV:
     MUSIC_GROUP = env.list("MUSIC_GROUP", "")
     # 音乐下载缓存目录
     MUSIC_CACHE = env.str("MUSIC_CACHE", "")
+    # 音乐管理员们
+    MUSIC_ADMINS = env.list("MUSIC_ADMINS", [])
 
 
 if __name__ == "__main__":
