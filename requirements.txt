@@ -3,3 +3,6 @@ pandas
 pandas-datareader
 environs
 requests
+yt-dlp
+youtube-search
+requests
