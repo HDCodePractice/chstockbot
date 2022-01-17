@@ -46,7 +46,7 @@ def download_youtube(url, path="~/Downloads/"):
         try:
             dl_file = youtube.download([url])  # download music
             if dl_file == 0:
-                return True, f"{path}{url_info_list['title'].replace('/', '_')}.{url_info_list['id']}.{url_info_list['ext']}"
+                return True, youtube.prepare_filename(url_info_list)
         except Exception as e:
             err_msg = f"音乐下载报错了，具体错误是{e}"
     return False, err_msg
