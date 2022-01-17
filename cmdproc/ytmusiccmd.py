@@ -50,7 +50,12 @@ def ytmusic_command(update: Update, context: CallbackContext):
         msg = incoming_message.reply_text(alert_message)
         set_delay_delete(context, [msg, incoming_message])
         return
-    url_link = search(' '.join(context.args))
+    search_key = ' '.join(context.args)
+    url_link = search(search_key)
+    if url_link is None:
+        msg = incoming_message.reply_text(f"没有找到相关 {search_key} 的音乐")
+        set_delay_delete(context, [msg, incoming_message])
+        return
     info = get_info(url_link)
     if info == None:
         msg = incoming_message.reply_text(f"哥们儿您输入的网址好像不存在啊，请重新输入")
@@ -63,7 +68,7 @@ def ytmusic_command(update: Update, context: CallbackContext):
         set_delay_delete(context, [msg, incoming_message])
         return
     download_gif = incoming_message.reply_animation(
-        pic, caption=f"正在为您下载音乐 大小:{info['filesize']/1024/1024:.2f}MB 请耐心等待 点播者：{user.full_name}")
+        pic, caption=f"正在为您下载音乐 大小:{info['filesize']/1024/1024:.2f}MB 请耐心等待\n点播者：{user.full_name}")
     status, output = download_youtube(url_link, f"{ENV.MUSIC_CACHE}")
     if status == False:
         reply_msg = f"亲爱的{user.full_name}，bot出错啦，请稍后再试" if output == None else f"亲爱的{user.full_name}，{output}"
@@ -71,7 +76,7 @@ def ytmusic_command(update: Update, context: CallbackContext):
     if status == True:
         download_file = output
         download_gif.edit_caption(
-            caption=f"已从Youtube下载完成 正在上传中 请耐心等待 点播者：{user.full_name}")
+            caption=f"已从Youtube下载完成 正在上传中 请耐心等待\n点播者：{user.full_name}")
         img_url = info["thumbnails"][0]["url"]
         img_data = requests.get(img_url).content
         uid = user.id

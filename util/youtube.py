@@ -8,12 +8,13 @@ class YoutubeDLError(Exception):
 
 def search(keyword):
     results = YoutubeSearch(keyword, max_results=1).to_dict()
+    if len(results) == 0:
+        return None
     url = f"https://youtube.com{results[0]['url_suffix']}"
     return url
 
 
 def init_yt(ydl_opts=None, download_path="assets"):
-
     ydl_opts = {
         "format": "worstaudio[ext=m4a]",
         "geo-bypass": True,
