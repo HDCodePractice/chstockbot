@@ -1,18 +1,22 @@
-from telegram.ext import Updater
-import os
 import getopt
+import os
 import sys
+
+from telegram.ext import Updater
+
 import config
 
 
 def help():
     return "'bot.py -c <configpath>'"
 
-def sendmsg(bot,chatid,msg,debug=True):
+
+def sendmsg(bot, chatid, msg, debug=True):
     if debug:
         print(f"{chatid}\n{msg}")
     else:
-        bot.send_message(chatid,msg)
+        bot.send_message(chatid, msg)
+
 
 if __name__ == '__main__':
     try:
@@ -26,13 +30,14 @@ if __name__ == '__main__':
             print(help())
             sys.exit()
         elif opt in ("-c", "--config"):
-            config.config_path = arg          
+            config.config_path = arg
 
     config.config_file = os.path.join(config.config_path, "config.json")
     try:
         CONFIG = config.load_config()
     except FileNotFoundError:
-        print(f"config.json not found.Generate a new configuration file in {config.config_file}")
+        print(
+            f"config.json not found.Generate a new configuration file in {config.config_file}")
         config.set_default()
 
     ENV = config.ENV
@@ -44,7 +49,8 @@ if __name__ == '__main__':
     CONFIG['ID'] = me.id
     CONFIG['Username'] = '@' + me.username
     config.set_default()
-    print(f"Starting... ID: {str(CONFIG['ID'])} , Username: {CONFIG['Username']}")
+    print(
+        f"Starting... ID: {str(CONFIG['ID'])} , Username: {CONFIG['Username']}")
 
     commands = []
     from cmdproc import groupcmd

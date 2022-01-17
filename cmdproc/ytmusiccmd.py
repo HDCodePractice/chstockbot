@@ -1,27 +1,15 @@
-import asyncio
-import datetime
-import os
-from json import dumps
-
-import config
-from bot import sendmsg
+import requests
 from config import ENV
-from telegram import BotCommand, ParseMode, Update
-from telegram.ext import CallbackContext, CallbackQueryHandler, CommandHandler
-from telegram.inline.inlinekeyboardbutton import InlineKeyboardButton
-from telegram.inline.inlinekeyboardmarkup import InlineKeyboardMarkup
-from util.tgutil import delay_del_msg, get_group_info, get_user_link
-from util.youtube import YoutubeDLError, download_youtube, get_info, search
-
-admingroup = ENV.ADMIN_GROUP
-groups = ENV.GROUPS
-admins = ENV.ADMINS
-debug = ENV.DEBUG
+from telegram import BotCommand, Update
+from telegram.ext import CallbackContext, CommandHandler
+from util.youtube import download_youtube, get_info, search
 
 pic = "https://c.tenor.com/XasjKGMk_wAAAAAC/load-loading.gif"  # 需要被转成ENV变量
 
 
 def ytmusic_command(update: Update, context: CallbackContext):
+    if str(update.effective_chat.id) not in ENV.MUSIC_GROUP:
+        return
     alert_message = "输入格式不对，请使用 /y 音乐名 这样的格式查询"
     incoming_message = update.effective_message
     user = update.effective_user
@@ -43,8 +31,10 @@ def ytmusic_command(update: Update, context: CallbackContext):
         download_file = output
         download_gif.edit_caption(
             caption=f"已从Youtube下载完成 正在上传中 请耐心等待 点播者：{user.full_name}")
-        incoming_message.reply_audio(open(download_file, 'rb'), thumb=info["thumbnails"][0]["url"].split(
-            "?")[0], caption=f"{info['title']}  点播者：{user.full_name}")
+        img_url = info["thumbnails"][0]["url"]
+        img_data = requests.get(img_url).content
+        incoming_message.reply_audio(open(
+            download_file, 'rb'), thumb=img_data, caption=f"{info['title']}  点播者：{user.full_name}", quote=False)
     download_gif.delete()
 
 

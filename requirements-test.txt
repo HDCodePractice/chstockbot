@@ -8,3 +8,4 @@ pandas-datareader
 environs
 yt-dlp
 youtube-search
+requests
