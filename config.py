@@ -114,6 +114,8 @@ class ENV:
     MMTCHAT = env.str("MMTCHAT", "")
     # 音乐ChatIDs
     MUSIC_GROUP = env.list("MUSIC_GROUP", "")
+    # 音乐下载缓存目录
+    MUSIC_CACHE = env.str("MUSIC_CACHE", "")
 
 
 if __name__ == "__main__":

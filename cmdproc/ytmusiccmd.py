@@ -23,7 +23,7 @@ def ytmusic_command(update: Update, context: CallbackContext):
         return
     download_gif = incoming_message.reply_animation(
         pic, caption=f"正在为您下载音乐 大小:{info['filesize']/1024/1024:.2f}MB 预估:{info['waiting_time']:.2f}秒 请耐心等待 点播者：{user.full_name}")
-    status, output = download_youtube(url_link, f"{ENV.WORKDIR}/music/")
+    status, output = download_youtube(url_link, f"{ENV.MUSIC_CACHE}")
     if status == False:
         reply_msg = f"亲爱的{user.full_name}，bot出错啦，请稍后再试" if output == None else f"亲爱的{user.full_name}，{output}"
         incoming_message.reply_text(reply_msg)

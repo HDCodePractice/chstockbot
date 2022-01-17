@@ -24,7 +24,7 @@ def test_download_youtube():
     r, path = youtube.download_youtube(
         'https://www.youtube.com/watch?v=1PTs1mqrToM', '/tmp/')
     assert r == False
-    assert path == '您要下载的文件太大了，请重新选择'
+    assert path == '您要下载的音乐竟然有21MB之大，这是要撑爆Telegram的节奏啊！'
 
 
 def test_search():
