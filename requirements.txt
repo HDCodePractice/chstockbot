@@ -3,6 +3,6 @@ pandas
 pandas-datareader
 environs
 requests
-yt-dlp=2023.3.3
+yt-dlp==2023.3.3
 youtube-search
 requests
